@@ -36,21 +36,37 @@ const upload = multer({ storage });
 let db;
 
 async function connectDB() {
-  try {
-    db = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "Root@123",
-      database: "lms_db",
-    });
-    console.log("✅ متصل به دیتابیس MySQL");
-  } catch (err) {
-    console.error("❌ خطا در اتصال به دیتابیس:", err);
-    process.exit(1);
-  }
+    try {
+        // خواندن متغیرهای محیطی
+        const dbHost = process.env.DB_HOST;
+        const dbUser = process.env.DB_USER;
+        const dbPassword = process.env.DB_PASSWORD;
+        const dbName = process.env.DB_NAME;
+        const dbPort = process.env.DB_PORT || 3306;
+        
+        console.log(`🔄 Connecting to database: ${dbHost}:${dbPort}`);
+        
+        db = await mysql.createConnection({
+            host: dbHost,
+            user: dbUser,
+            password: dbPassword,
+            database: dbName,
+            port: dbPort,
+            ssl: {
+                rejectUnauthorized: false  // برای Aiven لازم است
+            }
+        });
+        console.log("✅ متصل به دیتابیس MySQL (Aiven)");
+    } catch (err) {
+        console.error("❌ خطا در اتصال به دیتابیس:", err);
+        console.log("📋 متغیرهای محیطی:");
+        console.log("   DB_HOST:", process.env.DB_HOST || "not set");
+        console.log("   DB_USER:", process.env.DB_USER || "not set");
+        console.log("   DB_NAME:", process.env.DB_NAME || "not set");
+        console.log("   DB_PORT:", process.env.DB_PORT || "not set");
+        process.exit(1);
+    }
 }
-
-connectDB();
 
 // ==================== توابع کمکی ====================
 
