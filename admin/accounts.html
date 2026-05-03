@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت حساب‌ها | پنل مدیریت</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .nav-tabs .nav-link {
+            color: #4a5568;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            margin-right: 5px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .income-row {
+            background-color: #dcfce7;
+        }
+
+        .expense-row {
+            background-color: #fee2e2;
+        }
+
+        .section-title {
+            color: #2d3748;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i>گزارشات
+                        مالی</a>
+                    <a href="announcements.html" class="nav-link "><i class="fa-solid fa-bullhorn"></i>مدیریت
+                        اعلانات</a>
+                    <a href="complaints.html" class="nav-link "><i class="bi bi-file-text-fill"></i>
+                        مدیریت شکایات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
+                        خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="bi bi-graph-up text-primary me-2"></i> مدیریت حساب‌ها</h3>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <h5><i class="bi bi-cash-stack text-success me-2"></i> درآمد در مقابل هزینه</h5><canvas
+                                id="incomeExpenseChart" height="250"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <h5><i class="bi bi-pie-chart-fill text-primary me-2"></i> توزیع درآمدها</h5><canvas
+                                id="incomeDistributionChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#incomeTab">💰
+                            درآمدها</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expenseTab">💸 هزینه‌ها</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#statementTab">📋 صورت حساب</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#coaTab">📊 چارت حساب</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="incomeTab">
+                        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#incomeModal"><i
+                                class="bi bi-plus-circle"></i> افزودن درآمد</button>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>تاریخ</th>
+                                            <th>شرح</th>
+                                            <th>مبلغ</th>
+                                            <th>مرجع</th>
+                                            <th>عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="incomesList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="expenseTab">
+                        <button class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#expenseModal"><i
+                                class="bi bi-plus-circle"></i> افزودن هزینه</button>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>تاریخ</th>
+                                            <th>شرح</th>
+                                            <th>مبلغ</th>
+                                            <th>مرجع</th>
+                                            <th>عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expensesList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="statementTab">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4"><input type="date" class="form-control" id="statementStartDate"></div>
+                            <div class="col-md-4"><input type="date" class="form-control" id="statementEndDate"></div>
+                            <div class="col-md-4"><button class="btn btn-primary w-100"
+                                    onclick="loadStatement()">نمایش</button></div>
+                        </div>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>تاریخ</th>
+                                            <th>شرح</th>
+                                            <th>بدهکار</th>
+                                            <th>بستانکار</th>
+                                            <th>مانده</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="statementList"></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="4"><strong>مانده نهایی:</strong></td>
+                                            <td><strong id="finalBalance">0</strong> AFN</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="coaTab">
+                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#coaModal"><i
+                                class="bi bi-plus-circle"></i> افزودن سر فصل</button>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>نام سر فصل</th>
+                                            <th>نوع</th>
+                                            <th>عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="coaList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال‌ها -->
+    <div class="modal fade" id="incomeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">افزودن درآمد</h5><button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="incomeForm">
+                        <div class="mb-3"><label class="form-label">تاریخ</label><input type="date" class="form-control"
+                                id="incomeDate" required></div>
+                        <div class="mb-3"><label class="form-label">شرح</label><input type="text" class="form-control"
+                                id="incomeDesc" required></div>
+                        <div class="mb-3"><label class="form-label">مبلغ</label><input type="number"
+                                class="form-control" id="incomeAmount" required></div>
+                        <div class="mb-3"><label class="form-label">مرجع</label><input type="text" class="form-control"
+                                id="incomeRef"></div>
+                        <div class="mb-3"><label class="form-label">سر فصل</label><select class="form-select"
+                                id="incomeHead" required></select></div><button type="submit"
+                            class="btn btn-success w-100">ذخیره</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="expenseModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">افزودن هزینه</h5><button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="expenseForm">
+                        <div class="mb-3"><label class="form-label">تاریخ</label><input type="date" class="form-control"
+                                id="expenseDate" required></div>
+                        <div class="mb-3"><label class="form-label">شرح</label><input type="text" class="form-control"
+                                id="expenseDesc" required></div>
+                        <div class="mb-3"><label class="form-label">مبلغ</label><input type="number"
+                                class="form-control" id="expenseAmount" required></div>
+                        <div class="mb-3"><label class="form-label">مرجع</label><input type="text" class="form-control"
+                                id="expenseRef"></div>
+                        <div class="mb-3"><label class="form-label">سر فصل</label><select class="form-select"
+                                id="expenseHead" required></select></div><button type="submit"
+                            class="btn btn-danger w-100">ذخیره</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="coaModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">افزودن سر فصل</h5><button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="coaForm">
+                        <div class="mb-3"><label class="form-label">نام سر فصل</label><input type="text"
+                                class="form-control" id="coaName" required></div>
+                        <div class="mb-3"><label class="form-label">نوع</label><select class="form-select" id="coaType">
+                                <option value="income">درآمد</option>
+                                <option value="expense">هزینه</option>
+                            </select></div><button type="submit" class="btn btn-primary w-100">ذخیره</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../main.js"></script>
+    <script>
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+        function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
+        if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+        window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        async function logout() { await fetch('/api/logout', { method: 'POST' }); localStorage.clear(); window.location.href = '/login.html'; }
+
+        let incomeChart = null;
+
+        async function loadChartOfAccounts() {
+            const res = await fetch('/api/chart-of-accounts');
+            const data = await res.json();
+            document.getElementById('incomeHead').innerHTML = '<option value="">انتخاب...</option>' + data.filter(h => h.head_type === 'income').map(h => `<option value="${h.id}">${h.head_name}</option>`).join('');
+            document.getElementById('expenseHead').innerHTML = '<option value="">انتخاب...</option>' + data.filter(h => h.head_type === 'expense').map(h => `<option value="${h.id}">${h.head_name}</option>`).join('');
+            document.getElementById('coaList').innerHTML = data.map(h => `<tr><td>${h.head_name}</td><td><span class="badge ${h.head_type === 'income' ? 'bg-success bg-opacity-25 text-success' : 'bg-danger bg-opacity-25 text-danger'}">${h.head_type === 'income' ? 'درآمد' : 'هزینه'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteCoa(${h.id})"><i class="bi bi-trash"></i></button></td></tr>`).join('');
+        }
+
+        async function loadIncomes() {
+            const res = await fetch('/api/incomes');
+            const data = await res.json();
+            document.getElementById('incomesList').innerHTML = data.length ? data.map(i => `<tr class="income-row"><td>${i.date}</td><td>${i.description}</td><td class="text-success">+${i.amount.toLocaleString()} AFN</td><td>${i.reference || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="deleteIncome(${i.id})"><i class="bi bi-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted py-4">هیچ درآمدی ثبت نشده است</td></tr>';
+        }
+
+        async function loadExpenses() {
+            const res = await fetch('/api/expenses');
+            const data = await res.json();
+            document.getElementById('expensesList').innerHTML = data.length ? data.map(e => `<tr class="expense-row"><td>${e.date}</td><td>${e.description}</td><td class="text-danger">-${e.amount.toLocaleString()} AFN</td><td>${e.reference || '-'}</td><td><button class="btn btn-sm btn-danger" onclick="deleteExpense(${e.id})"><i class="bi bi-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted py-4">هیچ هزینه‌ای ثبت نشده است</td></tr>';
+        }
+
+        async function loadStatement() {
+            const startDate = document.getElementById('statementStartDate').value;
+            const endDate = document.getElementById('statementEndDate').value;
+            if (!startDate || !endDate) { alert('لطفاً بازه تاریخی را انتخاب کنید'); return; }
+            const incomes = await fetch('/api/incomes').then(r => r.json());
+            const expenses = await fetch('/api/expenses').then(r => r.json());
+            let transactions = [];
+            incomes.forEach(i => transactions.push({ date: i.date, description: i.description, debit: i.amount, credit: 0 }));
+            expenses.forEach(e => transactions.push({ date: e.date, description: e.description, debit: 0, credit: e.amount }));
+            transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+            transactions = transactions.filter(t => t.date >= startDate && t.date <= endDate);
+            let balance = 0, html = '';
+            transactions.forEach(t => { balance += (t.debit - t.credit); html += `<tr><td>${t.date}</td><td>${t.description}</td><td class="text-success">${t.debit > 0 ? t.debit.toLocaleString() + ' AFN' : '-'}</td><td class="text-danger">${t.credit > 0 ? t.credit.toLocaleString() + ' AFN' : '-'}<td><td class="${balance >= 0 ? 'text-success' : 'text-danger'}">${balance.toLocaleString()} AFN</td></tr>`; });
+            document.getElementById('statementList').innerHTML = html || '<tr><td colspan="5" class="text-center text-muted py-4">هیچ تراکنشی وجود ندارد</td></tr>';
+            document.getElementById('finalBalance').innerText = balance.toLocaleString();
+        }
+
+        async function deleteIncome(id) { if (confirm('حذف شود؟')) { await fetch(`/api/incomes/${id}`, { method: 'DELETE' }); loadIncomes(); loadIncomeExpenseChart(); } }
+        async function deleteExpense(id) { if (confirm('حذف شود؟')) { await fetch(`/api/expenses/${id}`, { method: 'DELETE' }); loadExpenses(); loadIncomeExpenseChart(); } }
+        async function deleteCoa(id) { if (confirm('حذف شود؟')) { await fetch(`/api/chart-of-accounts/${id}`, { method: 'DELETE' }); loadChartOfAccounts(); } }
+
+        document.getElementById('incomeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { head_id: document.getElementById('incomeHead').value, date: document.getElementById('incomeDate').value, description: document.getElementById('incomeDesc').value, amount: document.getElementById('incomeAmount').value, reference: document.getElementById('incomeRef').value };
+            const res = await fetch('/api/incomes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) { alert('درآمد اضافه شد'); bootstrap.Modal.getInstance(document.getElementById('incomeModal')).hide(); loadIncomes(); loadIncomeExpenseChart(); }
+            else alert('خطا');
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { head_id: document.getElementById('expenseHead').value, date: document.getElementById('expenseDate').value, description: document.getElementById('expenseDesc').value, amount: document.getElementById('expenseAmount').value, reference: document.getElementById('expenseRef').value };
+            const res = await fetch('/api/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) { alert('هزینه اضافه شد'); bootstrap.Modal.getInstance(document.getElementById('expenseModal')).hide(); loadExpenses(); loadIncomeExpenseChart(); }
+            else alert('خطا');
+        });
+
+        document.getElementById('coaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { head_name: document.getElementById('coaName').value, head_type: document.getElementById('coaType').value };
+            const res = await fetch('/api/chart-of-accounts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) { alert('سر فصل اضافه شد'); bootstrap.Modal.getInstance(document.getElementById('coaModal')).hide(); loadChartOfAccounts(); }
+            else alert('خطا');
+        });
+
+        async function loadIncomeExpenseChart() {
+            const incomes = await fetch('/api/incomes').then(r => r.json());
+            const expenses = await fetch('/api/expenses').then(r => r.json());
+            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const monthlyIncome = new Array(12).fill(0);
+            const monthlyExpense = new Array(12).fill(0);
+            incomes.forEach(i => { const m = new Date(i.date).getMonth(); monthlyIncome[m] += i.amount; });
+            expenses.forEach(e => { const m = new Date(e.date).getMonth(); monthlyExpense[m] += e.amount; });
+            const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+            if (incomeChart) incomeChart.destroy();
+            incomeChart = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: 'درآمد', data: monthlyIncome, backgroundColor: '#28a745' }, { label: 'هزینه', data: monthlyExpense, backgroundColor: '#dc3545' }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+            const totalIncome = incomes.reduce((a, b) => a + b.amount, 0);
+            const totalExpense = expenses.reduce((a, b) => a + b.amount, 0);
+            const ctx2 = document.getElementById('incomeDistributionChart').getContext('2d');
+            new Chart(ctx2, { type: 'pie', data: { labels: ['درآمد', 'هزینه'], datasets: [{ data: [totalIncome, totalExpense], backgroundColor: ['#28a745', '#dc3545'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+        }
+
+        loadChartOfAccounts(); loadIncomes(); loadExpenses(); loadIncomeExpenseChart();
+        document.getElementById('statementStartDate').value = new Date(new Date().setDate(1)).toISOString().split('T')[0];
+        document.getElementById('statementEndDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+
+</html>

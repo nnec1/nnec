@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت اعلانات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
+                    <h3 class="section-title"><i class="bi bi-megaphone-fill text-primary me-2"></i> مدیریت اعلانات</h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#annModal">
+                        <i class="bi bi-plus-circle"></i> اعلان جدید
+                    </button>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3"><select id="filterTarget" class="form-select" onchange="loadAnnouncements()">
+                            <option value="">همه</option>
+                            <option value="all">عمومی</option>
+                            <option value="students">شاگردان</option>
+                            <option value="teachers">استادان</option>
+                            <option value="admins">مدیران</option>
+                        </select></div>
+                </div>
+
+                <div id="annList" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="annModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                    <h5 class="modal-title"><i class="bi bi-megaphone-fill"></i> اعلان جدید</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="annForm" enctype="multipart/form-data"><input type="hidden" id="annId">
+                        <div class="mb-3"><label class="form-label">عنوان</label><input type="text" id="annTitle"
+                                class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">متن</label><textarea id="annContent"
+                                class="form-control" rows="3" required></textarea></div>
+                        <div class="mb-3"><label class="form-label">مخاطب</label><select id="annTarget"
+                                class="form-select">
+                                <option value="all">همه</option>
+                                <option value="students">شاگردان</option>
+                                <option value="teachers">استادان</option>
+                                <option value="admins">مدیران</option>
+                            </select></div>
+                        <div class="mb-3"><label class="form-label">آپلود فایل (عکس/PDF)</label><input type="file"
+                                id="annFile" class="form-control" accept="image/*,.pdf"></div>
+                        <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date" id="annExpiry"
+                                class="form-control"></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> ذخیره</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        async function loadAnnouncements() {
+            const target = document.getElementById('filterTarget').value;
+            const res = await fetch('/api/announcements');
+            let data = await res.json();
+            if (target) data = data.filter(a => a.target === target || a.target === 'all');
+            if (data.length === 0) { document.getElementById('annList').innerHTML = '<div class="alert alert-info">هیچ اعلانی وجود ندارد</div>'; return; }
+            document.getElementById('annList').innerHTML = data.map(a => `
+                <div class="card mb-3 p-3"><div class="d-flex justify-content-between"><h5><i class="bi bi-megaphone-fill text-primary"></i> ${a.title}</h5><div><button class="btn btn-sm btn-danger" onclick="deleteAnn(${a.id})"><i class="bi bi-trash"></i></button></div></div><p>${a.content}</p>${a.file_path ? `<a href="${a.file_path}" target="_blank" class="btn btn-sm btn-info"><i class="bi bi-file-earmark"></i> مشاهده فایل</a>` : ''}<small class="text-muted">مخاطب: ${a.target} | تاریخ انقضا: ${a.expires_at || 'نامحدود'}</small></div>
+            `).join('');
+        }
+
+        async function deleteAnn(id) { if (confirm('حذف شود؟')) { await fetch(`/api/announcements/${id}`, { method: 'DELETE' }); loadAnnouncements(); } }
+
+        document.getElementById('annForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('title', document.getElementById('annTitle').value);
+            formData.append('content', document.getElementById('annContent').value);
+            formData.append('target', document.getElementById('annTarget').value);
+            formData.append('expires_at', document.getElementById('annExpiry').value);
+            if (document.getElementById('annFile').files[0]) formData.append('file', document.getElementById('annFile').files[0]);
+
+            const res = await fetch('/api/announcements', { method: 'POST', body: formData });
+            if (res.ok) {
+                alert('اعلان با موفقیت اضافه شد');
+                bootstrap.Modal.getInstance(document.getElementById('annModal')).hide();
+                loadAnnouncements();
+                document.getElementById('annForm').reset();
+            } else alert('خطا');
+        });
+
+        loadAnnouncements();
+    </script>
+</body>
+
+</html>

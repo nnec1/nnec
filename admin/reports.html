@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>گزارشات جامع</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link "><i class="bi bi-calendar-check-fill"></i>
+                        حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link active"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title">📄 گزارشات جامع</h3>
+
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#studentReport">گزارش
+                            شاگردان</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#financialSummary">خلاصه
+                            مالی</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#classReport">گزارش صنف‌ها</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="studentReport">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3"><select id="studentReportClass" class="form-select">
+                                    <option value="">همه صنف‌ها</option>
+                                </select></div>
+                            <div class="col-md-3"><select id="studentReportStatus" class="form-select">
+                                    <option value="">همه وضعیت‌ها</option>
+                                    <option value="active">فعال</option>
+                                    <option value="graduated">فارغ‌التحصیل</option>
+                                    <option value="disabled">غیرفعال</option>
+                                </select></div>
+                            <div class="col-md-3"><button class="btn btn-primary"
+                                    onclick="generateStudentReport()">نمایش</button></div>
+                            <div class="col-md-3"><button class="btn btn-secondary"
+                                    onclick="printReport('student')">چاپ</button></div>
+                        </div>
+                        <div id="studentReportResult" class="table-container"></div>
+                    </div>
+
+                    <div class="tab-pane fade" id="financialSummary">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3"><input type="date" id="financialStartDate" class="form-control"></div>
+                            <div class="col-md-3"><input type="date" id="financialEndDate" class="form-control"></div>
+                            <div class="col-md-3"><button class="btn btn-primary"
+                                    onclick="generateFinancialSummary()">نمایش</button></div>
+                            <div class="col-md-3"><button class="btn btn-secondary"
+                                    onclick="printReport('financial')">چاپ</button></div>
+                        </div>
+                        <div id="financialSummaryResult" class="table-container"></div>
+                    </div>
+
+                    <div class="tab-pane fade" id="classReport">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3"><button class="btn btn-primary"
+                                    onclick="generateClassReport()">نمایش</button></div>
+                            <div class="col-md-3"><button class="btn btn-secondary"
+                                    onclick="printReport('class')">چاپ</button></div>
+                        </div>
+                        <div id="classReportResult" class="table-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        async function loadClassesForReport() {
+            const res = await fetch('/api/active-classes');
+            const classes = await res.json();
+            const select = document.getElementById('studentReportClass');
+            select.innerHTML = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+        }
+
+        async function generateStudentReport() {
+            const classId = document.getElementById('studentReportClass').value;
+            const status = document.getElementById('studentReportStatus').value;
+            const res = await fetch('/api/students');
+            let students = await res.json();
+            if (classId) students = students.filter(s => s.class_id == classId);
+            if (status) students = students.filter(s => s.status === status);
+            if (students.length === 0) { document.getElementById('studentReportResult').innerHTML = '<div class="alert alert-warning">نتیجه‌ای یافت نشد</div>'; return; }
+            let html = `<div class="table-responsive"><table class="table table-bordered"><thead class="table-light"><tr><th>آیدی کارت</th><th>نام</th><th>نام پدر</th><th>صنف</th><th>شماره تماس</th><th>وضعیت فیس</th><th>وضعیت</th></tr></thead><tbody>`;
+            students.forEach(s => {
+                const feeStatus = s.remaining_fee > 0 ? (s.due_date && new Date(s.due_date) < new Date() ? '<span class="text-danger">منقضی شده</span>' : '<span class="text-warning">بدهکار</span>') : '<span class="text-success">پرداخت کامل</span>';
+                html += `<tr><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div><td class="text-dark">${s.class_name || '-'}</div></div></div><td class="text-dark">${s.phone || '-'}</div></div></div><td class="text-dark">${feeStatus}</div></div></div><td class="text-dark"><span class="status-${s.status}">${s.status === 'active' ? 'فعال' : s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال'}</span></div></div></div></tr>`;
+            });
+            html += `</tbody></table></div><div class="mt-3"><strong>مجموع شاگردان: ${students.length}</strong></div>`;
+            document.getElementById('studentReportResult').innerHTML = html;
+        }
+
+        async function generateFinancialSummary() {
+            const startDate = document.getElementById('financialStartDate').value;
+            const endDate = document.getElementById('financialEndDate').value;
+            if (!startDate || !endDate) { alert('لطفاً بازه زمانی را انتخاب کنید'); return; }
+            const paymentsRes = await fetch('/api/fee-payments-history');
+            let payments = await paymentsRes.json();
+            payments = payments.filter(p => p.payment_date >= startDate && p.payment_date <= endDate);
+            const total = payments.reduce((a, b) => a + b.amount, 0);
+            let html = `<h6>بازه: ${startDate} تا ${endDate}</h6><div class="table-responsive"><table class="table"><thead class="table-light"><tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>تاریخ</th><th>شماره رسید</th></tr></thead><tbody>`;
+            payments.forEach(p => { html += `<tr><td class="text-dark">${p.student_name}</div></div></div><td class="text-dark">${p.class_name}</div></div></div><td class="text-success">${p.amount.toLocaleString()} AFN</div></div></div><td class="text-dark">${p.payment_date}</div></div></div><td class="text-dark">${p.receipt_number || '-'}</div></div></div></tr>`; });
+            html += `</tbody></table></div><div class="alert alert-success"><strong>مجموع درآمد: ${total.toLocaleString()} AFN</strong></div>`;
+            document.getElementById('financialSummaryResult').innerHTML = html;
+        }
+
+        async function generateClassReport() {
+            const classes = await fetch('/api/active-classes').then(r => r.json());
+            const students = await fetch('/api/students').then(r => r.json());
+            let html = `<div class="table-responsive"><table class="table table-bordered"><thead class="table-light"><tr><th>صنف</th><th>تعداد شاگردان</th><th>تعداد استادان</th><th>فیس ماهانه</th><th>درآمد ماهانه تخمینی</th></tr></thead><tbody>`;
+            for (const c of classes) {
+                const count = students.filter(s => s.class_id == c.id && s.status === 'active').length;
+                const teacherCount = c.teacher_count || 0;
+                const estimatedIncome = count * (c.monthly_fee || 0);
+                html += `<tr><td class="text-dark"><strong>${c.class_name}</strong></div></div></div><td class="text-dark">${count} نفر</div></div></div><td class="text-dark">${teacherCount} استاد</div></div></div><td class="text-dark">${(c.monthly_fee || 0).toLocaleString()} AFN</div></div></div><td class="text-success">${estimatedIncome.toLocaleString()} AFN</div></div></div></tr>`;
+            }
+            html += `</tbody></table></div>`;
+            document.getElementById('classReportResult').innerHTML = html;
+        }
+
+        function printReport(type) {
+            let content = '';
+            if (type === 'student') content = document.getElementById('studentReportResult').innerHTML;
+            else if (type === 'financial') content = document.getElementById('financialSummaryResult').innerHTML;
+            else content = document.getElementById('classReportResult').innerHTML;
+            const win = window.open('', '_blank');
+            win.document.write(`<html dir="rtl"><head><title>گزارش</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"></head><body><div class="container mt-3">${content}</div><script>window.print();<\/script></body></html>`);
+            win.document.close();
+        }
+
+        document.getElementById('financialStartDate').value = new Date(new Date().setDate(1)).toISOString().split('T')[0];
+        document.getElementById('financialEndDate').value = new Date().toISOString().split('T')[0];
+        loadClassesForReport();
+    </script>
+</body>
+
+</html>

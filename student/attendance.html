@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>گزارش حاضری من</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="bi bi-calendar-check-fill text-primary me-2"></i> گزارش حاضری من
+                </h3>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="attendanceMonth">
+                            <option value="1">فروردین</option>
+                            <option value="2">اردیبهشت</option>
+                            <option value="3">خرداد</option>
+                            <option value="4">تیر</option>
+                            <option value="5">مرداد</option>
+                            <option value="6">شهریور</option>
+                            <option value="7">مهر</option>
+                            <option value="8">آبان</option>
+                            <option value="9">آذر</option>
+                            <option value="10">دی</option>
+                            <option value="11">بهمن</option>
+                            <option value="12">اسفند</option>
+                        </select></div>
+                    <div class="col-md-3"><input type="number" class="form-control" id="attendanceYear" value="2025">
+                    </div>
+                    <div class="col-md-3"><button class="btn btn-primary" onclick="loadAttendance()"><i
+                                class="bi bi-search"></i> نمایش</button></div>
+                    <div class="col-md-3"><button class="btn btn-secondary" onclick="printReport()"><i
+                                class="bi bi-printer"></i> چاپ</button></div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card text-center"><i class="bi bi-check-circle-fill fs-1 text-success"></i>
+                            <h2 id="totalPresent">0</h2><small>حاضر</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center"><i class="bi bi-clock-fill fs-1 text-warning"></i>
+                            <h2 id="totalLate">0</h2><small>تأخیر</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center"><i class="bi bi-x-circle-fill fs-1 text-danger"></i>
+                            <h2 id="totalAbsent">0</h2><small>غایب</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>تاریخ</th>
+                                    <th>وضعیت</th>
+                                    <th>یادداشت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let studentId = localStorage.getItem('studentId') || localStorage.getItem('userId');
+
+        async function loadAttendance() {
+            const month = document.getElementById('attendanceMonth').value;
+            const year = document.getElementById('attendanceYear').value;
+            const res = await fetch(`/api/student/attendance/${studentId}?month=${month}&year=${year}`);
+            const data = await res.json();
+            document.getElementById('totalPresent').innerText = data.present || 0;
+            document.getElementById('totalLate').innerText = data.late || 0;
+            document.getElementById('totalAbsent').innerText = data.absent || 0;
+            if (data.details && data.details.length > 0) {
+                document.getElementById('attendanceList').innerHTML = data.details.map(d => {
+                    let badgeClass = '', statusText = '';
+                    if (d.status === 'present') { badgeClass = 'badge-present'; statusText = 'حاضر'; }
+                    else if (d.status === 'absent') { badgeClass = 'badge-absent'; statusText = 'غایب'; }
+                    else { badgeClass = 'badge-late'; statusText = 'تأخیر'; }
+                    return `<tr><td class="text-dark">${d.date}</div></div></div><td class="text-dark"><span class="${badgeClass}">${statusText}</span></div></div></div><td class="text-dark">${d.notes || '-'}</div></div></div>`;
+                }).join('');
+            } else {
+                document.getElementById('attendanceList').innerHTML = '<tr><td colspan="3" class="text-center">هیچ حاضری ثبت نشده است</div></div></div></tr>';
+            }
+        }
+
+        function printReport() {
+            const content = document.querySelector('.table-container').innerHTML;
+            const stats = document.querySelector('.row.g-4.mb-4').innerHTML;
+            const win = window.open('', '_blank');
+            win.document.write(`<html dir="rtl"><head><title>گزارش حاضری</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"></head><body><div class="container mt-3"><h3>گزارش حاضری</h3>${stats}${content}</div><script>window.print();<\/script></body></html>`);
+            win.document.close();
+        }
+
+        loadAttendance();
+    </script>
+</body>
+
+</html>

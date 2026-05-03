@@ -1,0 +1,9 @@
+# .gitignore
+node_modules/
+uploads/
+.env
+*.log
+.DS_Store
+Thumbs.db
+*.sql
+backup/

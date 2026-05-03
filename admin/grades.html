@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت نمرات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link "><i class="bi bi-calendar-check-fill"></i>
+                        حاضری</a>
+                    <a href="grades.html" class="nav-link active"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title">📊 مدیریت نمرات</h3>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select id="gradeClass" class="form-select">
+                            <option value="">انتخاب صنف</option>
+                        </select></div>
+                    <div class="col-md-3"><select id="gradeSubject" class="form-select">
+                            <option value="">انتخاب مضمون</option>
+                        </select></div>
+                    <div class="col-md-2"><select id="examType" class="form-select">
+                            <option value="quiz">Quiz</option>
+                            <option value="midterm">Midterm</option>
+                            <option value="final">Final</option>
+                            <option value="group_project">پروژه گروهی</option>
+                        </select></div>
+                    <div class="col-md-2"><input type="text" id="searchStudent" class="form-control"
+                            placeholder="جستجوی شاگرد..."></div>
+                    <div class="col-md-2"><button class="btn btn-primary w-100" onclick="loadGrades()">جستجو</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>آیدی کارت</th>
+                                    <th>نام شاگرد</th>
+                                    <th>مضمون</th>
+                                    <th>نوع امتحان</th>
+                                    <th>نمره</th>
+                                    <th>نمره کل</th>
+                                    <th>درصد</th>
+                                    <th>تاریخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradesList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        async function loadClasses() {
+            const res = await fetch('/api/active-classes');
+            const classes = await res.json();
+            document.getElementById('gradeClass').innerHTML = '<option value="">انتخاب صنف</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+        }
+
+        async function loadGrades() {
+            const classId = document.getElementById('gradeClass').value;
+            const subjectId = document.getElementById('gradeSubject').value;
+            const examType = document.getElementById('examType').value;
+            const search = document.getElementById('searchStudent').value.toLowerCase();
+            if (!classId || !subjectId) { alert('لطفاً صنف و مضمون را انتخاب کنید'); return; }
+            const studentsRes = await fetch('/api/students');
+            let students = await studentsRes.json();
+            students = students.filter(s => s.class_id == classId);
+            if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
+            let html = '';
+            for (const s of students) {
+                const gradeRes = await fetch(`/api/student/grades/${s.id}`);
+                let grades = await gradeRes.json();
+                grades = grades.filter(g => g.subject_id == subjectId && (!examType || g.exam_type === examType));
+                grades.forEach(g => {
+                    const percent = ((g.score / g.max_score) * 100).toFixed(1);
+                    html += `<tr><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${g.subject_name}</div></div></div><td class="text-dark">${g.exam_type}</div></div></div><td class="text-warning">${g.score}</div></div></div><td class="text-dark">${g.max_score}</div></div></div><td class="${percent >= 50 ? 'text-success' : 'text-danger'}">${percent}%</div></div></div><td class="text-dark">${g.exam_date || '-'}</div></div></div></div></div></div>`;
+                });
+            }
+            document.getElementById('gradesList').innerHTML = html || '<tr><td colspan="8" class="text-center">نمره‌ای یافت نشد</div></div></div></tr>';
+        }
+
+        async function loadSubjects() {
+            const classId = document.getElementById('gradeClass').value;
+            if (!classId) return;
+            const res = await fetch(`/api/class-subjects/${classId}`);
+            const subjects = await res.json();
+            document.getElementById('gradeSubject').innerHTML = '<option value="">انتخاب مضمون</option>' + subjects.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
+        }
+
+        document.getElementById('gradeClass').addEventListener('change', loadSubjects);
+        loadClasses();
+    </script>
+</body>
+
+</html>

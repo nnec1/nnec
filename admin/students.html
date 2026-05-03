@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت شاگردان</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link active"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
+                    <h3 class="section-title"><i class="bi bi-mortarboard-fill text-primary me-2"></i> مدیریت شاگردان
+                    </h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#studentModal"
+                        onclick="resetStudentForm()">
+                        <i class="bi bi-plus-circle"></i> شاگرد جدید
+                    </button>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="filterClass">
+                            <option value="">همه صنف‌ها</option>
+                        </select></div>
+                    <div class="col-md-3"><select class="form-select" id="filterStatus">
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="active">فعال</option>
+                            <option value="graduated">فارغ‌التحصیل</option>
+                            <option value="disabled">غیرفعال</option>
+                        </select></div>
+                    <div class="col-md-3"><input type="text" class="form-control" id="searchStudent"
+                            placeholder="جستجوی نام..."></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadStudents()"><i
+                                class="bi bi-search"></i> جستجو</button></div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>آیدی کارت</th>
+                                    <th>نام</th>
+                                    <th>نام پدر</th>
+                                    <th>صنف</th>
+                                    <th>فیس کل</th>
+                                    <th>پرداخت شده</th>
+                                    <th>باقی مانده</th>
+                                    <th>تاریخ انقضا</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال شاگرد -->
+    <div class="modal fade" id="studentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                    <h5 class="modal-title" id="studentModalLabel"><i class="bi bi-person-plus-fill"></i> شاگرد جدید
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="studentForm" enctype="multipart/form-data">
+                        <input type="hidden" id="stuId">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">نام کامل <span
+                                        class="text-danger">*</span></label><input type="text" class="form-control"
+                                    id="stuName" required></div>
+                            <div class="col-md-6"><label class="form-label">نام پدر <span
+                                        class="text-danger">*</span></label><input type="text" class="form-control"
+                                    id="stuFather" required></div>
+                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
+                                    class="form-control" id="stuPhone"></div>
+                            <div class="col-md-6">
+                                <label class="form-label">صنف <span class="text-danger">*</span></label>
+                                <select class="form-select" id="stuClassId" required>
+                                    <option value="">انتخاب صنف...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">فیس اصلی (AFN) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="stuTotalFee" value="0" required
+                                    oninput="calculateRemaining()">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">فیس پرداخت شده (AFN)</label>
+                                <input type="number" class="form-control" id="stuPaidFee" value="0"
+                                    oninput="calculateRemaining()">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">باقی مانده (AFN)</label>
+                                <input type="number" class="form-control" id="stuRemainingFee" readonly
+                                    style="background:#f1f5f9">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ انقضای فیس</label>
+                                <input type="date" class="form-control" id="stuDueDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">وضعیت</label>
+                                <select class="form-select" id="stuStatus">
+                                    <option value="active">فعال</option>
+                                    <option value="graduated">فارغ‌التحصیل</option>
+                                    <option value="disabled">غیرفعال</option>
+                                </select>
+                            </div>
+                            <div class="col-12"><label class="form-label">آدرس</label><textarea class="form-control"
+                                    id="stuAddress" rows="2"></textarea></div>
+                            <div class="col-12"><label class="form-label">عکس شاگرد</label><input type="file"
+                                    class="form-control" id="stuPhoto" accept="image/*"></div>
+                            <div class="col-12"><label class="form-label">رمز عبور جدید</label><input type="password"
+                                    class="form-control" id="stuPassword" placeholder="در صورت ویرایش خالی بگذارید">
+                            </div>
+                        </div>
+                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i>
+                                ذخیره شاگرد</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let currentEditId = null, studentModal = null;
+
+        // تنظیم خودکار تاریخ انقضا (یک ماه بعد)
+        function setDefaultDueDate() {
+            const today = new Date();
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(today.getMonth() + 1);
+            const year = nextMonth.getFullYear();
+            const month = String(nextMonth.getMonth() + 1).padStart(2, '0');
+            const day = String(nextMonth.getDate()).padStart(2, '0');
+            document.getElementById('stuDueDate').value = `${year}-${month}-${day}`;
+        }
+
+        function calculateRemaining() {
+            const totalFee = parseFloat(document.getElementById('stuTotalFee').value) || 0;
+            const paidFee = parseFloat(document.getElementById('stuPaidFee').value) || 0;
+            const remaining = totalFee - paidFee;
+            document.getElementById('stuRemainingFee').value = remaining < 0 ? 0 : remaining;
+        }
+
+        async function loadClasses() {
+            try {
+                const res = await fetch('/api/classes');
+                const classes = await res.json();
+                const select = document.getElementById('stuClassId');
+                const filterSelect = document.getElementById('filterClass');
+
+                if (classes && classes.length > 0) {
+                    const options = classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                    select.innerHTML = '<option value="">انتخاب صنف...</option>' + options;
+                    filterSelect.innerHTML = '<option value="">همه صنف‌ها</option>' + options;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // async function loadStudents() {
+        //     try {
+        //         const res = await fetch('/api/students');
+        //         let students = await res.json();
+        //         const classId = document.getElementById('filterClass').value;
+        //         const status = document.getElementById('filterStatus').value;
+        //         const search = document.getElementById('searchStudent').value.toLowerCase();
+
+        //         if (classId) students = students.filter(s => s.class_id == classId);
+        //         if (status) students = students.filter(s => s.status === status);
+        //         if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
+
+        //         if (!students || students.length === 0) {
+        //             document.getElementById('studentsList').innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
+        //             return;
+        //         }
+
+        //         document.getElementById('studentsList').innerHTML = students.map(s => {
+        //             const isExpired = s.due_date && new Date(s.due_date) < new Date() && s.remaining_fee > 0;
+        //             return `<tr class="${isExpired ? 'fee-overdue-row' : ''}">
+        //                 <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></div></div></div>
+        //                 <td class="text-dark">${s.name}</div></div></div>
+        //                 <td class="text-dark">${s.father_name || '-'}</div></div></div>
+        //                 <td class="text-dark">${s.class_name || '-'}</div></div></div>
+        //                 <td class="text-dark">${(s.total_fee || 0).toLocaleString()}</div></div></div>
+        //                 <td class="text-success">${(s.paid_fee || 0).toLocaleString()}</div></div></div>
+        //                 <td class="text-danger">${(s.remaining_fee || 0).toLocaleString()}</div></div></div>
+        //                 <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">${s.due_date || '-'}</div></div></div>
+        //                 <td class="text-dark"><span class="status-${s.status}">${s.status === 'active' ? 'فعال' : s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال'}</span></div></div></div>
+        //                 <td class="text-dark">
+        //                     <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="bi bi-pencil"></i></button>
+        //                     <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="bi bi-trash"></i></button>
+        //                     <button class="btn btn-sm btn-info" onclick="window.open('/student-card.html?id=${s.id}','_blank')"><i class="bi bi-qr-code"></i></button>
+        //                 </div></div></div>
+        //             </div></div></div>`;
+        //         }).join('');
+        //     } catch (err) {
+        //         console.error(err);
+        //         document.getElementById('studentsList').innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+        //     }
+        // }
+
+        // در بخش loadStudents، تاریخ انقضا را به فرمت میلادی نمایش دهید
+        async function loadStudents() {
+            try {
+                const res = await fetch('/api/students');
+                let students = await res.json();
+                const classId = document.getElementById('filterClass').value;
+                const status = document.getElementById('filterStatus').value;
+                const search = document.getElementById('searchStudent').value.toLowerCase();
+
+                if (classId) students = students.filter(s => s.class_id == classId);
+                if (status) students = students.filter(s => s.status === status);
+                if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
+
+                if (!students || students.length === 0) {
+                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
+                    return;
+                }
+
+                document.getElementById('studentsList').innerHTML = students.map(s => {
+                    const isExpired = s.due_date && new Date(s.due_date) < new Date() && s.remaining_fee > 0;
+                    const dueDateFormatted = s.due_date ? formatGregorianDate(s.due_date) : '-';
+                    return `<tr class="${isExpired ? 'fee-overdue-row' : ''}">
+                <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></div></div></div>
+                <td class="text-dark">${s.name}</div></div></div>
+                <td class="text-dark">${s.father_name || '-'}</div></div></div>
+                <td class="text-dark">${s.phone || '-'}</div></div></div>
+                <td class="text-dark">${s.class_name || '-'}</div></div></div>
+                <td class="text-dark">${(s.total_fee || 0).toLocaleString()}</div></div></div>
+                <td class="text-success">${(s.paid_fee || 0).toLocaleString()}</div></div></div>
+                <td class="text-danger">${(s.remaining_fee || 0).toLocaleString()}</div></div></div>
+                <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">${dueDateFormatted}</div></div></div>
+                <td class="text-dark"><span class="status-${s.status}">${s.status === 'active' ? 'فعال' : s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال'}</span></div></div></div>
+                <td class="text-dark">
+                    <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="bi bi-trash"></i></button>
+                    <button class="btn btn-sm btn-info" onclick="window.open('/student-card.html?id=${s.id}','_blank')"><i class="bi bi-qr-code"></i></button>
+                </div></div></div>
+            </div></div></div>`;
+                }).join('');
+            } catch (err) {
+                console.error('Error loading students:', err);
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="11" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+            }
+        }
+
+        // فرمت تاریخ میلادی
+        function formatGregorianDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                const d = new Date(dateString);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            } catch (e) {
+                return dateString;
+            }
+        }
+        async function deleteStudent(id) {
+            if (confirm('حذف شود؟')) {
+                await fetch(`/api/students/${id}`, { method: 'DELETE' });
+                loadStudents();
+            }
+        }
+
+        async function editStudent(id) {
+            try {
+                const res = await fetch(`/api/students/${id}`);
+                const s = await res.json();
+                currentEditId = id;
+                document.getElementById('stuName').value = s.name || '';
+                document.getElementById('stuFather').value = s.father_name || '';
+                document.getElementById('stuPhone').value = s.phone || '';
+                document.getElementById('stuClassId').value = s.class_id || '';
+                document.getElementById('stuTotalFee').value = s.total_fee || 0;
+                document.getElementById('stuPaidFee').value = s.paid_fee || 0;
+                calculateRemaining();
+                document.getElementById('stuDueDate').value = s.due_date || '';
+                document.getElementById('stuStatus').value = s.status || 'active';
+                document.getElementById('stuAddress').value = s.address || '';
+                document.getElementById('studentModalLabel').innerHTML = '<i class="bi bi-pencil-square"></i> ویرایش شاگرد';
+                if (studentModal) studentModal.show();
+            } catch (err) { alert('خطا در بارگیری اطلاعات'); }
+        }
+
+        function resetStudentForm() {
+            currentEditId = null;
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentModalLabel').innerHTML = '<i class="bi bi-person-plus-fill"></i> شاگرد جدید';
+            setDefaultDueDate();
+            calculateRemaining();
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('name', document.getElementById('stuName').value);
+            formData.append('father_name', document.getElementById('stuFather').value);
+            formData.append('phone', document.getElementById('stuPhone').value);
+            formData.append('class_id', document.getElementById('stuClassId').value);
+            formData.append('total_fee', document.getElementById('stuTotalFee').value);
+            formData.append('paid_fee', document.getElementById('stuPaidFee').value);
+            formData.append('due_date', document.getElementById('stuDueDate').value);
+            formData.append('status', document.getElementById('stuStatus').value);
+            formData.append('address', document.getElementById('stuAddress').value);
+
+            if (document.getElementById('stuPhoto').files[0]) formData.append('photo', document.getElementById('stuPhoto').files[0]);
+            if (document.getElementById('stuPassword').value) formData.append('password', document.getElementById('stuPassword').value);
+
+            const url = currentEditId ? `/api/students/${currentEditId}` : '/api/students';
+            const method = currentEditId ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, { method, body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(currentEditId ? 'شاگرد ویرایش شد' : 'شاگرد اضافه شد');
+                    if (studentModal) studentModal.hide();
+                    loadStudents();
+                    resetStudentForm();
+                    if (!currentEditId) {
+                        window.open(`/student-card.html?id=${data.id}`, '_blank');
+                    }
+                } else {
+                    alert(data.error || 'خطا در ثبت شاگرد');
+                }
+            } catch (err) { alert('خطا در ارتباط با سرور'); }
+        });
+
+        // مقداردهی اولیه
+        setDefaultDueDate();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            studentModal = new bootstrap.Modal(document.getElementById('studentModal'));
+            loadClasses();
+            loadStudents();
+        });
+    </script>
+</body>
+
+</html>

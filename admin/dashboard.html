@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>پیشخوان مدیر</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 10px 0 0;
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .period-btn {
+            margin: 2px;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .period-active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .report-card:hover {
+            transform: translateX(-5px);
+            background: #f8fafc;
+        }
+
+        .income-positive {
+            color: #28a745;
+        }
+
+        .expense-negative {
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link active"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <h3 class="section-title"><i class="bi bi-speedometer2 text-primary me-2"></i> پیشخوان مدیریت</h3>
+                    <div class="bg-white px-3 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-calendar3 text-primary"></i>
+                        <span id="currentDate" class="me-2 text-dark"></span>
+                    </div>
+                </div>
+
+                <!-- کارت‌های آمار کلی -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="stat-card">
+                            <i class="bi bi-mortarboard-fill text-primary"></i>
+                            <h2 id="totalStudents">0</h2>
+                            <small>شاگردان فعال</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="stat-card">
+                            <i class="bi bi-people-fill text-info"></i>
+                            <h2 id="totalTeachers">0</h2>
+                            <small>استادان</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="stat-card">
+                            <i class="bi bi-cash-stack text-success" id="dailyIncomeIcon"></i>
+                            <h2 id="dailyIncome">0</h2>
+                            <small>درآمد امروز</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="stat-card">
+                            <i class="bi bi-receipt text-danger" id="dailyExpenseIcon"></i>
+                            <h2 id="dailyExpense">0</h2>
+                            <small>مصارف امروز</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تب‌های انتخاب بازه زمانی -->
+                <div class="chart-container">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                        <h5><i class="bi bi-graph-up text-primary me-2"></i> گزارش عواید و مصارف</h5>
+                        <div>
+                            <button class="btn btn-sm period-btn" onclick="loadFinancialReport('daily')">روزانه</button>
+                            <button class="btn btn-sm period-btn"
+                                onclick="loadFinancialReport('monthly')">ماهانه</button>
+                            <button class="btn btn-sm period-btn"
+                                onclick="loadFinancialReport('yearly')">سالانه</button>
+                            <button class="btn btn-sm period-btn"
+                                onclick="loadFinancialReport('custom')">دلخواه</button>
+                        </div>
+                    </div>
+
+                    <!-- انتخاب بازه دلخواه -->
+                    <div id="customDateRange" class="row g-2 mb-3" style="display: none;">
+                        <div class="col-md-4"><input type="date" id="startDate" class="form-control"
+                                placeholder="از تاریخ"></div>
+                        <div class="col-md-4"><input type="date" id="endDate" class="form-control"
+                                placeholder="تا تاریخ"></div>
+                        <div class="col-md-4"><button class="btn btn-primary w-100"
+                                onclick="loadCustomReport()">نمایش</button></div>
+                    </div>
+
+                    <canvas id="financeChart" height="280"></canvas>
+                </div>
+
+                <!-- آمار سریع روزانه/ماهانه/سالانه -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <i class="bi bi-calendar-day text-primary"></i>
+                            <h2 id="todayIncome">0</h2>
+                            <small>درآمد امروز</small>
+                            <p class="mb-0 text-muted small" id="todayTransactions">0 تراکنش</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <i class="bi bi-calendar-month text-warning"></i>
+                            <h2 id="monthlyIncomeTotal">0</h2>
+                            <small>درآمد این ماه</small>
+                            <p class="mb-0 text-muted small" id="monthlyTransactions">0 تراکنش</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <i class="bi bi-calendar-year text-success"></i>
+                            <h2 id="yearlyIncomeTotal">0</h2>
+                            <small>درآمد امسال</small>
+                            <p class="mb-0 text-muted small" id="yearlyTransactions">0 تراکنش</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جزئیات تراکنش‌های اخیر -->
+                <div class="chart-container">
+                    <h5><i class="bi bi-clock-history text-primary me-2"></i> آخرین تراکنش‌های مالی</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>تاریخ</th>
+                                    <th>شاگرد</th>
+                                    <th>توضیحات</th>
+                                    <th>مبلغ</th>
+                                    <th>نوع</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactions"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- کارت‌های گزارشات سریع -->
+                <div class="row g-4 mt-2">
+                    <div class="col-md-4">
+                        <div class="report-card" onclick="window.location.href='financial-reports.html?type=daily'">
+                            <i class="bi bi-calendar-day fs-3 text-primary float-start"></i>
+                            <div class="text-end">
+                                <h6 class="mb-0">گزارش روزانه</h6><small class="text-muted">مشاهده جزئیات امروز</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="report-card" onclick="window.location.href='financial-reports.html?type=monthly'">
+                            <i class="bi bi-calendar-month fs-3 text-success float-start"></i>
+                            <div class="text-end">
+                                <h6 class="mb-0">گزارش ماهانه</h6><small class="text-muted">مشاهده جزئیات این
+                                    ماه</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="report-card" onclick="window.location.href='financial-reports.html?type=yearly'">
+                            <i class="bi bi-calendar-year fs-3 text-warning float-start"></i>
+                            <div class="text-end">
+                                <h6 class="mb-0">گزارش سالانه</h6><small class="text-muted">مشاهده جزئیات امسال</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let financeChart = null;
+        let adminName = localStorage.getItem('userName') || 'مدیر';
+        document.getElementById('adminName').innerText = adminName;
+
+        // فرمت تاریخ میلادی
+        function formatGregorianDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                const d = new Date(dateString);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            } catch (e) { return dateString; }
+        }
+
+        // بارگذاری آمار کلی
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/dashboard-stats');
+                const data = await res.json();
+                document.getElementById('totalStudents').innerText = (data.total_students || 0).toLocaleString();
+                document.getElementById('totalTeachers').innerText = (data.total_teachers || 0).toLocaleString();
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری درآمد و هزینه امروز
+        async function loadDailyStats() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const res = await fetch(`/api/financial-summary?start_date=${today}&end_date=${today}`);
+                const data = await res.json();
+                document.getElementById('dailyIncome').innerText = (data.total_income || 0).toLocaleString();
+                document.getElementById('dailyExpense').innerText = (data.total_expense || 0).toLocaleString();
+                document.getElementById('todayIncome').innerText = (data.total_income || 0).toLocaleString();
+                document.getElementById('todayTransactions').innerText = (data.transaction_count || 0) + ' تراکنش';
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری آمار ماهانه
+        async function loadMonthlyStats() {
+            try {
+                const now = new Date();
+                const startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+                const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+                const res = await fetch(`/api/financial-summary?start_date=${startDate}&end_date=${endDate}`);
+                const data = await res.json();
+                document.getElementById('monthlyIncomeTotal').innerText = (data.total_income || 0).toLocaleString();
+                document.getElementById('monthlyTransactions').innerText = (data.transaction_count || 0) + ' تراکنش';
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری آمار سالانه
+        async function loadYearlyStats() {
+            try {
+                const now = new Date();
+                const startDate = `${now.getFullYear()}-01-01`;
+                const endDate = `${now.getFullYear()}-12-31`;
+                const res = await fetch(`/api/financial-summary?start_date=${startDate}&end_date=${endDate}`);
+                const data = await res.json();
+                document.getElementById('yearlyIncomeTotal').innerText = (data.total_income || 0).toLocaleString();
+                document.getElementById('yearlyTransactions').innerText = (data.transaction_count || 0) + ' تراکنش';
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری آخرین تراکنش‌ها
+        async function loadRecentTransactions() {
+            try {
+                const res = await fetch('/api/recent-transactions');
+                const data = await res.json();
+                if (data.length === 0) {
+                    document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">هیچ تراکنشی ثبت نشده است</div></div></div></tr>';
+                    return;
+                }
+                document.getElementById('recentTransactions').innerHTML = data.map(t => `
+                    <tr>
+                        <td class="text-dark">${formatGregorianDate(t.payment_date)}</div></div></div>
+                        <td class="text-dark">${t.student_name}</div></div></div>
+                        <td class="text-dark">پرداخت فیس</div></div></div>
+                        <td class="text-success">${t.amount.toLocaleString()} AFN</div></div></div>
+                        <td class="text-dark"><span class="badge bg-success">درآمد</span></div></div></div>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری گزارش مالی با نمودار
+        async function loadFinancialReport(period) {
+            // تنظیم استایل دکمه‌ها
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('period-active'));
+            event.target.classList.add('period-active');
+
+            // نمایش/مخفی کردن بازه دلخواه
+            const customRange = document.getElementById('customDateRange');
+            if (period === 'custom') {
+                customRange.style.display = 'flex';
+                return;
+            }
+            customRange.style.display = 'none';
+
+            try {
+                let url = `/api/financial-reports?period=${period}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                let labels = data.periods || [];
+                let incomeData = data.incomes || [];
+                let expenseData = data.expenses || [];
+
+                if (financeChart) financeChart.destroy();
+                const ctx = document.getElementById('financeChart').getContext('2d');
+                financeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'درآمد (AFN)', data: incomeData, backgroundColor: '#28a745', borderRadius: 8 },
+                            { label: 'هزینه (AFN)', data: expenseData, backgroundColor: '#dc3545', borderRadius: 8 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} AFN` } } }
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری گزارش دلخواه
+        async function loadCustomReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if (!startDate || !endDate) { alert('لطفاً بازه زمانی را انتخاب کنید'); return; }
+
+            try {
+                const res = await fetch(`/api/financial-reports?start_date=${startDate}&end_date=${endDate}`);
+                const data = await res.json();
+
+                if (financeChart) financeChart.destroy();
+                const ctx = document.getElementById('financeChart').getContext('2d');
+                financeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.periods || [],
+                        datasets: [
+                            { label: 'درآمد (AFN)', data: data.incomes || [], backgroundColor: '#28a745', borderRadius: 8 },
+                            { label: 'هزینه (AFN)', data: data.expenses || [], backgroundColor: '#dc3545', borderRadius: 8 }
+                        ]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // بارگذاری همه آمار
+        async function loadAll() {
+            await loadStats();
+            await loadDailyStats();
+            await loadMonthlyStats();
+            await loadYearlyStats();
+            await loadRecentTransactions();
+            await loadFinancialReport('daily');
+        }
+
+        loadAll();
+    </script>
+</body>
+
+</html>

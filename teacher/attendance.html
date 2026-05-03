@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>حاضری شاگردان</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .present-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #28a745;
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        .present-checkbox:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .absent-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #dc3545;
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        .absent-checkbox:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .late-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #ffc107;
+            transform: scale(1.1);
+            margin: 0;
+        }
+
+        .late-checkbox:checked {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .student-row {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .student-row:hover {
+            background-color: #f8fafc;
+        }
+
+        .attendance-present-row {
+            background-color: #dcfce7 !important;
+            border-right: 4px solid #28a745;
+        }
+
+        .attendance-absent-row {
+            background-color: #fee2e2 !important;
+            border-right: 4px solid #dc3545;
+        }
+
+        .attendance-late-row {
+            background-color: #fef3c7 !important;
+            border-right: 4px solid #ffc107;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .checkbox-label:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .checkbox-label input {
+            margin: 0;
+        }
+
+        .label-present {
+            color: #15803d;
+        }
+
+        .label-absent {
+            color: #dc2626;
+        }
+
+        .label-late {
+            color: #b45309;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .student-photo-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #f1f5f9;
+        }
+
+        .fee-warning-badge {
+            background: #dc2626;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 20px;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .checkbox-group {
+                gap: 8px;
+            }
+
+            .checkbox-label {
+                font-size: 11px;
+                padding: 2px 6px;
+            }
+
+            .student-photo-small {
+                width: 30px;
+                height: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="bi bi-calendar-check-fill text-primary me-2"></i> حاضری شاگردان</h3>
+
+                <div class="quick-actions">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <select class="form-select" id="attendanceClass" onchange="loadAttendanceList()">
+                                <option value="">انتخاب صنف...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="attendanceDate">
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-success w-100" onclick="saveAttendance()">
+                                <i class="bi bi-save"></i> ذخیره حاضری
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-secondary w-100" onclick="markAllPresent()">
+                                <i class="bi bi-check2-all"></i> همه حاضر
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feeWarning" class="alert alert-danger d-none"></div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px">#</th>
+                                    <th>عکس</th>
+                                    <th>آیدی کارت</th>
+                                    <th>نام شاگرد</th>
+                                    <th>نام پدر</th>
+                                    <th>وضعیت فیس</th>
+                                    <th style="width: 200px">وضعیت حاضری</th>
+                                    <th>یادداشت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceList">
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let teacherId = localStorage.getItem('userId') || 3;
+        let currentAttendance = [];
+        let feeExpiredStudents = [];
+
+        // بارگذاری صنف‌های استاد
+        async function loadClasses() {
+            try {
+                const res = await fetch(`/api/teacher/classes/${teacherId}`);
+                const classes = await res.json();
+                const select = document.getElementById('attendanceClass');
+                if (classes.length === 0) {
+                    select.innerHTML = '<option value="">هیچ صنفی به شما تخصیص داده نشده</option>';
+                } else {
+                    select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.class_id || c.id}">${c.class_name} - ${c.subject_name || ''}</option>`).join('');
+                }
+            } catch (err) {
+                console.error('Error loading classes:', err);
+            }
+        }
+
+        // بارگذاری لیست شاگردان و حاضری
+        async function loadAttendanceList() {
+            const classId = document.getElementById('attendanceClass').value;
+            if (!classId) {
+                document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</td></tr>';
+                return;
+            }
+            const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+
+            try {
+                const res = await fetch(`/api/teacher/students/${teacherId}`);
+                let students = await res.json();
+                students = students.filter(s => s.class_id == classId);
+
+                if (students.length === 0) {
+                    document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">هیچ شاگردی در این صنف وجود ندارد</td></tr>';
+                    return;
+                }
+
+                // بررسی فیس منقضی شده
+                feeExpiredStudents = students.filter(s => s.due_date && new Date(s.due_date) < new Date() && s.remaining_fee > 0);
+                if (feeExpiredStudents.length > 0) {
+                    document.getElementById('feeWarning').innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی شده دارند!`;
+                    document.getElementById('feeWarning').classList.remove('d-none');
+                } else {
+                    document.getElementById('feeWarning').classList.add('d-none');
+                }
+
+                // مقداردهی اولیه وضعیت حاضری
+                currentAttendance = students.map(s => ({
+                    student_id: s.id,
+                    name: s.name,
+                    father_name: s.father_name,
+                    student_card_id: s.student_card_id,
+                    photo: s.photo,
+                    fee_expired: s.due_date && new Date(s.due_date) < new Date(),
+                    status: 'present',
+                    notes: ''
+                }));
+
+                // بررسی حاضری قبلی
+                await checkExistingAttendance(classId, date);
+
+                // ساخت جدول
+                document.getElementById('attendanceList').innerHTML = students.map((s, i) => {
+                    const feeWarningHtml = currentAttendance[i].fee_expired ? `<span class="fee-warning-badge"><i class="bi bi-exclamation-circle"></i> فیس منقضی</span>` : '';
+                    const rowClass = currentAttendance[i].status === 'present' ? 'attendance-present-row' :
+                        (currentAttendance[i].status === 'absent' ? 'attendance-absent-row' : 'attendance-late-row');
+
+                    return `
+                    <tr id="attendance-row-${i}" class="student-row ${rowClass}" data-index="${i}">
+                        <td class="text-center">${i + 1}</td>
+                        <td class="text-center">
+                            <img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'">
+                        </td>
+                        <td class="text-dark"><strong>${s.student_card_id || '-'}</strong> ${feeWarningHtml}</td>
+                        <td class="text-dark"><strong>${s.name}</strong></td>
+                        <td class="text-dark">${s.father_name || '-'}</td>
+                        <td class="text-dark">
+                            ${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="bi bi-x-circle"></i> منقضی</span>' : '<span class="text-success"><i class="bi bi-check-circle"></i> معتبر</span>') : '-'}
+                        </td>
+                        <td class="text-center">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label label-present" onclick="event.stopPropagation()">
+                                    <input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')">
+                                    <i class="bi bi-check-circle-fill"></i> حاضر
+                                </label>
+                                <label class="checkbox-label label-absent" onclick="event.stopPropagation()">
+                                    <input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')">
+                                    <i class="bi bi-x-circle-fill"></i> غایب
+                                </label>
+                                <label class="checkbox-label label-late" onclick="event.stopPropagation()">
+                                    <input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')">
+                                    <i class="bi bi-clock-fill"></i> تأخیر
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm" placeholder="یادداشت..." 
+                                   value="${currentAttendance[i].notes || ''}" 
+                                   onchange="currentAttendance[${i}].notes = this.value">
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (err) {
+                console.error('Error loading attendance:', err);
+                document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">خطا در بارگیری اطلاعات</td></tr>';
+            }
+        }
+
+        // بررسی حاضری قبلی
+        async function checkExistingAttendance(classId, date) {
+            try {
+                const res = await fetch(`/api/attendance/class/${classId}?date=${date}`);
+                const data = await res.json();
+                if (data.exists && data.details) {
+                    data.details.forEach(detail => {
+                        const index = currentAttendance.findIndex(a => a.student_id === detail.student_id);
+                        if (index !== -1) {
+                            currentAttendance[index].status = detail.status;
+                            currentAttendance[index].notes = detail.notes || '';
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Error checking existing attendance:', err);
+            }
+        }
+
+        // تنظیم وضعیت حاضری
+        function setAttendanceStatus(index, status) {
+            currentAttendance[index].status = status;
+
+            // تغییر کلاس ردیف
+            const row = document.getElementById(`attendance-row-${index}`);
+            if (row) {
+                row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row');
+                if (status === 'present') row.classList.add('attendance-present-row');
+                else if (status === 'absent') row.classList.add('attendance-absent-row');
+                else row.classList.add('attendance-late-row');
+            }
+        }
+
+        // همه را حاضر کند
+        function markAllPresent() {
+            for (let i = 0; i < currentAttendance.length; i++) {
+                currentAttendance[i].status = 'present';
+                const radio = document.querySelector(`input[name="status_${i}"][value="present"]`);
+                if (radio) radio.checked = true;
+                const row = document.getElementById(`attendance-row-${i}`);
+                if (row) {
+                    row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row');
+                    row.classList.add('attendance-present-row');
+                }
+            }
+            showToast('همه شاگردان حاضر شدند', 'success');
+        }
+
+        // ذخیره حاضری
+        async function saveAttendance() {
+            const classId = document.getElementById('attendanceClass').value;
+            if (!classId) {
+                alert('لطفاً صنف را انتخاب کنید');
+                return;
+            }
+            const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+
+            try {
+                const res = await fetch('/api/teacher/save-attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        teacher_id: teacherId,
+                        class_id: classId,
+                        date,
+                        attendance: currentAttendance
+                    })
+                });
+
+                if (res.ok) {
+                    showToast('حاضری با موفقیت ذخیره شد', 'success');
+                    if (feeExpiredStudents.length > 0) {
+                        alert(`⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی دارند. لطفاً به مدیریت اطلاع دهید.`);
+                    }
+                } else {
+                    showToast('خطا در ذخیره حاضری', 'danger');
+                }
+            } catch (err) {
+                console.error('Error saving attendance:', err);
+                showToast('خطا در ارتباط با سرور', 'danger');
+            }
+        }
+
+        // نمایش پیام موقت
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast-message toast-${type}`;
+            toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i> ${message}`;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1100;
+                min-width: 250px;
+                padding: 12px 20px;
+                border-radius: 12px;
+                color: white;
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // مقداردهی اولیه
+        document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+        loadClasses();
+    </script>
+</body>
+
+</html>

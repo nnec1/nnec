@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>پیشخوان شاگرد</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-mortarboard-fill fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل شاگرد</h5>
+                    <small class="text-muted" id="studentNameSidebar">نام شاگرد</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link active"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> فیس</a>
+                    <a href="complaints.html" class="nav-link"><i class="bi bi-chat-dots-fill"></i> شکایات</a>
+                    <a href="profile.html" class="nav-link"><i class="bi bi-person-circle"></i> پروفایل</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <h3 class="section-title"><i class="bi bi-speedometer2 text-primary me-2"></i> پیشخوان شاگرد</h3>
+                    <div class="bg-white px-3 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-calendar3 text-primary"></i>
+                        <span id="currentDate" class="me-2 text-dark"></span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-person-badge fs-1 text-primary"></i>
+                            <h6>آیدی کارت</h6>
+                            <h5 id="studentCardId">-</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-person-fill fs-1 text-info"></i>
+                            <h6>نام</h6>
+                            <h5 id="studentName">-</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-people-fill fs-1 text-success"></i>
+                            <h6>صنف</h6>
+                            <h5 id="studentClass">-</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-star-fill fs-1 text-warning"></i>
+                            <h6>میانگین نمرات</h6>
+                            <h2 id="avgGrade">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm">
+                            <canvas id="attendanceChart" height="250"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm">
+                            <canvas id="feeChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feeWarning" class="alert alert-danger mt-4 d-none"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let studentId = localStorage.getItem('studentId') || localStorage.getItem('userId');
+
+        async function loadStudentInfo() {
+            const res = await fetch(`/api/student/info/${studentId}`);
+            const data = await res.json();
+            document.getElementById('studentCardId').innerText = data.student_card_id || '-';
+            document.getElementById('studentName').innerText = data.name || '-';
+            document.getElementById('studentClass').innerText = data.class_name || '-';
+            document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+        }
+
+        async function loadStats() {
+            const res = await fetch(`/api/student/stats/${studentId}`);
+            const data = await res.json();
+            document.getElementById('avgGrade').innerText = data.avg_grade || 0;
+
+            new Chart(document.getElementById('attendanceChart'), {
+                type: 'doughnut',
+                data: { labels: ['حاضر', 'تأخیر', 'غایب'], datasets: [{ data: [data.present_count || 0, data.late_count || 0, data.absent_count || 0], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        async function loadFeeStatus() {
+            const res = await fetch(`/api/student/fees/${studentId}`);
+            const data = await res.json();
+            new Chart(document.getElementById('feeChart'), {
+                type: 'pie',
+                data: { labels: ['پرداخت شده', 'باقی مانده'], datasets: [{ data: [data.paid_fee || 0, data.remaining_fee || 0], backgroundColor: ['#28a745', '#dc3545'] }] }
+            });
+
+            if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) {
+                document.getElementById('feeWarning').innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ⚠️ هشدار! فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.`;
+                document.getElementById('feeWarning').classList.remove('d-none');
+            }
+        }
+
+        loadStudentInfo();
+        loadStats();
+        loadFeeStatus();
+    </script>
+</body>
+
+</html>
