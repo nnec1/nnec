@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>تنظیمات صنف - غیرفعال‌سازی شاگرد</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .status-active {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+
+        .status-disabled {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="section-title"><i class="bi bi-gear-fill text-primary me-2"></i> تنظیمات صنف -
+                        غیرفعال‌سازی شاگرد</h3>
+                    <button class="btn btn-primary btn-sm" onclick="refreshData()"><i class="bi bi-arrow-repeat"></i>
+                        بروزرسانی</button>
+                </div>
+
+                <div class="card mb-4 p-3">
+                    <h5><i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i> انتخاب صنف</h5>
+                    <select id="selectedClass" class="form-select mt-2" onchange="loadStudents()">
+                        <option value="">انتخاب صنف...</option>
+                    </select>
+                    <small class="text-muted mt-2"><i class="bi bi-info-circle"></i> لطفاً ابتدا صنف مورد نظر را انتخاب
+                        کنید</small>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="table-container">
+                            <h5><i class="bi bi-people-fill text-success me-2"></i> شاگردان فعال</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>آیدی کارت</th>
+                                            <th>نام</th>
+                                            <th>نام پدر</th>
+                                            <th>عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="activeStudentsList">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید
+                            </div>
+                        </div>
+                    </div>
+                    </tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="table-container">
+                <h5><i class="bi bi-person-x-fill text-danger me-2"></i> شاگردان غیرفعال شده</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>آیدی کارت</th>
+                                <th>نام</th>
+                                <th>نام پدر</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="disabledStudentsList">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید
+                </div>
+            </div>
+        </div>
+        </tr>
+        </tbody>
+        </table>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="card mt-4 p-3">
+        <h5><i class="bi bi-info-circle-fill text-info me-2"></i> راهنما</h5>
+        <p>در این بخش می‌توانید شاگردان خود را غیرفعال کنید. شاگردان غیرفعال شده نمی‌توانند وارد سیستم شوند.</p>
+        <p class="text-muted mb-0">⚠️ توجه: غیرفعال کردن شاگرد به معنی حذف اطلاعات او نیست و در صورت لزوم می‌توانید
+            دوباره فعال کنید.</p>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let teacherId = localStorage.getItem('userId') || 3;
+        let currentClassId = null;
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast-message toast-${type}`;
+            toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        async function loadClasses() {
+            const res = await fetch(`/api/teacher/classes/${teacherId}`);
+            const classes = await res.json();
+            const select = document.getElementById('selectedClass');
+            if (classes.length === 0) {
+                select.innerHTML = '<option value="">هیچ صنفی به شما تخصیص داده نشده</option>';
+                return;
+            }
+            select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.class_id || c.id}">${c.class_name} - ${c.subject_name || 'بدون مضمون'}</option>`).join('');
+        }
+
+        async function loadStudents() {
+            currentClassId = document.getElementById('selectedClass').value;
+            if (!currentClassId) {
+                document.getElementById('activeStudentsList').innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید</div></div></div></td>';
+                document.getElementById('disabledStudentsList').innerHTML = '</td><td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید</div></div></div><tr>';
+                return;
+            }
+
+            const studentsRes = await fetch('/api/students');
+            let students = await studentsRes.json();
+            students = students.filter(s => s.class_id == currentClassId);
+
+            const active = students.filter(s => s.status === 'active');
+            const disabled = students.filter(s => s.status === 'disabled');
+
+            document.getElementById('activeStudentsList').innerHTML = active.length ? active.map(s => `
+                <tr><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div><td class="text-dark"><button class="btn btn-sm btn-danger" onclick="disableStudent(${s.id})"><i class="bi bi-ban"></i> غیرفعال</button></div></div></div>
+            `).join('') : '<tr><td colspan="4" class="text-center text-muted py-4">هیچ شاگرد فعالی در این صنف وجود ندارد</div></div></div></tr>';
+
+            document.getElementById('disabledStudentsList').innerHTML = disabled.length ? disabled.map(s => `
+                <tr><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div><td class="text-dark"><button class="btn btn-sm btn-success" onclick="enableStudent(${s.id})"><i class="bi bi-arrow-repeat"></i> فعال کردن</button></div></div></div>
+            `).join('') : '<tr><td colspan="4" class="text-center text-muted py-4">هیچ شاگرد غیرفعالی در این صنف وجود ندارد</div></div></div></tr>';
+        }
+
+        async function disableStudent(id) {
+            if (confirm('⚠️ آیا از غیرفعال کردن این شاگرد اطمینان دارید؟\n\nشاگرد دیگر نمی‌تواند وارد سیستم شود.')) {
+                const studentRes = await fetch(`/api/students/${id}`);
+                const student = await studentRes.json();
+                const res = await fetch(`/api/teacher/disable-student`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: id, reason: `توسط استاد ${localStorage.getItem('userName') || 'استاد'} غیرفعال شد` })
+                });
+                if (res.ok) {
+                    showToast(`شاگرد ${student.name} با موفقیت غیرفعال شد`, 'success');
+                    loadStudents();
+                } else showToast('خطا در غیرفعال کردن شاگرد', 'danger');
+            }
+        }
+
+        async function enableStudent(id) {
+            if (confirm('آیا از فعال کردن این شاگرد اطمینان دارید؟')) {
+                const studentRes = await fetch(`/api/students/${id}`);
+                const student = await studentRes.json();
+                const res = await fetch(`/api/students/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'active' })
+                });
+                if (res.ok) {
+                    showToast(`شاگرد ${student.name} با موفقیت فعال شد`, 'success');
+                    loadStudents();
+                } else showToast('خطا در فعال کردن شاگرد', 'danger');
+            }
+        }
+
+        function refreshData() {
+            if (currentClassId) { loadStudents(); showToast('داده‌ها بروزرسانی شد', 'success'); }
+            else showToast('لطفاً ابتدا یک صنف را انتخاب کنید', 'warning');
+        }
+
+        loadClasses();
+    </script>
+</body>
+
+</html>

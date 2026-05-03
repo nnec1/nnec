@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>پیشخوان استاد</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .rating-star {
+            cursor: pointer;
+            font-size: 28px;
+            color: #ffc107;
+            transition: 0.2s;
+        }
+
+        .rating-star:hover {
+            transform: scale(1.1);
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-chalkboard-fill fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل استاد</h5>
+                    <small class="text-muted" id="teacherNameSidebar">نام استاد</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link active"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="class-settings.html" class="nav-link"><i class="bi bi-gear-fill"></i> تنظیمات صنف</a>
+                    <a href="profile.html" class="nav-link"><i class="bi bi-person-circle"></i> تنظیمات اکاونت</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <div>
+                        <h2 class="mb-0 text-dark">پیشخوان استاد</h2>
+                        <p class="text-muted">خلاصه وضعیت تدریس</p>
+                    </div>
+                    <div class="bg-white px-3 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-calendar3 text-primary"></i>
+                        <span id="currentDate" class="me-2 text-dark"></span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-people-fill fs-1 text-primary"></i>
+                            <h6>مجموع شاگردان</h6>
+                            <h2 id="totalStudents">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+                            <h6>حاضر امروز</h6>
+                            <h2 id="presentToday">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-x-circle-fill fs-1 text-danger"></i>
+                            <h6>غایب امروز</h6>
+                            <h2 id="absentToday">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h5><i class="bi bi-person-circle text-primary me-2"></i> اطلاعات شخصی</h5>
+                            <p><strong>نام:</strong> <span id="teacherName">-</span></p>
+                            <p><strong>نام پدر:</strong> <span id="teacherFather">-</span></p>
+                            <p><strong>شماره تماس:</strong> <span id="teacherPhone">-</span></p>
+                            <p><strong>ایمیل:</strong> <span id="teacherEmail">-</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h5><i class="bi bi-star-fill text-warning me-2"></i> امتیاز دادن به شاگرد</h5>
+                            <div id="ratingStars" class="mb-2">
+                                <i class="bi bi-star rating-star" data-rating="1"></i>
+                                <i class="bi bi-star rating-star" data-rating="2"></i>
+                                <i class="bi bi-star rating-star" data-rating="3"></i>
+                                <i class="bi bi-star rating-star" data-rating="4"></i>
+                                <i class="bi bi-star rating-star" data-rating="5"></i>
+                            </div>
+                            <select id="ratingStudent" class="form-select mb-2">
+                                <option value="">انتخاب شاگرد...</option>
+                            </select>
+                            <textarea id="ratingMessage" class="form-control mb-2" rows="2"
+                                placeholder="پیام شما به مدیر..."></textarea>
+                            <button class="btn btn-warning w-100" onclick="sendRating()">
+                                <i class="bi bi-send"></i> ارسال امتیاز و پیام
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card mt-4">
+                    <h5><i class="bi bi-chat-dots-fill text-danger me-2"></i> ثبت شکایت به مدیر</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" id="complaintSubject" class="form-control" placeholder="موضوع شکایت">
+                        </div>
+                        <div class="col-md-6">
+                            <select id="complaintStudent" class="form-select">
+                                <option value="">انتخاب شاگرد (اختیاری)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <textarea id="complaintMessage" class="form-control" rows="3"
+                                placeholder="متن شکایت..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-danger w-100" onclick="sendComplaint()">
+                                <i class="bi bi-send"></i> ارسال شکایت
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card mt-4">
+                    <h5><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i> صنف‌های تدریس من</h5>
+                    <div id="myClassesList" class="row g-3 mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let teacherId = localStorage.getItem('userId') || 3;
+        let selectedRating = 0;
+
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.addEventListener('click', function () {
+                selectedRating = parseInt(this.dataset.rating);
+                document.querySelectorAll('.rating-star').forEach((s, i) => {
+                    if (i < selectedRating) {
+                        s.classList.remove('bi-star');
+                        s.classList.add('bi-star-fill');
+                    } else {
+                        s.classList.remove('bi-star-fill');
+                        s.classList.add('bi-star');
+                    }
+                });
+            });
+        });
+
+        async function loadTeacherInfo() {
+            const res = await fetch(`/api/teacher/info/${teacherId}`);
+            const data = await res.json();
+            document.getElementById('teacherName').innerText = data.name || '-';
+            document.getElementById('teacherFather').innerText = data.father_name || '-';
+            document.getElementById('teacherPhone').innerText = data.phone || '-';
+            document.getElementById('teacherEmail').innerText = data.email || '-';
+            document.getElementById('teacherNameSidebar').innerText = data.name || 'استاد';
+        }
+
+        async function loadStats() {
+            const res = await fetch(`/api/teacher/stats/${teacherId}`);
+            const data = await res.json();
+            document.getElementById('totalStudents').innerText = data.total_students || 0;
+            document.getElementById('presentToday').innerText = data.present_today || 0;
+            document.getElementById('absentToday').innerText = data.absent_today || 0;
+        }
+
+        async function loadMyClasses() {
+            const res = await fetch(`/api/teacher/classes/${teacherId}`);
+            const classes = await res.json();
+            document.getElementById('myClassesList').innerHTML = classes.length ? classes.map(c => `
+                <div class="col-md-4"><div class="bg-light rounded-3 p-3 text-center"><i class="bi bi-book fs-2 text-primary"></i><h6>${c.class_name}</h6><small>${c.subject_name || ''}</small></div></div>
+            `).join('') : '<div class="col-12 text-center">هیچ صنفی تخصیص داده نشده است</div>';
+
+            const studentsRes = await fetch(`/api/teacher/students/${teacherId}`);
+            const students = await studentsRes.json();
+            document.getElementById('ratingStudent').innerHTML = '<option value="">انتخاب شاگرد...</option>' + students.map(s => `<option value="${s.id}">${s.name} (${s.student_card_id})</option>`).join('');
+            document.getElementById('complaintStudent').innerHTML = '<option value="">انتخاب شاگرد (اختیاری)</option>' + students.map(s => `<option value="${s.id}">${s.name} (${s.student_card_id})</option>`).join('');
+        }
+
+        async function sendRating() {
+            const studentId = document.getElementById('ratingStudent').value;
+            const message = document.getElementById('ratingMessage').value;
+            if (!studentId) { alert('شاگرد را انتخاب کنید'); return; }
+            if (selectedRating === 0) { alert('امتیاز را انتخاب کنید'); return; }
+            const res = await fetch('/api/teacher/send-rating', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teacher_id: teacherId, student_id: studentId, rating: selectedRating, message })
+            });
+            if (res.ok) {
+                alert('امتیاز با موفقیت ارسال شد');
+                document.getElementById('ratingMessage').value = '';
+                selectedRating = 0;
+                document.querySelectorAll('.rating-star').forEach(s => {
+                    s.classList.remove('bi-star-fill');
+                    s.classList.add('bi-star');
+                });
+            } else alert('خطا در ارسال امتیاز');
+        }
+
+        async function sendComplaint() {
+            const studentId = document.getElementById('complaintStudent').value;
+            const subject = document.getElementById('complaintSubject').value;
+            const message = document.getElementById('complaintMessage').value;
+            if (!subject || !message) { alert('موضوع و متن شکایت را وارد کنید'); return; }
+            const res = await fetch('/api/teacher/send-complaint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teacher_id: teacherId, student_id: studentId || null, subject, message })
+            });
+            if (res.ok) {
+                alert('شکایت شما با موفقیت ارسال شد');
+                document.getElementById('complaintSubject').value = '';
+                document.getElementById('complaintMessage').value = '';
+            } else alert('خطا در ارسال شکایت');
+        }
+
+        loadTeacherInfo();
+        loadStats();
+        loadMyClasses();
+    </script>
+</body>
+
+</html>

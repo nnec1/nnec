@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>وضعیت فیس</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="bi bi-cash-stack text-primary me-2"></i> وضعیت فیس من</h3>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-receipt fs-1 text-primary"></i>
+                            <h3 id="feeMain">0</h3>
+                            <small>فیس کل</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+                            <h3 id="feePaid">0</h3>
+                            <small>پرداخت شده</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+                            <h3 id="feeRemaining">0</h3>
+                            <small>باقی مانده</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-calendar-exclamation fs-1 text-warning"></i>
+                            <h4 id="feeExpiry">-</h4>
+                            <small>تاریخ انقضا</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="overdueWarning" class="alert alert-danger d-none"></div>
+
+                <div class="table-container">
+                    <h5><i class="bi bi-clock-history"></i> تاریخچه پرداخت‌ها</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>تاریخ</th>
+                                    <th>مبلغ</th>
+                                    <th>شماره رسید</th>
+                                    <th>یادداشت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentHistory"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let studentId = localStorage.getItem('studentId') || localStorage.getItem('userId');
+
+        async function loadFeeStatus() {
+            const res = await fetch(`/api/student/fees/${studentId}`);
+            const data = await res.json();
+            document.getElementById('feeMain').innerText = (data.total_fee || 0).toLocaleString();
+            document.getElementById('feePaid').innerText = (data.paid_fee || 0).toLocaleString();
+            document.getElementById('feeRemaining').innerText = (data.remaining_fee || 0).toLocaleString();
+            document.getElementById('feeExpiry').innerText = data.due_date || '-';
+
+            if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) {
+                document.getElementById('overdueWarning').innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ⚠️ هشدار! فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.`;
+                document.getElementById('overdueWarning').classList.remove('d-none');
+            }
+        }
+
+        async function loadPaymentHistory() {
+            const res = await fetch(`/api/student/payments/${studentId}`);
+            const payments = await res.json();
+            if (payments.length === 0) {
+                document.getElementById('paymentHistory').innerHTML = '<td><td colspan="4" class="text-center">هیچ پرداختی ثبت نشده است</div></div></div></td>';
+                return;
+            }
+            document.getElementById('paymentHistory').innerHTML = payments.map(p => `
+                <tr><td class="text-dark">${p.payment_date}</div></div></div><td class="text-success">${(p.amount || 0).toLocaleString()} AFN</div></div></div><td class="text-dark">${p.receipt_number || '-'}</div></div></div><td class="text-dark">${p.notes || '-'}</div></div></div>
+            `).join('');
+        }
+
+        loadFeeStatus();
+        loadPaymentHistory();
+        setInterval(loadFeeStatus, 30000);
+    </script>
+</body>
+
+</html>

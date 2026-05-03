@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت کارمندان</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link active"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
+                    <h3 class="section-title"><i class="bi bi-people-fill text-primary me-2"></i> مدیریت کارمندان</h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#employeeModal"
+                        onclick="resetEmployeeForm()">
+                        <i class="bi bi-plus-circle"></i> کارمند جدید
+                    </button>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="filterRole">
+                            <option value="">همه نقش‌ها</option>
+                            <option value="teacher">استاد</option>
+                            <option value="accountant">حسابدار</option>
+                        </select></div>
+                    <div class="col-md-3"><input type="text" class="form-control" id="searchEmp"
+                            placeholder="جستجوی نام..."></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadEmployees()"><i
+                                class="bi bi-search"></i> جستجو</button></div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>نام</th>
+                                    <th>نام پدر</th>
+                                    <th>شماره تماس</th>
+                                    <th>ایمیل</th>
+                                    <th>نقش</th>
+                                    <th>معاش</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال کارمند -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                    <h5 class="modal-title" id="employeeModalLabel"><i class="bi bi-person-plus-fill"></i> کارمند جدید
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="employeeForm" enctype="multipart/form-data">
+                        <input type="hidden" id="empId">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">نام کامل</label><input type="text"
+                                    class="form-control" id="empName" required></div>
+                            <div class="col-md-6"><label class="form-label">نام پدر</label><input type="text"
+                                    class="form-control" id="empFather"></div>
+                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
+                                    class="form-control" id="empPhone"></div>
+                            <div class="col-md-6"><label class="form-label">ایمیل</label><input type="email"
+                                    class="form-control" id="empEmail" required></div>
+                            <div class="col-md-6"><label class="form-label">نقش</label><select class="form-select"
+                                    id="empPosition">
+                                    <option value="teacher">استاد</option>
+                                    <option value="accountant">حسابدار</option>
+                                </select></div>
+                            <div class="col-md-6"><label class="form-label">معاش (AFN)</label><input type="number"
+                                    class="form-control" id="empSalary"></div>
+                            <div class="col-md-6"><label class="form-label">تاریخ استخدام</label><input type="date"
+                                    class="form-control" id="empHireDate"></div>
+                            <div class="col-md-6"><label class="form-label">تحصیلات</label><input type="text"
+                                    class="form-control" id="empEducation"></div>
+                            <div class="col-12"><label class="form-label">تجربه کاری</label><textarea
+                                    class="form-control" id="empExperience" rows="2"></textarea></div>
+                            <div class="col-12"><label class="form-label">عکس</label><input type="file"
+                                    class="form-control" id="empPhoto" accept="image/*"></div>
+                            <div class="col-md-6"><label class="form-label">رمز عبور جدید</label><input type="password"
+                                    class="form-control" id="empPassword" placeholder="در صورت ویرایش خالی بگذارید">
+                            </div>
+                            <div class="col-md-6"><label class="form-label">وضعیت</label><select class="form-select"
+                                    id="empStatus">
+                                    <option value="active">فعال</option>
+                                    <option value="inactive">غیرفعال</option>
+                                </select></div>
+                        </div>
+                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i>
+                                ذخیره</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let editEmpId = null, employeeModal = null;
+
+        async function loadEmployees() {
+            const res = await fetch('/api/employees');
+            let emps = await res.json();
+            const role = document.getElementById('filterRole').value;
+            const search = document.getElementById('searchEmp').value.toLowerCase();
+            if (role) emps = emps.filter(e => e.position === role);
+            if (search) emps = emps.filter(e => e.name.toLowerCase().includes(search));
+            if (emps.length === 0) { document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ کارمندی یافت نشد</div></div></div></tr>'; return; }
+            document.getElementById('employeesList').innerHTML = emps.map(e => `
+                <tr><td class="text-dark"><strong>${e.name}</strong>${e.father_name ? `<br><small>${e.father_name}</small>` : ''}</div></div></div>
+                <td class="text-dark">${e.father_name || '-'}</div></div></div><td class="text-dark">${e.phone || '-'}</div></div></div>
+                <td class="text-dark">${e.email || '-'}</div></div></div><td class="text-dark">${e.position === 'teacher' ? 'استاد' : 'حسابدار'}</div></div></div>
+                <td class="text-dark">${(e.salary || 0).toLocaleString()} AFN</div></div></div>
+                <td><span class="badge ${e.status === 'active' ? 'bg-success' : 'bg-danger'}">${e.status === 'active' ? 'فعال' : 'غیرفعال'}</span></div></div></div>
+                <td><button class="btn btn-sm btn-warning me-1" onclick="editEmployee(${e.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteEmployee(${e.id})"><i class="bi bi-trash"></i></button></div></div></div>
+            </tr>`).join('');
+        }
+
+        async function deleteEmployee(id) { if (confirm('حذف شود؟')) { await fetch(`/api/employees/${id}`, { method: 'DELETE' }); loadEmployees(); } }
+
+        async function editEmployee(id) {
+            const res = await fetch(`/api/employees/${id}`);
+            const e = await res.json();
+            editEmpId = id;
+            document.getElementById('empName').value = e.name;
+            document.getElementById('empFather').value = e.father_name || '';
+            document.getElementById('empPhone').value = e.phone || '';
+            document.getElementById('empEmail').value = e.email;
+            document.getElementById('empPosition').value = e.position;
+            document.getElementById('empSalary').value = e.salary || '';
+            document.getElementById('empHireDate').value = e.hire_date || '';
+            document.getElementById('empEducation').value = e.education || '';
+            document.getElementById('empExperience').value = e.experience || '';
+            document.getElementById('empStatus').value = e.status;
+            document.getElementById('employeeModalLabel').innerHTML = '<i class="bi bi-pencil-square"></i> ویرایش کارمند';
+            if (employeeModal) employeeModal.show();
+        }
+
+        function resetEmployeeForm() { editEmpId = null; document.getElementById('employeeForm').reset(); document.getElementById('employeeModalLabel').innerHTML = '<i class="bi bi-person-plus-fill"></i> کارمند جدید'; }
+
+        document.getElementById('employeeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('name', document.getElementById('empName').value);
+            formData.append('father_name', document.getElementById('empFather').value);
+            formData.append('phone', document.getElementById('empPhone').value);
+            formData.append('email', document.getElementById('empEmail').value);
+            formData.append('position', document.getElementById('empPosition').value);
+            formData.append('salary', document.getElementById('empSalary').value);
+            formData.append('hire_date', document.getElementById('empHireDate').value);
+            formData.append('education', document.getElementById('empEducation').value);
+            formData.append('experience', document.getElementById('empExperience').value);
+            formData.append('status', document.getElementById('empStatus').value);
+            if (document.getElementById('empPhoto').files[0]) formData.append('photo', document.getElementById('empPhoto').files[0]);
+            if (document.getElementById('empPassword').value) formData.append('password', document.getElementById('empPassword').value);
+            const url = editEmpId ? `/api/employees/${editEmpId}` : '/api/employees';
+            const method = editEmpId ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, body: formData });
+            if (res.ok) {
+                alert(editEmpId ? 'کارمند ویرایش شد' : 'کارمند اضافه شد');
+                if (employeeModal) employeeModal.hide();
+                loadEmployees();
+                resetEmployeeForm();
+            } else alert('خطا');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            employeeModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+            loadEmployees();
+        });
+    </script>
+</body>
+
+</html>

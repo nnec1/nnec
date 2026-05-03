@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت نمرات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title">📊 مدیریت نمرات</h3>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="gradeClass" onchange="loadSubjects()">
+                            <option value="">انتخاب صنف...</option>
+                        </select></div>
+                    <div class="col-md-3"><select class="form-select" id="gradeSubject" onchange="loadStudents()">
+                            <option value="">انتخاب مضمون...</option>
+                        </select></div>
+                    <div class="col-md-2"><select class="form-select" id="examType">
+                            <option value="quiz">Quiz</option>
+                            <option value="midterm">Midterm</option>
+                            <option value="final">Final</option>
+                            <option value="group_project">پروژه گروهی</option>
+                        </select></div>
+                    <div class="col-md-2"><input type="number" class="form-control" id="maxScore" value="100"></div>
+                    <div class="col-md-2"><button class="btn btn-success w-100" onclick="saveAllGrades()"><i
+                                class="bi bi-save"></i> ذخیره همه</button></div>
+                </div>
+
+                <div class="alert alert-info d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-people-fill"></i> نمره گروهی: برای کل صنف یک نمره ثبت کنید</span>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#groupGradeModal"><i
+                            class="bi bi-plus-circle"></i> نمره گروهی</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>آیدی کارت</th>
+                                    <th>نام شاگرد</th>
+                                    <th>نمره (از <span id="maxScoreDisplay">100</span>)</th>
+                                    <th>درصد</th>
+                                    <th>Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradesStudentsList">
+                                <tr>
+                                    <td colspan="5" class="text-center">لطفاً صنف و مضمون را انتخاب کنید
+                    </div>
+                </div>
+            </div>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- مودال نمره گروهی -->
+    <div class="modal fade" id="groupGradeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                    <h5 class="modal-title"><i class="bi bi-people-fill"></i> نمره گروهی</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="groupGradeForm">
+                        <div class="mb-3"><label class="form-label">نمره گروهی</label><input type="number"
+                                class="form-control" id="groupScore" required></div>
+                        <div class="mb-3"><label class="form-label">نمره کل</label><input type="number"
+                                class="form-control" id="groupMaxScore" value="100" required></div>
+                        <div class="mb-3"><label class="form-label">نوع امتحان</label><select class="form-select"
+                                id="groupExamType">
+                                <option value="group_project">پروژه گروهی</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="midterm">Midterm</option>
+                            </select></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> ذخیره برای همه
+                            شاگردان</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let teacherId = localStorage.getItem('userId') || 3;
+        let currentSubjectId = null;
+        let currentClassId = null;
+        let allStudents = [];
+
+        async function loadClasses() {
+            const res = await fetch(`/api/teacher/classes/${teacherId}`);
+            const classes = await res.json();
+            const select = document.getElementById('gradeClass');
+            select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.class_id || c.id}">${c.class_name}</option>`).join('');
+        }
+
+        async function loadSubjects() {
+            currentClassId = document.getElementById('gradeClass').value;
+            if (!currentClassId) { document.getElementById('gradeSubject').innerHTML = '<option value="">انتخاب مضمون...</option>'; return; }
+            const res = await fetch(`/api/class-subjects/${currentClassId}`);
+            const subjects = await res.json();
+            document.getElementById('gradeSubject').innerHTML = '<option value="">انتخاب مضمون...</option>' + subjects.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
+        }
+
+        async function loadStudents() {
+            currentSubjectId = document.getElementById('gradeSubject').value;
+            if (!currentSubjectId || !currentClassId) return;
+
+            const res = await fetch('/api/students');
+            let students = await res.json();
+            students = students.filter(s => s.class_id == currentClassId);
+            allStudents = students;
+
+            if (students.length === 0) {
+                document.getElementById('gradesStudentsList').innerHTML = '<td><td colspan="5" class="text-center">هیچ شاگردی نیست</div></div></div></tr>';
+                return;
+            }
+
+            const maxScore = document.getElementById('maxScore').value;
+            document.getElementById('maxScoreDisplay').innerText = maxScore;
+            document.getElementById('gradesStudentsList').innerHTML = students.map(s => `
+                <tr id="grade-row-${s.id}">
+                    <td class="text-dark">${s.student_card_id || '-'}</div></div></div>
+                    <td class="text-dark"><strong>${s.name}</strong><br><small>${s.father_name || ''}</small></div></div></div>
+                    <td class="text-dark"><input type="number" class="form-control grade-input" id="grade_${s.id}" style="width:100px" min="0" max="${maxScore}" step="0.5" onchange="updatePercentage(${s.id})"></div></div></div>
+                    <td class="text-dark"><span id="percent_${s.id}">-</span>%</div></div></div>
+                    <td class="text-dark"><span id="grade_letter_${s.id}" class="badge bg-secondary">-</span></div></div></div>
+                </div></div></div>
+            `).join('');
+
+            for (const s of students) {
+                const gradeRes = await fetch(`/api/student/grades/${s.id}`);
+                const grades = await gradeRes.json();
+                const existing = grades.find(g => g.subject_id == currentSubjectId && g.exam_type === document.getElementById('examType').value);
+                if (existing) {
+                    document.getElementById(`grade_${s.id}`).value = existing.score;
+                    updatePercentage(s.id);
+                }
+            }
+        }
+
+        function updatePercentage(studentId) {
+            const score = parseFloat(document.getElementById(`grade_${studentId}`).value) || 0;
+            const maxScore = parseFloat(document.getElementById('maxScore').value) || 100;
+            const percent = ((score / maxScore) * 100).toFixed(1);
+            document.getElementById(`percent_${studentId}`).innerText = percent;
+            let gradeLetter = percent >= 90 ? 'A+' : percent >= 80 ? 'A' : percent >= 70 ? 'B+' : percent >= 60 ? 'B' : percent >= 50 ? 'C' : percent >= 40 ? 'D' : 'F';
+            let gradeClass = percent >= 60 ? 'bg-success' : (percent >= 40 ? 'bg-warning' : 'bg-danger');
+            document.getElementById(`grade_letter_${studentId}`).innerHTML = `<span class="badge ${gradeClass}">${gradeLetter}</span>`;
+        }
+
+        async function saveAllGrades() {
+            if (!currentSubjectId || !currentClassId) { alert('لطفاً صنف و مضمون را انتخاب کنید'); return; }
+            const maxScore = parseFloat(document.getElementById('maxScore').value) || 100;
+            const examType = document.getElementById('examType').value;
+            let saved = 0;
+
+            for (const s of allStudents) {
+                const scoreInput = document.getElementById(`grade_${s.id}`);
+                if (scoreInput) {
+                    const score = parseFloat(scoreInput.value);
+                    if (!isNaN(score)) {
+                        await fetch('/api/teacher/save-grade', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ student_id: s.id, class_id: currentClassId, subject_id: currentSubjectId, score, max_score: maxScore, exam_type: examType, teacher_id: teacherId })
+                        });
+                        saved++;
+                    }
+                }
+            }
+            alert(`${saved} نمره با موفقیت ذخیره شد`);
+        }
+
+        document.getElementById('groupGradeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentClassId || !currentSubjectId) { alert('لطفاً صنف و مضمون را انتخاب کنید'); return; }
+            const score = document.getElementById('groupScore').value;
+            const maxScore = document.getElementById('groupMaxScore').value;
+            const examType = document.getElementById('groupExamType').value;
+
+            const res = await fetch('/api/teacher/save-group-grade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ class_id: currentClassId, subject_id: currentSubjectId, score, max_score: maxScore, exam_type: examType, teacher_id: teacherId })
+            });
+            if (res.ok) {
+                alert('نمره گروهی با موفقیت برای همه شاگردان ثبت شد');
+                bootstrap.Modal.getInstance(document.getElementById('groupGradeModal')).hide();
+                loadStudents();
+            } else alert('خطا');
+        });
+
+        document.getElementById('maxScore').addEventListener('change', () => {
+            document.getElementById('maxScoreDisplay').innerText = document.getElementById('maxScore').value;
+        });
+        loadClasses();
+    </script>
+</body>
+
+</html>

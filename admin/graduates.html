@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت فارغ‌التحصیلان | پنل مدیریت</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .row {
+            margin: 0 !important;
+            display: flex;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+
+        [class*="col-"] {
+            padding: 0 !important;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-left: 1px solid #e9ecef;
+        }
+
+        .sidebar .nav-link {
+            color: #4a5568;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin: 4px 12px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(-4px);
+        }
+
+        .sidebar .nav-link i {
+            margin-left: 12px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            padding: 25px 30px !important;
+            background: #f5f7fb;
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                width: 280px;
+                flex-shrink: 0;
+            }
+
+            .main-content {
+                width: calc(100% - 280px);
+            }
+
+            .container-fluid .row {
+                flex-wrap: nowrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .main-content {
+                padding: 80px 15px 25px 15px !important;
+                width: 100%;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+
+            .container-fluid .row {
+                flex-wrap: wrap;
+            }
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .section-title {
+            color: #2d3748;
+            margin-bottom: 25px;
+            border-right: 4px solid #667eea;
+            padding-right: 15px;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+
+        .form-control,
+        .form-select {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 16px;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+        }
+
+        .btn-primary:hover,
+        .btn-success:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            border: none;
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            border: none;
+            color: #333;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+        }
+
+        .modal-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .text-muted {
+            color: #718096 !important;
+        }
+
+        .badge-graduated {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-dark mb-0">مدیریت آموزشگاه</h5>
+                    <small class="text-muted">پنل مدیریت</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="graduates.html" class="nav-link active"><i class="bi bi-award-fill"></i> فارغ‌التحصیلان</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <a href="announcements.html" class="nav-link"><i class="bi bi-megaphone-fill"></i> اعلانات</a>
+                    <a href="complaints.html" class="nav-link"><i class="bi bi-chat-dots-fill"></i> شکایات</a>
+                    <a href="settings.html" class="nav-link"><i class="bi bi-gear-fill"></i> تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                    <h3 class="section-title"><i class="bi bi-award-fill text-primary me-2"></i> مدیریت فارغ‌التحصیلان
+                    </h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addGraduateModal"
+                        onclick="resetGraduateForm()">
+                        <i class="bi bi-plus-circle"></i> افزودن فارغ‌التحصیل
+                    </button>
+                </div>
+
+                <!-- فیلترها -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="filterYear">
+                            <option value="">همه سال‌ها</option>
+                            <option value="1400">1400</option>
+                            <option value="1401">1401</option>
+                            <option value="1402">1402</option>
+                            <option value="1403">1403</option>
+                            <option value="1404">1404</option>
+                        </select></div>
+                    <div class="col-md-3"><input type="text" class="form-control" id="searchGraduate"
+                            placeholder="جستجوی نام..."></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadGraduates()"><i
+                                class="bi bi-search"></i> جستجو</button></div>
+                    <div class="col-md-3"><button class="btn btn-info w-100" onclick="exportGraduates()"><i
+                                class="bi bi-download"></i> خروجی اکسل</button></div>
+                </div>
+
+                <!-- لیست فارغ‌التحصیلان -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>عکس</th>
+                                    <th>نام شاگرد</th>
+                                    <th>نام پدر</th>
+                                    <th>سال فراغت</th>
+                                    <th>آیدی نمبر</th>
+                                    <th>شماره تماس</th>
+                                    <th>QR کد</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="graduatesList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال افزودن فارغ‌التحصیل -->
+    <div class="modal fade" id="addGraduateModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-award-fill text-success me-2"></i> افزودن فارغ‌التحصیل جدید
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="graduateForm">
+                        <div class="mb-3"><label class="form-label">انتخاب شاگرد</label><select class="form-select"
+                                id="graduateStudentId" required>
+                                <option value="">انتخاب شاگرد...</option>
+                            </select></div>
+                        <div class="mb-3"><label class="form-label">سال فراغت</label><input type="text"
+                                class="form-control" id="graduateYear" placeholder="مثال: 1404" required></div>
+                        <div class="mb-3"><label class="form-label">شماره سند فراغت</label><input type="text"
+                                class="form-control" id="certificateNumber" placeholder="شماره سند"></div>
+                        <div class="mb-3"><label class="form-label">تاریخ فراغت</label><input type="date"
+                                class="form-control" id="graduationDate"></div>
+                        <div class="mb-3"><label class="form-label">عکس سند فراغت</label><input type="file"
+                                class="form-control" id="certificatePhoto" accept="image/*"></div>
+                        <div class="mb-3"><label class="form-label">توضیحات</label><textarea class="form-control"
+                                id="graduateNotes" rows="2" placeholder="توضیحات اضافی..."></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100">ذخیره فارغ‌التحصیل</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال نمایش سند -->
+    <div class="modal fade" id="certificateModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">سند فراغت</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" id="certificateContent"></div>
+                <div class="modal-footer"><button class="btn btn-primary" onclick="printCertificate()"><i
+                            class="bi bi-printer"></i> چاپ</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+    <script>
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+        function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
+        if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+        window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+
+        async function logout() { await fetch('/api/logout', { method: 'POST' }); localStorage.clear(); window.location.href = '/login.html'; }
+
+        async function loadStudentsForSelect() {
+            const res = await fetch('/api/students');
+            let students = await res.json();
+            students = students.filter(s => s.status !== 'graduated');
+            document.getElementById('graduateStudentId').innerHTML = '<option value="">انتخاب شاگرد...</option>' + students.map(s => `<option value="${s.id}">${s.name} - ${s.class_name}</option>`).join('');
+        }
+
+        async function loadGraduates() {
+            const res = await fetch('/api/students');
+            let students = await res.json();
+            let graduates = students.filter(s => s.status === 'graduated');
+            const filterYear = document.getElementById('filterYear').value;
+            const search = document.getElementById('searchGraduate').value.toLowerCase();
+            if (filterYear) graduates = graduates.filter(g => g.graduation_year === filterYear);
+            if (search) graduates = graduates.filter(g => g.name.toLowerCase().includes(search));
+
+            if (graduates.length === 0) { document.getElementById('graduatesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ فارغ‌التحصیلی یافت نشد</td></tr>'; return; }
+
+            document.getElementById('graduatesList').innerHTML = graduates.map(g => `
+            <tr>
+                <td>${g.photo ? `<img src="${g.photo}" class="profile-img">` : '<i class="bi bi-person-circle fs-3 text-secondary"></i>'}</div></div></div>
+                <td class="text-dark"><strong>${g.name}</strong><br><small>${g.father_name || ''}</small></div></div></div>
+                <td class="text-dark">${g.father_name || '-'}</div></div></div>
+                <td class="text-dark"><span class="badge-graduated">${g.graduation_year || '-'}</span></div></div></div>
+                <td class="text-dark">${g.id}</div></div></div><td class="text-dark">${g.phone || '-'}</div></div></div>
+                <td><button class="btn btn-sm btn-info" onclick="showQRCode(${g.id}, '${g.name}')"><i class="bi bi-qr-code"></i></button></div></div></div>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="editGraduate(${g.id})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteGraduate(${g.id})"><i class="bi bi-trash"></i></button>
+                    <button class="btn btn-sm btn-secondary" onclick="showCertificate(${g.id})"><i class="bi bi-file-text"></i></button>
+                 </div></div></div>
+             </div></div></div>
+        `).join('');
+        }
+
+        function showQRCode(id, name) {
+            const qrUrl = `${window.location.origin}/login.html?qr=GRAD_${id}`;
+            const win = window.open('', '_blank');
+            win.document.write(`<html dir="rtl"><head><title>QR کد فارغ‌التحصیل</title><script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"><\/script></head><body><div id="qrcode" style="display:flex;justify-content:center;align-items:center;height:100vh"></div><script>new QRCode(document.getElementById("qrcode"),{text:"${qrUrl}",width:200,height:200});<\/script></body></html>`);
+            win.document.close();
+        }
+
+        function showCertificate(id) { alert('نمایش سند فراغت برای شاگرد شماره ' + id); }
+        function printCertificate() { window.print(); }
+        function resetGraduateForm() { document.getElementById('graduateForm').reset(); }
+
+        document.getElementById('graduateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('graduateStudentId').value;
+            const graduationYear = document.getElementById('graduateYear').value;
+            await fetch(`/api/students/${studentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'graduated', graduation_year: graduationYear }) });
+            alert('شاگرد با موفقیت به لیست فارغ‌التحصیلان اضافه شد');
+            bootstrap.Modal.getInstance(document.getElementById('addGraduateModal')).hide();
+            loadGraduates();
+        });
+
+        async function deleteGraduate(id) { if (confirm('آیا از حذف این فارغ‌التحصیل اطمینان دارید؟')) { await fetch(`/api/students/${id}`, { method: 'DELETE' }); loadGraduates(); } }
+        function editGraduate(id) { alert('ویرایش اطلاعات فارغ‌التحصیل ' + id); }
+        function exportGraduates() { alert('در حال دانلود لیست فارغ‌التحصیلان...'); }
+
+        loadStudentsForSelect(); loadGraduates();
+    </script>
+</body>
+
+</html>

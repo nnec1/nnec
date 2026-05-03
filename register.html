@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ثبت نام شاگرد جدید</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 32px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            font-weight: bold;
+            transition: 0.3s;
+            padding: 12px;
+            border-radius: 16px;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 14px;
+            padding: 12px 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-card">
+        <div class="text-center mb-4">
+            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)"><i
+                    class="bi bi-person-plus-fill fs-1 text-white"></i></div>
+            <h3>ثبت نام شاگرد جدید</h3>
+            <p class="text-muted">لطفاً اطلاعات زیر را کامل کنید</p>
+        </div>
+        <div id="message" class="alert d-none"></div>
+        <form id="registerForm">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">نام کامل</label><input type="text" class="form-control"
+                        id="name" placeholder="علی محمدی" required></div>
+                <div class="col-md-6"><label class="form-label">نام پدر</label><input type="text" class="form-control"
+                        id="father_name" placeholder="احمد"></div>
+                <div class="col-md-6"><label class="form-label">نام مادر</label><input type="text" class="form-control"
+                        id="mother_name" placeholder="فاطمه"></div>
+                <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="tel" class="form-control"
+                        id="phone" placeholder="09123456789"></div>
+                <div class="col-md-12"><label class="form-label">صنف</label><select class="form-select" id="class"
+                        required>
+                        <option value="">در حال بارگیری...</option>
+                    </select><small class="text-muted" id="classInfo"></small></div>
+                <div class="col-md-6"><label class="form-label">رمز عبور</label><input type="password"
+                        class="form-control" id="password" placeholder="حداقل ۴ کاراکتر" required></div>
+                <div class="col-md-6"><label class="form-label">تکرار رمز عبور</label><input type="password"
+                        class="form-control" id="confirm_password" required></div>
+                <div class="col-12"><label class="form-label">آدرس (اختیاری)</label><textarea class="form-control"
+                        id="address" rows="2" placeholder="آدرس منزل..."></textarea></div>
+            </div>
+            <div class="mt-4"><button type="submit" class="btn btn-register w-100 text-white"><i
+                        class="bi bi-check-circle"></i> ثبت نام</button></div>
+        </form>
+        <div class="text-center mt-3"><a href="login.html" class="text-decoration-none"><i
+                    class="bi bi-box-arrow-in-right"></i> قبلاً ثبت نام کرده‌اید؟ وارد شوید</a></div>
+    </div>
+
+    <script>
+        // بارگذاری صنف‌هایی که استاد دارند
+        async function loadClasses() {
+            const res = await fetch('/api/classes-with-teachers');
+            const classes = await res.json();
+            const select = document.getElementById('class');
+            if (classes.length === 0) {
+                select.innerHTML = '<option value="">هیچ صنفی با استاد موجود نیست</option>';
+                document.getElementById('classInfo').innerHTML = '<span class="text-danger">⚠️ ابتدا مدیر باید استاد به صنف تخصیص دهد</span>';
+            } else {
+                select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}" data-fee="${c.monthly_fee}" data-teacher-count="${c.teacher_count}">${c.class_name} (${c.teacher_count} استاد) - ${c.monthly_fee.toLocaleString()} AFN</option>`).join('');
+                document.getElementById('classInfo').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> صنف‌های دارای استاد</span>';
+            }
+            select.onchange = async function () {
+                const classId = this.value;
+                if (classId) {
+                    const teacherRes = await fetch(`/api/teachers-by-class/${classId}`);
+                    const teachers = await teacherRes.json();
+                    if (teachers.length > 0) {
+                        document.getElementById('classInfo').innerHTML = `<i class="bi bi-person-badge"></i> استادان این صنف: ${teachers.map(t => t.name).join(', ')}`;
+                    }
+                } else {
+                    document.getElementById('classInfo').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> صنف‌های دارای استاد</span>';
+                }
+            };
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            if (password !== confirm) { showMessage('رمز عبور و تکرار آن مطابقت ندارند', 'danger'); return; }
+            if (password.length < 4) { showMessage('رمز عبور حداقل ۴ کاراکتر باشد', 'danger'); return; }
+            const formData = { name: document.getElementById('name').value, father_name: document.getElementById('father_name').value, mother_name: document.getElementById('mother_name').value, phone: document.getElementById('phone').value, password: password, class_id: document.getElementById('class').value, address: document.getElementById('address').value };
+            if (!formData.class_id) { showMessage('لطفاً صنف را انتخاب کنید', 'danger'); return; }
+            const response = await fetch('/api/students', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+            const data = await response.json();
+            if (response.ok) { showMessage(`✅ ثبت نام موفق! آیدی کارت: ${data.student_card_id} | رمز عبور: ${data.password}`, 'success'); setTimeout(() => window.location.href = 'login.html', 4000); }
+            else showMessage(data.error || 'خطا در ثبت نام', 'danger');
+        });
+
+        function showMessage(msg, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.classList.remove('d-none');
+            msgDiv.className = `alert alert-${type} rounded-3`;
+            msgDiv.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i> ${msg}`;
+            setTimeout(() => msgDiv.classList.add('d-none'), 5000);
+        }
+
+        loadClasses();
+    </script>
+</body>
+
+</html>
