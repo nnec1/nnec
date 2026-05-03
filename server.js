@@ -35,38 +35,29 @@ const upload = multer({ storage });
 // اتصال به دیتابیس
 let db;
 
-async function connectDB() {
+(async function initDB() {
     try {
-        // خواندن متغیرهای محیطی
-        const dbHost = process.env.DB_HOST;
-        const dbUser = process.env.DB_USER;
-        const dbPassword = process.env.DB_PASSWORD;
-        const dbName = process.env.DB_NAME;
-        const dbPort = process.env.DB_PORT || 3306;
-        
-        console.log(`🔄 Connecting to database: ${dbHost}:${dbPort}`);
+        console.log("🔄 Connecting to database...");
+        console.log("   Host:", process.env.DB_HOST);
+        console.log("   Port:", process.env.DB_PORT);
         
         db = await mysql.createConnection({
-            host: dbHost,
-            user: dbUser,
-            password: dbPassword,
-            database: dbName,
-            port: dbPort,
-            ssl: {
-                rejectUnauthorized: false  // برای Aiven لازم است
-            }
+            host: process.env.DB_HOST || "localhost",
+            user: process.env.DB_USER || "root",
+            password: process.env.DB_PASSWORD || "Root@123",
+            database: process.env.DB_NAME || "lms_db",
+            port: parseInt(process.env.DB_PORT) || 3306,
+            ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+            connectTimeout: 30000
         });
-        console.log("✅ متصل به دیتابیس MySQL (Aiven)");
+        console.log("✅ Database connected successfully!");
     } catch (err) {
-        console.error("❌ خطا در اتصال به دیتابیس:", err);
-        console.log("📋 متغیرهای محیطی:");
-        console.log("   DB_HOST:", process.env.DB_HOST || "not set");
-        console.log("   DB_USER:", process.env.DB_USER || "not set");
-        console.log("   DB_NAME:", process.env.DB_NAME || "not set");
-        console.log("   DB_PORT:", process.env.DB_PORT || "not set");
+        console.error("❌ Database connection failed:", err.message);
+        console.error("❌ Full error:", err);
         process.exit(1);
     }
-}
+})();
+
 
 // ==================== توابع کمکی ====================
 
