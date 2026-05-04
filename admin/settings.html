@@ -1,138 +1,125 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>تنظیمات سیستم</title>
+    <!-- Bootstrap CSS (با نسخه جدید و RTL) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
+            <!-- سایدبار -->
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
                         <i class="bi bi-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
                     <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
                     <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
-                        استاد</a>
                     <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
                     <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <a href="settings.html" class="nav-link active"><i class="bi bi-gear-fill"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
                 </nav>
             </div>
-            <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title">⚙️ تنظیمات سیستم</h3>
 
-                <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#general">تنظیمات
-                            عمومی</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#security">امنیت</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#feeSettings">تنظیمات فیس</a>
+            <!-- محتوای اصلی -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="bi bi-gear-fill text-primary me-2"></i> تنظیمات سیستم</h3>
+
+                <!-- تب‌ها -->
+                <ul class="nav nav-tabs mb-4" id="settingsTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">🏢 تنظیمات عمومی</button>
                     </li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#backup">پشتیبان گیری</a></li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">🔐 امنیت</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="fee-tab" data-bs-toggle="tab" data-bs-target="#feeSettings" type="button" role="tab">💰 تنظیمات فیس</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">💾 پشتیبان گیری</button>
+                    </li>
                 </ul>
 
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="general">
+                <div class="tab-content" id="settingsTabContent">
+                    <!-- تب تنظیمات عمومی -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
                         <div class="card p-4">
                             <form id="generalSettingsForm">
                                 <div class="row g-3">
-                                    <div class="col-md-6"><label>نام موسسه</label><input type="text" id="instituteName"
-                                            class="form-control"></div>
-                                    <div class="col-md-6"><label>شعار موسسه</label><input type="text"
-                                            id="instituteTagline" class="form-control"></div>
-                                    <div class="col-md-6"><label>شماره تماس</label><input type="text"
-                                            id="institutePhone" class="form-control"></div>
-                                    <div class="col-md-6"><label>ایمیل</label><input type="email" id="instituteEmail"
-                                            class="form-control"></div>
-                                    <div class="col-md-6"><label>آدرس</label><input type="text" id="instituteAddress"
-                                            class="form-control"></div>
-                                    <div class="col-md-6"><label>سال تحصیلی جاری</label><input type="text"
-                                            id="academicYear" class="form-control" value="1404"></div>
-                                    <div class="col-12"><button type="submit" class="btn btn-primary">ذخیره
-                                            تنظیمات</button></div>
+                                    <div class="col-md-6"><label class="form-label">نام موسسه</label><input type="text" id="instituteName" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">شعار موسسه</label><input type="text" id="instituteTagline" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text" id="institutePhone" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">ایمیل</label><input type="email" id="instituteEmail" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">آدرس</label><input type="text" id="instituteAddress" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">سال تحصیلی جاری</label><input type="text" id="academicYear" class="form-control" value="1404"></div>
+                                    <div class="col-12"><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> ذخیره تنظیمات</button></div>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="security">
+                    <!-- تب امنیت (Security) - مشکل اینجا بود -->
+                    <div class="tab-pane fade" id="security" role="tabpanel">
                         <div class="card p-4">
-                            <h5>تغییر رمز عبور مدیر</h5>
+                            <h5><i class="bi bi-key-fill text-primary me-2"></i> تغییر رمز عبور مدیر</h5>
                             <form id="changePasswordForm">
-                                <div class="mb-3"><label>رمز عبور فعلی</label><input type="password"
-                                        id="currentPassword" class="form-control" required></div>
-                                <div class="mb-3"><label>رمز عبور جدید</label><input type="password" id="newPassword"
-                                        class="form-control" required></div>
-                                <div class="mb-3"><label>تکرار رمز عبور جدید</label><input type="password"
-                                        id="confirmPassword" class="form-control" required></div>
-                                <button type="submit" class="btn btn-primary">تغییر رمز عبور</button>
+                                <div class="mb-3"><label class="form-label">رمز عبور فعلی</label><input type="password" id="currentPassword" class="form-control" required></div>
+                                <div class="mb-3"><label class="form-label">رمز عبور جدید</label><input type="password" id="newPassword" class="form-control" required></div>
+                                <div class="mb-3"><label class="form-label">تکرار رمز عبور جدید</label><input type="password" id="confirmPassword" class="form-control" required></div>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> تغییر رمز عبور</button>
                             </form>
+                            <hr class="my-4">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <strong>توجه:</strong> پس از تغییر رمز عبور، باید دوباره وارد سیستم شوید.
+                            </div>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="feeSettings">
+                    <!-- تب تنظیمات فیس -->
+                    <div class="tab-pane fade" id="feeSettings" role="tabpanel">
                         <div class="card p-4">
                             <form id="feeSettingsForm">
                                 <div class="row g-3">
-                                    <div class="col-md-6"><label>هشدار انقضای فیس (روز قبل)</label><input type="number"
-                                            id="feeWarningDays" class="form-control" value="7"></div>
-                                    <div class="col-md-6"><label>جریمه تاخیر (درصد)</label><input type="number"
-                                            id="lateFeePercent" class="form-control" value="0"></div>
-                                    <div class="col-md-6"><label>پیشوند آیدی کارت</label><input type="text"
-                                            id="cardIdPrefix" class="form-control" value="STU"></div>
-                                    <div class="col-12"><button type="submit" class="btn btn-primary">ذخیره تنظیمات
-                                            فیس</button></div>
+                                    <div class="col-md-6"><label class="form-label">هشدار انقضای فیس (روز قبل)</label><input type="number" id="feeWarningDays" class="form-control" value="7"></div>
+                                    <div class="col-md-6"><label class="form-label">جریمه تاخیر (درصد)</label><input type="number" id="lateFeePercent" class="form-control" value="0"></div>
+                                    <div class="col-md-6"><label class="form-label">پیشوند آیدی کارت</label><input type="text" id="cardIdPrefix" class="form-control" value="STU"></div>
+                                    <div class="col-12"><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> ذخیره تنظیمات فیس</button></div>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="backup">
+                    <!-- تب پشتیبان گیری -->
+                    <div class="tab-pane fade" id="backup" role="tabpanel">
                         <div class="card p-4 text-center">
                             <i class="bi bi-database-fill-down fs-1 text-primary"></i>
                             <h5 class="mt-3">پشتیبان گیری از دیتابیس</h5>
-                            <p class="text-muted">با کلیک بر روی دکمه زیر می‌توانید از کل دیتابیس سیستم پشتیبان بگیرید.
-                            </p>
-                            <button class="btn btn-primary" onclick="backupDatabase()"><i class="bi bi-download"></i>
-                                دریافت پشتیبان</button>
+                            <p class="text-muted">با کلیک بر روی دکمه زیر می‌توانید از کل دیتابیس سیستم پشتیبان بگیرید.</p>
+                            <button class="btn btn-primary" onclick="backupDatabase()"><i class="bi bi-download"></i> دریافت پشتیبان</button>
                             <hr class="my-4">
-                            <i class="bi bi-arrow-repeat fs-1 text-warning"></i>
+                            <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
                             <h5 class="mt-3">بازنشانی سیستم</h5>
-                            <p class="text-muted">توجه: این عمل تمام داده‌ها را حذف می‌کند!</p>
-                            <button class="btn btn-danger" onclick="resetSystem()"><i
-                                    class="bi bi-exclamation-triangle"></i> بازنشانی کامل سیستم</button>
+                            <p class="text-danger">توجه: تمام داده‌ها حذف می‌شود!</p>
+                            <button class="btn btn-danger" onclick="resetSystem()"><i class="bi bi-exclamation-triangle"></i> بازنشانی کامل</button>
                         </div>
                     </div>
                 </div>
@@ -140,23 +127,33 @@
         </div>
     </div>
 
+    <!-- اسکریپت‌ها -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
+        let adminName = localStorage.getItem('userName') || 'مدیر';
+        document.getElementById('adminName').innerText = adminName;
+
         // بارگذاری تنظیمات ذخیره شده
         async function loadSettings() {
-            const res = await fetch('/api/settings');
-            const settings = await res.json();
-            if (settings.institute_name) document.getElementById('instituteName').value = settings.institute_name;
-            if (settings.institute_tagline) document.getElementById('instituteTagline').value = settings.institute_tagline;
-            if (settings.institute_phone) document.getElementById('institutePhone').value = settings.institute_phone;
-            if (settings.institute_email) document.getElementById('instituteEmail').value = settings.institute_email;
-            if (settings.institute_address) document.getElementById('instituteAddress').value = settings.institute_address;
-            if (settings.academic_year) document.getElementById('academicYear').value = settings.academic_year;
-            if (settings.fee_warning_days) document.getElementById('feeWarningDays').value = settings.fee_warning_days;
-            if (settings.late_fee_percent) document.getElementById('lateFeePercent').value = settings.late_fee_percent;
-            if (settings.card_id_prefix) document.getElementById('cardIdPrefix').value = settings.card_id_prefix;
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                if (settings.institute_name) document.getElementById('instituteName').value = settings.institute_name;
+                if (settings.institute_tagline) document.getElementById('instituteTagline').value = settings.institute_tagline;
+                if (settings.institute_phone) document.getElementById('institutePhone').value = settings.institute_phone;
+                if (settings.institute_email) document.getElementById('instituteEmail').value = settings.institute_email;
+                if (settings.institute_address) document.getElementById('instituteAddress').value = settings.institute_address;
+                if (settings.academic_year) document.getElementById('academicYear').value = settings.academic_year;
+                if (settings.fee_warning_days) document.getElementById('feeWarningDays').value = settings.fee_warning_days;
+                if (settings.late_fee_percent) document.getElementById('lateFeePercent').value = settings.late_fee_percent;
+                if (settings.card_id_prefix) document.getElementById('cardIdPrefix').value = settings.card_id_prefix;
+            } catch (err) {
+                console.error("Error loading settings:", err);
+            }
         }
 
+        // تنظیمات عمومی
         document.getElementById('generalSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -171,6 +168,7 @@
             if (res.ok) alert('تنظیمات ذخیره شد'); else alert('خطا');
         });
 
+        // تنظیمات فیس
         document.getElementById('feeSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -182,6 +180,7 @@
             if (res.ok) alert('تنظیمات فیس ذخیره شد'); else alert('خطا');
         });
 
+        // تغییر رمز عبور
         document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPass = document.getElementById('newPassword').value;
@@ -193,8 +192,11 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ current: document.getElementById('currentPassword').value, new: newPass })
             });
-            if (res.ok) { alert('رمز عبور تغییر کرد'); document.getElementById('changePasswordForm').reset(); }
-            else alert('رمز فعلی اشتباه است');
+            if (res.ok) {
+                alert('رمز عبور با موفقیت تغییر کرد. لطفاً دوباره وارد شوید.');
+                localStorage.clear();
+                setTimeout(() => window.location.href = '/', 2000);
+            } else alert('رمز فعلی اشتباه است');
         });
 
         function backupDatabase() {
@@ -214,5 +216,4 @@
         loadSettings();
     </script>
 </body>
-
 </html>
