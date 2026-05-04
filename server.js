@@ -98,34 +98,86 @@ async function connectDB() {
 let dbConnected = false;
 
 // تابع راه‌اندازی سرور
+// async function startServer() {
+//   try {
+//     await connectDB();
+//     dbConnected = true;
+//     console.log("✅ Database ready");
+//   } catch (err) {
+//     console.error("❌ Could not connect to database:", err.message);
+//     dbConnected = false;
+//     console.log("⚠️ Continuing without database connection...");
+//   }
+
+//   // شروع سرور
+//   app.listen(PORT, () => {
+//     console.log(`\n✅ Server running on port ${PORT}`);
+//     console.log(`🔗 Login URL: http://localhost:${PORT}/index.html`);
+//     console.log(`\n👤 Default login:`);
+//     console.log(`   📍 CEO: ceo@school.com / 123456`);
+
+//     if (!dbConnected) {
+//       console.log(
+//         `\n⚠️ WARNING: Database not connected! Please check your database settings.`,
+//       );
+//     }
+//   });
+// }
+
+// // راه‌اندازی سرور
+// startServer();
+
+
+// ====================== راه‌اندازی سرور ======================
+
+// استفاده از پورت محیطی Render یا 3000 برای localhost
+const PORT = process.env.PORT || 3000;
+
 async function startServer() {
-  try {
-    await connectDB();
-    dbConnected = true;
-    console.log("✅ Database ready");
-  } catch (err) {
-    console.error("❌ Could not connect to database:", err.message);
-    dbConnected = false;
-    console.log("⚠️ Continuing without database connection...");
-  }
-
-  // شروع سرور
-  app.listen(PORT, () => {
-    console.log(`\n✅ Server running on port ${PORT}`);
-    console.log(`🔗 Login URL: http://localhost:${PORT}/login.html`);
-    console.log(`\n👤 Default login:`);
-    console.log(`   📍 CEO: ceo@school.com / 123456`);
-
-    if (!dbConnected) {
-      console.log(
-        `\n⚠️ WARNING: Database not connected! Please check your database settings.`,
-      );
+    try {
+        await connectDB();
+        console.log("✅ Database ready for connections");
+    } catch (err) {
+        console.error("❌ Could not connect to database:", err.message);
+        console.log("⚠️ Starting server without database connection - some features may not work");
     }
-  });
+    
+    // شروع سرور - مهم: از '0.0.0.0' استفاده کنید
+    const server = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`\n✅ Server running on port ${PORT}`);
+        console.log(`🔗 Login URL: http://localhost:${PORT}/`);
+        console.log(`\n👤 Default login:`);
+        console.log(`   📍 CEO: ceo@school.com / 123456`);
+        console.log(`\n🔑 Order of creation:`);
+        console.log(`   1️⃣ Login as CEO and create an admin`);
+        console.log(`   2️⃣ Login as admin and create classes`);
+        console.log(`   3️⃣ Assign teachers to classes`);
+        console.log(`   4️⃣ Register students\n`);
+        
+        if (!dbConnected) {
+            console.log(`⚠️ WARNING: Database not connected!`);
+        }
+    });
+    
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`❌ Port ${PORT} is already in use!`);
+            console.log(`💡 Trying alternative port ${PORT + 1}...`);
+            
+            // تلاش با پورت بعدی
+            app.listen(PORT + 1, '0.0.0.0', () => {
+                console.log(`✅ Server running on port ${PORT + 1}`);
+            });
+        } else {
+            console.error('Server error:', err);
+        }
+    });
 }
 
-// راه‌اندازی سرور
+// شروع سرور
 startServer();
+
+
 // ==================== توابع کمکی ====================
 
 function cleanParams(params) {
