@@ -1,9 +1,33 @@
-# .gitignore
-node_modules/
-uploads/
+# Environment variables (محافظت شده)
 .env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+
+# Uploads
+uploads/
+public/uploads/
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Database backups (اگر وجود دارد)
 *.sql
-backup/
+*.sql.gz
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
