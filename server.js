@@ -33,32 +33,94 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // اتصال به دیتابیس
+// let db;
+
+// (async function initDB() {
+//     try {
+//         console.log("🔄 Connecting to database...");
+//         console.log("   Host:", process.env.DB_HOST);
+//         console.log("   Port:", process.env.DB_PORT);
+        
+//         db = await mysql.createConnection({
+//             host: process.env.DB_HOST || "localhost",
+//             user: process.env.DB_USER || "root",
+//             password: process.env.DB_PASSWORD || "Root@123",
+//             database: process.env.DB_NAME || "lms_db",
+//             port: parseInt(process.env.DB_PORT) || 3306,
+//             ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+//             connectTimeout: 30000
+//         });
+//         console.log("✅ Database connected successfully!");
+//     } catch (err) {
+//         console.error("❌ Database connection failed:", err.message);
+//         console.error("❌ Full error:", err);
+//         process.exit(1);
+//     }
+// })();
+
+// ==================== اتصال به دیتابیس ====================
+
+require("dotenv").config();
+
 let db;
 
-(async function initDB() {
+async function connectDB() {
     try {
         console.log("🔄 Connecting to database...");
         console.log("   Host:", process.env.DB_HOST);
         console.log("   Port:", process.env.DB_PORT);
-        
+        console.log("   User:", process.env.DB_USER);
+        console.log("   Database:", process.env.DB_NAME);
+
         db = await mysql.createConnection({
             host: process.env.DB_HOST || "localhost",
             user: process.env.DB_USER || "root",
             password: process.env.DB_PASSWORD || "Root@123",
             database: process.env.DB_NAME || "lms_db",
             port: parseInt(process.env.DB_PORT) || 3306,
-            ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
-            connectTimeout: 30000
+            ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
+            connectTimeout: 30000,
         });
+        
         console.log("✅ Database connected successfully!");
+        return db;
     } catch (err) {
         console.error("❌ Database connection failed:", err.message);
         console.error("❌ Full error:", err);
-        process.exit(1);
+        throw err;
     }
-})();
+}
 
+// اتصال به دیتابیس قبل از شروع سرور
+let dbConnected = false;
 
+// تابع راه‌اندازی سرور
+async function startServer() {
+    try {
+        await connectDB();
+        dbConnected = true;
+        console.log("✅ Database ready");
+    } catch (err) {
+        console.error("❌ Could not connect to database:", err.message);
+        dbConnected = false;
+        console.log("⚠️ Continuing without database connection...");
+    }
+    
+    // شروع سرور
+    app.listen(PORT, () => {
+        console.log(`\n✅ Server running on port ${PORT}`);
+        console.log(`🔗 Login URL: http://localhost:${PORT}/login.html`);
+        console.log(`\n👤 Default login:`);
+        console.log(`   📍 CEO: ceo@school.com / 123456`);
+        
+        if (!dbConnected) {
+            console.log(`\n⚠️ WARNING: Database not connected! Please check your database settings.`);
+        }
+    });
+}
+
+// راه‌اندازی سرور
+startServer();
 // ==================== توابع کمکی ====================
 
 function cleanParams(params) {
