@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,86 +9,122 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .section-title { color: #2d3748; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            color: #2d3748;
+        }
     </style>
 </head>
+
 <body>
 
-<button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
-<div class="overlay" id="overlay"></div>
+    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <div class="overlay" id="overlay"></div>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
-            <div class="text-center py-4">
-                <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                    <i class="bi bi-building fs-1 text-white"></i>
-                </div>
-                <h5 class="text-dark mb-0">مدیریت آموزشگاه</h5>
-                <small class="text-muted">پنل مدیریت</small>
-            </div>
-            <nav class="nav flex-column mt-2">
-                <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
-                <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
-                <a href="subjects.html" class="nav-link active"><i class="bi bi-book-fill"></i> دروس</a>
-                <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
-                <a href="accounts.html" class="nav-link"><i class="bi bi-graph-up"></i> حساب‌ها</a>
-                <a href="settings.html" class="nav-link"><i class="bi bi-gear-fill"></i> تنظیمات</a>
-                <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                <hr class="text-secondary mx-3 my-2">
-                <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
-            </nav>
-        </div>
-
-        <div class="col-md-9 col-lg-10 main-content">
-            <h3 class="section-title"><i class="bi bi-book-fill text-primary me-2"></i> مدیریت دروس</h3>
-
-            <div class="card">
-                <form id="subjectForm">
-                    <div class="row g-3">
-                        <div class="col-md-5"><label class="form-label">نام مضمون</label><input type="text" class="form-control" id="subjectName" required></div>
-                        <div class="col-md-4"><label class="form-label">کد مضمون</label><input type="text" class="form-control" id="subjectCode"></div>
-                        <div class="col-md-2"><label class="form-label">نمره کل</label><input type="number" class="form-control" id="totalMarks" value="100"></div>
-                        <div class="col-md-1"><label class="form-label">&nbsp;</label><button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i></button></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        <i class="bi bi-building fs-1 text-white"></i>
                     </div>
-                </form>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
+                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
+                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                        استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
+                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
+                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
+                        مالی</a>
+                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
+                        اعلانات</a>
+                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
+                        مدیریت شکایات</a>
+                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
+                        مدیریت دروس</a>
+                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
+                        تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
+                        خروج</a>
+                </nav>
             </div>
 
-            <div class="card">
-                <h5>لیست دروس</h5>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead class="table-light"><tr><th>نام مضمون</th><th>کد</th><th>نمره کل</th><th>وضعیت</th><th>عملیات</th></tr></thead>
-                        <tbody id="subjectsList"></tbody>
-                    </table>
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="bi bi-book-fill text-primary me-2"></i> مدیریت دروس</h3>
+
+                <div class="card">
+                    <form id="subjectForm">
+                        <div class="row g-3">
+                            <div class="col-md-5"><label class="form-label">نام مضمون</label><input type="text"
+                                    class="form-control" id="subjectName" required></div>
+                            <div class="col-md-4"><label class="form-label">کد مضمون</label><input type="text"
+                                    class="form-control" id="subjectCode"></div>
+                            <div class="col-md-2"><label class="form-label">نمره کل</label><input type="number"
+                                    class="form-control" id="totalMarks" value="100"></div>
+                            <div class="col-md-1"><label class="form-label">&nbsp;</label><button type="submit"
+                                    class="btn btn-primary w-100"><i class="bi bi-save"></i></button></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h5>لیست دروس</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>نام مضمون</th>
+                                    <th>کد</th>
+                                    <th>نمره کل</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjectsList"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../main.js"></script>
-<script>
-    const toggleBtn = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
-    function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
-    if(toggleBtn) toggleBtn.addEventListener('click', openSidebar);
-    if(overlay) overlay.addEventListener('click', closeSidebar);
-    window.addEventListener('resize', () => { if(window.innerWidth > 768) closeSidebar(); });
-    
-    async function logout() { await fetch('/api/logout', { method: 'POST' }); localStorage.clear(); window.location.href = '/login.html'; }
-    
-    async function loadSubjects() {
-        const res = await fetch('/api/subjects');
-        const subjects = await res.json();
-        document.getElementById('subjectsList').innerHTML = subjects.map(s => `
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../main.js"></script>
+    <script>
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+        function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
+        if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+        window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+
+        async function logout() { await fetch('/api/logout', { method: 'POST' }); localStorage.clear(); window.location.href = '/login.html'; }
+
+        async function loadSubjects() {
+            const res = await fetch('/api/subjects');
+            const subjects = await res.json();
+            document.getElementById('subjectsList').innerHTML = subjects.map(s => `
             <tr>
                 <td><strong>${s.subject_name}</strong></div></div></div><td class="text-dark">${s.subject_code || '-'}</div></div></div>
                 <td>${s.total_marks}</div></div></div>
@@ -95,28 +132,29 @@
                 <td><button class="btn btn-sm btn-danger" onclick="deleteSubject(${s.id})"><i class="bi bi-trash"></i></button></div></div></div>
              </div></div></div>
         `).join('');
-    }
-    
-    async function deleteSubject(id) {
-        if(confirm('حذف شود؟')) {
-            await fetch(`/api/subjects/${id}`, { method: 'DELETE' });
-            loadSubjects();
         }
-    }
-    
-    document.getElementById('subjectForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = {
-            subject_name: document.getElementById('subjectName').value,
-            subject_code: document.getElementById('subjectCode').value,
-            total_marks: document.getElementById('totalMarks').value
-        };
-        const res = await fetch('/api/subjects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        if(res.ok) { alert('مضمون با موفقیت اضافه شد'); loadSubjects(); document.getElementById('subjectForm').reset(); }
-        else alert('خطا');
-    });
-    
-    loadSubjects();
-</script>
+
+        async function deleteSubject(id) {
+            if (confirm('حذف شود؟')) {
+                await fetch(`/api/subjects/${id}`, { method: 'DELETE' });
+                loadSubjects();
+            }
+        }
+
+        document.getElementById('subjectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                subject_name: document.getElementById('subjectName').value,
+                subject_code: document.getElementById('subjectCode').value,
+                total_marks: document.getElementById('totalMarks').value
+            };
+            const res = await fetch('/api/subjects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) { alert('مضمون با موفقیت اضافه شد'); loadSubjects(); document.getElementById('subjectForm').reset(); }
+            else alert('خطا');
+        });
+
+        loadSubjects();
+    </script>
 </body>
+
 </html>
