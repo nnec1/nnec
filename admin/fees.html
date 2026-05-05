@@ -104,6 +104,74 @@
             border-bottom: 1px solid #e2e8f0;
             padding: 8px 0;
             font-size: 12px;
+            cursor: pointer;
+        }
+
+        .payment-history-item:hover {
+            background: #e2e8f0;
+        }
+
+        .selected-payment {
+            background: #dbeafe;
+            border-right: 3px solid #667eea;
+        }
+
+        /* تنظیمات دکمه همبرگر برای گوشی */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
@@ -182,9 +250,9 @@
                                             <th>تاریخ انقضا</th>
                                             <th>عملیات</th>
                                             <th>پرداخت کامل</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="defaultersList"></tbody>
+                                </table>
+                                </thead>
+                                <tbody id="defaultersList"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -276,7 +344,7 @@
 
     <!-- مودال ویرایش فیس شاگرد -->
     <div class="modal fade" id="editFeeModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
                     <h5 class="modal-title"><i class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</h5>
@@ -294,6 +362,7 @@
         let currentStudent = null;
         let paymentModal = null;
         let editFeeModal = null;
+        let selectedPaymentId = null;
 
         function formatDate(dateString) {
             if (!dateString) return '-';
@@ -326,6 +395,27 @@
             } catch (e) {
                 return false;
             }
+        }
+
+        // ========== توابع سایدبار موبایل ==========
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() {
+                if (sidebar) sidebar.classList.remove('show');
+                if (overlay) overlay.classList.remove('show');
+            }
+            function openSidebar() {
+                if (sidebar) sidebar.classList.add('show');
+                if (overlay) overlay.classList.add('show');
+            }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) closeSidebar();
+            });
         }
 
         async function loadClasses() {
@@ -397,7 +487,7 @@
                         <div class="payment-history-card">
                             <h6><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</h6>
                             ${payments.map(p => `
-                                <div class="payment-history-item">
+                                <div class="payment-history-item" onclick="selectPaymentForEdit(${p.id}, '${formatDate(p.payment_date)}', '${p.notes || ''}')">
                                     <div class="d-flex justify-content-between">
                                         <span><i class="fa-regular fa-calendar"></i> ${formatDate(p.payment_date)}</span>
                                         <span class="text-success">${(p.amount || 0).toLocaleString()} AFN</span>
@@ -569,7 +659,7 @@
                 const res = await fetch('/api/fee-defaulters');
                 const data = await res.json();
                 if (!data || data.length === 0) {
-                    document.getElementById('defaultersList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></tr>';
+                    document.getElementById('defaultersList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></table>';
                     return;
                 }
                 document.getElementById('defaultersList').innerHTML = data.map(d => `
@@ -581,7 +671,7 @@
                         <td class="${isDateExpired(d.due_date) ? 'text-danger fw-bold' : ''}">${formatDate(d.due_date)}</div></div></div>
                         <td><button class="btn btn-sm btn-primary" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت جزیی</button></div></div></div>
                         <td><button class="btn btn-sm btn-success" onclick="openFullPayment(${d.id}, ${parseFloat(d.remaining_fee) || 0})"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</button></div></div></div>
-                    </tr>
+                    </div></div></div>
                 `).join('');
             } catch (err) {
                 console.error('Error loading defaulters:', err);
@@ -628,7 +718,7 @@
                 let data = await res.json();
 
                 if (!data || data.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></table>';
+                    document.getElementById('expiredList').innerHTML = '</table><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
                     return;
                 }
 
@@ -661,11 +751,11 @@
                         <td class="text-danger fw-bold">${formatDate(d.due_date)}</div></div></div>
                         <td><button class="btn btn-sm btn-warning" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت جزیی</button></div></div></div>
                         <td><button class="btn btn-sm btn-success" onclick="openFullPayment(${d.id}, ${parseFloat(d.remaining_fee) || 0})"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</button></div></div></div>
-                    </tr>
+                    </div></div></div>
                 `).join('');
             } catch (err) {
                 console.error('Error loading expired:', err);
-                document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></td>';
+                document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
             }
         }
 
@@ -689,7 +779,7 @@
                     <td class="text-dark"><span class="badge bg-info">${p.receipt_number || '-'}</span></div></div></div>
                     <td class="text-dark">${p.notes || '-'}</div></div></div>
                     <td><button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id}, ${p.student_id}, ${p.amount})"><i class="fa-solid fa-trash-can"></i></button></div></div></div>
-                </tr>
+                </div></div></div>
             `).join('');
         }
 
@@ -745,6 +835,15 @@
                     dueDateValue = student.due_date.split('T')[0];
                 }
 
+                let paymentsListHtml = '<option value="">انتخاب پرداخت برای ویرایش تاریخ...</option>';
+                if (payments.length > 0) {
+                    paymentsListHtml = payments.map(p => `
+                        <option value="${p.id}" data-date="${formatDate(p.payment_date)}" data-notes="${p.notes || ''}">
+                            ${formatDate(p.payment_date)} - ${(p.amount || 0).toLocaleString()} AFN
+                        </option>
+                    `).join('');
+                }
+
                 const modalBody = document.getElementById('editFeeModalBody');
                 modalBody.innerHTML = `
                     <form id="editFeeForm">
@@ -766,8 +865,33 @@
                                 <input type="date" id="editDueDate" class="form-control" value="${dueDateValue}">
                             </div>
                         </div>
+                        
+                        <hr class="my-3">
+                        <h6><i class="fa-solid fa-clock-rotate-left"></i> ویرایش تاریخ پرداخت</h6>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">انتخاب پرداخت</label>
+                                <select id="editPaymentSelect" class="form-select" onchange="selectPaymentForEdit()">
+                                    ${paymentsListHtml}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ جدید پرداخت</label>
+                                <input type="date" id="editPaymentDate" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت جدید</label>
+                                <input type="text" id="editPaymentNotes" class="form-control" placeholder="یادداشت جدید">
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-warning w-100" onclick="updatePaymentDate()">
+                                    <i class="fa-solid fa-save"></i> به‌روزرسانی تاریخ پرداخت
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات</button>
+                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات فیس</button>
                         </div>
                     </form>`;
 
@@ -778,6 +902,44 @@
             } catch (err) {
                 console.error('Error in openEditFeeModal:', err);
                 alert('❌ خطا در بارگیری اطلاعات شاگرد: ' + err.message);
+            }
+        }
+
+        function selectPaymentForEdit() {
+            const select = document.getElementById('editPaymentSelect');
+            if (select && select.value) {
+                const selectedOption = select.options[select.selectedIndex];
+                selectedPaymentId = select.value;
+                document.getElementById('editPaymentDate').value = selectedOption.dataset.date || '';
+                document.getElementById('editPaymentNotes').value = selectedOption.dataset.notes || '';
+            }
+        }
+
+        async function updatePaymentDate() {
+            if (!selectedPaymentId) {
+                alert('❌ لطفاً ابتدا یک پرداخت را انتخاب کنید');
+                return;
+            }
+            const newDate = document.getElementById('editPaymentDate').value;
+            const newNotes = document.getElementById('editPaymentNotes').value;
+            if (!newDate) {
+                alert('❌ لطفاً تاریخ جدید را وارد کنید');
+                return;
+            }
+
+            const res = await fetch(`/api/fee-payment/${selectedPaymentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payment_date: newDate, notes: newNotes })
+            });
+            if (res.ok) {
+                alert('✅ تاریخ پرداخت با موفقیت به‌روز شد');
+                if (editFeeModal) editFeeModal.hide();
+                searchEditStudents();
+                loadPaymentHistory();
+            } else {
+                const err = await res.json();
+                alert('❌ خطا: ' + (err.error || 'مشخص نیست'));
             }
         }
 
@@ -840,6 +1002,7 @@
             endDateInput.value = today.toISOString().split('T')[0];
         }
 
+        setupSidebar();
         loadClasses();
         searchStudents();
         loadDefaulters();
@@ -848,6 +1011,8 @@
 
         window.openFullPayment = openFullPayment;
         window.setFullPayment = setFullPayment;
+        window.selectPaymentForEdit = selectPaymentForEdit;
+        window.updatePaymentDate = updatePaymentDate;
     </script>
 </body>
 
