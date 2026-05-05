@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -15,66 +14,23 @@
             padding: 25px;
             margin-bottom: 25px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
-
-        .payment-history-item {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-right: 4px solid #667eea;
-        }
-
-        .info-row {
-            display: flex;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #e2e8f0;
-        }
-
-        .info-label {
-            width: 140px;
-            font-weight: 600;
-            color: #475569;
-        }
-
-        .info-value {
-            flex: 1;
-            color: #1e293b;
-        }
-
-        .amount-pay {
-            font-size: 1.8rem;
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .expired-badge {
-            background: #dc2626;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-        }
-
-        .paid-badge {
-            background: #10b981;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-        }
-
-        .partial-badge {
-            background: #f59e0b;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-        }
+        .payment-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+        .expired-badge { background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .paid-badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .partial-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .info-row { display: flex; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
+        .info-label { width: 140px; font-weight: 600; color: #475569; }
+        .info-value { flex: 1; color: #1e293b; }
+        .nav-tabs .nav-link { color: #4a5568; border: none; padding: 10px 25px; border-radius: 12px; margin-right: 5px; }
+        .nav-tabs .nav-link.active { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .table-container { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; }
+        .fee-overdue-row { background-color: #fee2e2 !important; border-right: 3px solid #dc2626; }
+        .payment-row:hover { background-color: #f8fafc; }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -82,70 +38,102 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
                         <i class="bi bi-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
+                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
                     <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
                     <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
-                        استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص استاد</a>
+                    <a href="fees.html" class="nav-link active"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="reports.html" class="nav-link"><i class="bi bi-file-text-fill"></i> گزارشات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <h3 class="section-title"><i class="bi bi-cash-stack text-primary me-2"></i> مدیریت فیس</h3>
 
-                <!-- جستجو -->
-                <div class="payment-card">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">انتخاب صنف</label>
-                            <select id="feeClassFilter" class="form-select">
-                                <option value="">همه صنف‌ها</option>
-                            </select>
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#collect">💰 پرداخت فیس</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#defaulters">⚠️ بدهکاران</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired">⏰ منقضی شده</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#history">📜 تاریخچه پرداخت‌ها</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#editFee">✏️ ویرایش فیس شاگرد</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- تب 1: پرداخت فیس -->
+                    <div class="tab-pane fade show active" id="collect">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4"><select id="feeClassFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
+                            <div class="col-md-4"><input type="text" id="searchStudentFee" class="form-control" placeholder="نام یا آیدی کارت..."></div>
+                            <div class="col-md-4"><button class="btn btn-primary w-100" onclick="searchStudents()"><i class="bi bi-search"></i> جستجو</button></div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">جستجوی شاگرد</label>
-                            <input type="text" id="searchStudentFee" class="form-control"
-                                placeholder="نام یا آیدی کارت...">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">&nbsp;</label>
-                            <button class="btn btn-primary w-100" onclick="searchStudents()">
-                                <i class="bi bi-search"></i> جستجو
-                            </button>
+                        <div id="studentsList"></div>
+                    </div>
+
+                    <!-- تب 2: بدهکاران -->
+                    <div class="tab-pane fade" id="defaulters">
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light"><tr><th>آیدی کارت</th><th>نام</th><th>صنف</th><th>باقی مانده</th><th>تاریخ انقضا</th><th>عملیات</th></tr></thead>
+                                    <tbody id="defaultersList"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- نتایج جستجو -->
-                <div id="studentsList"></div>
+                    <!-- تب 3: فیس منقضی شده -->
+                    <div class="tab-pane fade" id="expired">
+                        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> شاگردانی که تاریخ فیس آنها گذشته است</div>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light"><tr><th>آیدی کارت</th><th>نام</th><th>صنف</th><th>باقی مانده</th><th>تاریخ انقضا</th><th>عملیات</th></tr></thead>
+                                    <tbody id="expiredList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تب 4: تاریخچه پرداخت‌ها -->
+                    <div class="tab-pane fade" id="history">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3"><input type="date" id="historyStartDate" class="form-control"></div>
+                            <div class="col-md-3"><input type="date" id="historyEndDate" class="form-control"></div>
+                            <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadPaymentHistory()"><i class="bi bi-search"></i> جستجو</button></div>
+                            <div class="col-md-3"><button class="btn btn-success w-100" onclick="exportToExcel()"><i class="bi bi-file-excel"></i> خروجی Excel</button></div>
+                        </div>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light"><tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>تاریخ پرداخت</th><th>شماره رسید</th><th>یادداشت</th><th>عملیات</th></tr></thead>
+                                    <tbody id="historyList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تب 5: ویرایش فیس شاگرد -->
+                    <div class="tab-pane fade" id="editFee">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4"><select id="editClassFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
+                            <div class="col-md-4"><input type="text" id="searchEditStudent" class="form-control" placeholder="نام یا آیدی کارت..."></div>
+                            <div class="col-md-4"><button class="btn btn-primary w-100" onclick="searchEditStudents()"><i class="bi bi-search"></i> جستجو</button></div>
+                        </div>
+                        <div id="editStudentsList"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -163,175 +151,100 @@
         </div>
     </div>
 
+    <!-- مودال ویرایش فیس شاگرد -->
+    <div class="modal fade" id="editFeeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square"></i> ویرایش فیس شاگرد</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="editFeeModalBody"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="/main.js"></script>
     <script>
         let currentStudent = null;
 
-        // فرمت تاریخ میلادی
         function formatDate(dateString) {
             if (!dateString) return '-';
-            try {
-                const d = new Date(dateString);
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            } catch (e) { return dateString; }
+            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; } 
+            catch(e) { return dateString; }
         }
 
-        // بارگذاری صنف‌ها
+        // ========== بارگذاری صنف‌ها ==========
         async function loadClasses() {
             try {
                 const res = await fetch('/api/classes');
                 const classes = await res.json();
-                document.getElementById('feeClassFilter').innerHTML = '<option value="">همه صنف‌ها</option>' +
-                    classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
-            } catch (err) { console.error(err); }
+                const options = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                document.getElementById('feeClassFilter').innerHTML = options;
+                document.getElementById('editClassFilter').innerHTML = options;
+            } catch(err) { console.error(err); }
         }
 
-        // جستجوی شاگردان
+        // ========== تب 1: جستجوی شاگردان برای پرداخت ==========
         async function searchStudents() {
             const classId = document.getElementById('feeClassFilter').value;
             const search = document.getElementById('searchStudentFee').value;
             const res = await fetch(`/api/student-fee-search?class_id=${classId}&search=${search}`);
             const students = await res.json();
-
-            if (students.length === 0) {
-                document.getElementById('studentsList').innerHTML = '<div class="alert alert-warning">هیچ شاگردی یافت نشد</div>';
-                return;
-            }
-
+            if (students.length === 0) { document.getElementById('studentsList').innerHTML = '<div class="alert alert-warning">هیچ شاگردی یافت نشد</div>'; return; }
             let html = '<div class="row g-4">';
             for (const s of students) {
                 const isExpired = s.due_date && new Date(s.due_date) < new Date();
-                const statusBadge = s.remaining_fee <= 0 ? '<span class="paid-badge">پرداخت کامل</span>' :
-                    (isExpired ? '<span class="expired-badge">منقضی شده</span>' : '<span class="partial-badge">بدهکار</span>');
-
-                html += `
-                    <div class="col-md-6">
-                        <div class="payment-card" style="cursor:pointer" onclick="openPaymentModal(${s.id})">
-                            <div class="d-flex justify-content-between">
-                                <h6><i class="bi bi-person-badge"></i> ${s.name}</h6>
-                                ${statusBadge}
-                            </div>
-                            <p class="mb-1 text-muted small">آیدی کارت: ${s.student_card_id || '-'}</p>
-                            <p class="mb-1 text-muted small">صنف: ${s.class_name}</p>
-                            <p class="mb-1"><span class="text-danger">باقی مانده: ${(s.remaining_fee || 0).toLocaleString()} AFN</span></p>
-                            <p class="mb-0"><small>تاریخ انقضا: ${formatDate(s.due_date)}</small></p>
-                        </div>
-                    </div>
-                `;
+                const statusBadge = s.remaining_fee <= 0 ? '<span class="paid-badge">پرداخت کامل</span>' : (isExpired ? '<span class="expired-badge">منقضی شده</span>' : '<span class="partial-badge">بدهکار</span>');
+                html += `<div class="col-md-6"><div class="payment-card" onclick="openPaymentModal(${s.id})"><div class="d-flex justify-content-between"><h6><i class="bi bi-person-badge"></i> ${s.name}</h6>${statusBadge}</div>
+                    <p class="mb-1 text-muted small">آیدی کارت: ${s.student_card_id || '-'}</p><p class="mb-1 text-muted small">صنف: ${s.class_name}</p>
+                    <p class="mb-1"><span class="text-danger">باقی مانده: ${(s.remaining_fee || 0).toLocaleString()} AFN</span></p>
+                    <p class="mb-0"><small>تاریخ انقضا: ${formatDate(s.due_date)}</small></p></div></div>`;
             }
             html += '</div>';
             document.getElementById('studentsList').innerHTML = html;
         }
 
-        // باز کردن مودال پرداخت با اطلاعات کامل
+        // ========== باز کردن مودال پرداخت ==========
         async function openPaymentModal(studentId) {
             currentStudent = studentId;
-
-            // دریافت اطلاعات کامل شاگرد
             const studentRes = await fetch(`/api/students/${studentId}`);
             const student = await studentRes.json();
-
-            // دریافت تاریخچه پرداخت‌ها
             const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
             const payments = await paymentsRes.json();
-
-            // آخرین پرداخت (اگر وجود داشته باشد)
             const lastPayment = payments.length > 0 ? payments[0] : null;
-
-            // محاسبه فیس پیشنهادی (مثل ماه جاری)
             const suggestedAmount = student.total_fee || 0;
 
-            const modalBody = document.getElementById('paymentModalBody');
-            modalBody.innerHTML = `
-                <form id="paymentForm">
-                    <!-- اطلاعات شاگرد -->
-                    <div class="bg-light p-3 rounded-3 mb-3">
-                        <h6><i class="bi bi-person-circle"></i> اطلاعات شاگرد</h6>
-                        <div class="row">
-                            <div class="col-6"><strong>نام:</strong> ${student.name}</div>
-                            <div class="col-6"><strong>نام پدر:</strong> ${student.father_name || '-'}</div>
-                            <div class="col-6"><strong>آیدی کارت:</strong> ${student.student_card_id || '-'}</div>
-                            <div class="col-6"><strong>شماره تماس:</strong> ${student.phone || '-'}</div>
-                            <div class="col-6"><strong>صنف:</strong> ${student.class_name || '-'}</div>
-                            <div class="col-6"><strong>تاریخ انقضا فعلی:</strong> <span class="${new Date(student.due_date) < new Date() ? 'text-danger fw-bold' : ''}">${formatDate(student.due_date)}</span></div>
-                        </div>
+            document.getElementById('paymentModalBody').innerHTML = `
+                <form id="paymentForm"><div class="bg-light p-3 rounded-3 mb-3"><h6><i class="bi bi-person-circle"></i> اطلاعات شاگرد</h6>
+                    <div class="row"><div class="col-6"><strong>نام:</strong> ${student.name}</div><div class="col-6"><strong>نام پدر:</strong> ${student.father_name || '-'}</div>
+                    <div class="col-6"><strong>آیدی کارت:</strong> ${student.student_card_id || '-'}</div><div class="col-6"><strong>شماره تماس:</strong> ${student.phone || '-'}</div>
+                    <div class="col-6"><strong>صنف:</strong> ${student.class_name || '-'}</div><div class="col-6"><strong>تاریخ انقضا فعلی:</strong> <span class="${new Date(student.due_date) < new Date() ? 'text-danger fw-bold' : ''}">${formatDate(student.due_date)}</span></div></div></div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-3 mb-3"><h6><i class="bi bi-clock-history"></i> آخرین پرداخت</h6>
+                        ${lastPayment ? `<div class="row"><div class="col-6"><strong>تاریخ:</strong> ${formatDate(lastPayment.payment_date)}</div><div class="col-6"><strong>مبلغ:</strong> <span class="text-success">${lastPayment.amount.toLocaleString()} AFN</span></div>
+                        <div class="col-12 mt-2"><strong>شماره رسید:</strong> ${lastPayment.receipt_number || '-'}</div></div>` : '<p class="text-muted mb-0">هیچ پرداختی قبلی ثبت نشده است</p>'}
                     </div>
-                    
-                    <!-- آخرین پرداخت (تاریخ قبلی) -->
-                    <div class="bg-info bg-opacity-10 p-3 rounded-3 mb-3">
-                        <h6><i class="bi bi-clock-history"></i> آخرین پرداخت (تاریخچه قبلی)</h6>
-                        ${lastPayment ? `
-                            <div class="row">
-                                <div class="col-6"><strong>تاریخ پرداخت قبلی:</strong> ${formatDate(lastPayment.payment_date)}</div>
-                                <div class="col-6"><strong>مبلغ پرداخت قبلی:</strong> <span class="text-success">${lastPayment.amount.toLocaleString()} AFN</span></div>
-                                <div class="col-12 mt-2"><strong>شماره رسید قبلی:</strong> ${lastPayment.receipt_number || '-'}</div>
-                            </div>
-                        ` : '<p class="text-muted mb-0">هیچ پرداختی قبلی ثبت نشده است</p>'}
-                    </div>
-                    
-                    <!-- وضعیت فعلی فیس -->
-                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 mb-3">
-                        <h6><i class="bi bi-cash-stack"></i> وضعیت فعلی فیس</h6>
-                        <div class="row">
-                            <div class="col-4"><strong>فیس کل:</strong> ${(student.total_fee || 0).toLocaleString()} AFN</div>
-                            <div class="col-4"><strong>پرداخت شده کل:</strong> <span class="text-success">${(student.paid_fee || 0).toLocaleString()} AFN</span></div>
-                            <div class="col-4"><strong>باقی مانده کل:</strong> <span class="text-danger">${(student.remaining_fee || 0).toLocaleString()} AFN</span></div>
-                        </div>
-                    </div>
-                    
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 mb-3"><h6><i class="bi bi-cash-stack"></i> وضعیت فعلی فیس</h6>
+                        <div class="row"><div class="col-4"><strong>فیس کل:</strong> ${(student.total_fee || 0).toLocaleString()} AFN</div>
+                        <div class="col-4"><strong>پرداخت شده:</strong> <span class="text-success">${(student.paid_fee || 0).toLocaleString()} AFN</span></div>
+                        <div class="col-4"><strong>باقی مانده:</strong> <span class="text-danger">${(student.remaining_fee || 0).toLocaleString()} AFN</span></div></div></div>
                     <input type="hidden" id="currentRemaining" value="${student.remaining_fee || 0}">
-                    <input type="hidden" id="currentTotalFee" value="${student.total_fee || 0}">
-                    <input type="hidden" id="currentPaidFee" value="${student.paid_fee || 0}">
-                    
-                    <!-- فرم پرداخت جدید -->
-                    <div class="bg-white p-3 rounded-3 border">
-                        <h6><i class="bi bi-plus-circle text-success"></i> پرداخت جدید</h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label">فیس قابل پرداخت (پیشنهادی)</label>
-                                <input type="number" id="suggestedAmount" class="form-control" value="${suggestedAmount}" readonly style="background:#f1f5f9">
-                                <small class="text-muted">مبلغ پیشنهادی بر اساس فیس کل</small>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">مبلغ پرداختی جدید <span class="text-danger">*</span></label>
-                                <input type="number" id="payAmount" class="form-control" value="${student.remaining_fee || 0}" max="${student.remaining_fee || 0}" required oninput="updateRemaining()">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">تاریخ پرداخت جدید <span class="text-danger">*</span></label>
-                                <input type="date" id="payDate" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">تاریخ انقضای جدید</label>
-                                <input type="date" id="newDueDate" class="form-control">
-                                <small class="text-muted">خالی بگذارید = یک ماه بعد</small>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">باقی مانده پس از این پرداخت</label>
-                                <h4 class="text-danger" id="newRemaining">${(student.remaining_fee || 0).toLocaleString()} AFN</h4>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">یادداشت</label>
-                                <textarea id="payNotes" class="form-control" rows="2" placeholder="توضیحات..."></textarea>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-printer"></i> ثبت پرداخت و چاپ رسید</button>
-                        </div>
-                    </div>
-                </form>
-            `;
-
-            // تنظیم تاریخ انقضای جدید پیش‌فرض (یک ماه بعد)
-            const today = new Date();
-            const nextMonth = new Date(today);
-            nextMonth.setMonth(today.getMonth() + 1);
+                    <div class="bg-white p-3 rounded-3 border"><h6><i class="bi bi-plus-circle text-success"></i> پرداخت جدید</h6>
+                        <div class="row g-3"><div class="col-12"><label class="form-label">مبلغ پرداختی <span class="text-danger">*</span></label>
+                            <input type="number" id="payAmount" class="form-control" value="${student.remaining_fee || 0}" max="${student.remaining_fee || 0}" required oninput="updateRemaining()"></div>
+                        <div class="col-md-6"><label class="form-label">تاریخ پرداخت</label><input type="date" id="payDate" class="form-control" value="${new Date().toISOString().split('T')[0]}" required></div>
+                        <div class="col-md-6"><label class="form-label">تاریخ انقضای جدید</label><input type="date" id="newDueDate" class="form-control"><small class="text-muted">خالی = یک ماه بعد</small></div>
+                        <div class="col-12"><label class="form-label">باقی مانده پس از پرداخت</label><h4 class="text-danger" id="newRemaining">${(student.remaining_fee || 0).toLocaleString()} AFN</h4></div>
+                        <div class="col-12"><label class="form-label">یادداشت</label><textarea id="payNotes" class="form-control" rows="2"></textarea></div></div>
+                        <div class="mt-4"><button type="submit" class="btn btn-success w-100"><i class="bi bi-printer"></i> ثبت پرداخت و چاپ رسید</button></div></div>
+                </form>`;
+            const nextMonth = new Date(); nextMonth.setMonth(nextMonth.getMonth() + 1);
             document.getElementById('newDueDate').value = nextMonth.toISOString().split('T')[0];
-
             new bootstrap.Modal(document.getElementById('paymentModal')).show();
         }
 
-        // به‌روزرسانی باقی مانده پس از پرداخت
         function updateRemaining() {
             const currentRemaining = parseFloat(document.getElementById('currentRemaining').value) || 0;
             const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
@@ -339,61 +252,137 @@
             document.getElementById('newRemaining').innerHTML = (newRemaining < 0 ? 0 : newRemaining).toLocaleString() + ' AFN';
         }
 
-        // ثبت پرداخت
+        // ========== ثبت پرداخت ==========
         document.getElementById('paymentModalBody').addEventListener('submit', async (e) => {
             if (e.target && e.target.id === 'paymentForm') {
                 e.preventDefault();
-
                 const amount = document.getElementById('payAmount').value;
                 const date = document.getElementById('payDate').value;
                 const newDueDate = document.getElementById('newDueDate').value;
                 const notes = document.getElementById('payNotes').value;
-
                 if (!amount || amount <= 0) { alert('مبلغ معتبر وارد کنید'); return; }
-                if (!date) { alert('تاریخ پرداخت را انتخاب کنید'); return; }
-
-                const res = await fetch('/api/collect-fee', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        student_id: currentStudent,
-                        amount: parseFloat(amount),
-                        payment_date: date,
-                        new_due_date: newDueDate,
-                        notes: notes
-                    })
-                });
-
+                const res = await fetch('/api/collect-fee', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ student_id: currentStudent, amount: parseFloat(amount), payment_date: date, new_due_date: newDueDate, notes }) });
                 const data = await res.json();
-
                 if (res.ok) {
                     alert('پرداخت با موفقیت ثبت شد');
                     bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
                     searchStudents();
-
-                    // چاپ رسید
-                    printReceipt(
-                        data.student_name,
-                        data.student_father,
-                        data.student_card_id,
-                        data.total_fee,
-                        data.paid_fee,
-                        data.remaining_fee,
-                        data.payment_amount,
-                        data.payment_date,
-                        data.expiry_date,
-                        data.receipt_number,
-                        notes
-                    );
-                } else {
-                    alert(data.error || 'خطا در ثبت پرداخت');
-                }
+                    loadDefaulters();
+                    loadExpired();
+                    loadPaymentHistory();
+                    printReceipt(data.student_name, data.student_father, data.student_card_id, data.total_fee, data.paid_fee, data.remaining_fee, data.payment_amount, data.payment_date, data.expiry_date, data.receipt_number, notes);
+                } else { alert(data.error || 'خطا'); }
             }
         });
 
+        // ========== تب 2: بدهکاران ==========
+        async function loadDefaulters() {
+            const res = await fetch('/api/fee-defaulters');
+            const data = await res.json();
+            if (data.length === 0) { document.getElementById('defaultersList').innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></tr>'; return; }
+            document.getElementById('defaultersList').innerHTML = data.map(d => `<tr><td class="text-dark">${d.student_card_id || '-'}</td><td class="text-dark">${d.name}</td><td class="text-dark">${d.class_name}</td><td class="text-danger">${(d.remaining_fee || 0).toLocaleString()}</td><td class="${new Date(d.due_date) < new Date() ? 'text-danger fw-bold' : ''}">${formatDate(d.due_date)}</td>
+                <td><button class="btn btn-sm btn-primary" onclick="openPaymentModal(${d.id})">وصول</button></td></tr>`).join('');
+        }
+
+        // ========== تب 3: فیس منقضی شده ==========
+        async function loadExpired() {
+            const res = await fetch('/api/fee-expired');
+            const data = await res.json();
+            if (data.length === 0) { document.getElementById('expiredList').innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>'; return; }
+            document.getElementById('expiredList').innerHTML = data.map(d => `<tr class="fee-overdue-row"><td class="text-dark">${d.student_card_id || '-'}</td><td class="text-dark">${d.name}</td><td class="text-dark">${d.class_name}</td><td class="text-danger">${(d.remaining_fee || 0).toLocaleString()}</td><td class="text-danger fw-bold">${formatDate(d.due_date)}</td>
+                <td><button class="btn btn-sm btn-warning" onclick="openPaymentModal(${d.id})">پرداخت</button></td></tr>`).join('');
+        }
+
+        // ========== تب 4: تاریخچه پرداخت‌ها ==========
+        async function loadPaymentHistory() {
+            const startDate = document.getElementById('historyStartDate').value;
+            const endDate = document.getElementById('historyEndDate').value;
+            let url = '/api/fee-payments-history';
+            if (startDate && endDate) url += `?start_date=${startDate}&end_date=${endDate}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.length === 0) { document.getElementById('historyList').innerHTML = '<td><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div></tr>'; return; }
+            document.getElementById('historyList').innerHTML = data.map(p => `<tr class="payment-row"><td class="text-dark">${p.student_name}</td><td class="text-dark">${p.class_name}</td><td class="text-success">${p.amount.toLocaleString()} AFN</td>
+                <td class="text-dark">${formatDate(p.payment_date)}</td><td class="text-dark"><span class="badge bg-info">${p.receipt_number || '-'}</span></td><td class="text-dark">${p.notes || '-'}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id}, ${p.student_id}, ${p.amount})"><i class="bi bi-trash"></i></button></td></tr>`).join('');
+        }
+
+        async function deletePayment(paymentId, studentId, amount) {
+            if (!confirm('آیا از حذف این پرداخت اطمینان دارید؟')) return;
+            const res = await fetch(`/api/fee-payment/${paymentId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ student_id: studentId, amount: amount }) });
+            if (res.ok) { alert('پرداخت حذف شد'); loadPaymentHistory(); searchStudents(); loadDefaulters(); loadExpired(); }
+            else alert('خطا');
+        }
+
+        // ========== تب 5: ویرایش فیس شاگرد ==========
+        async function searchEditStudents() {
+            const classId = document.getElementById('editClassFilter').value;
+            const search = document.getElementById('searchEditStudent').value;
+            const res = await fetch(`/api/student-fee-search?class_id=${classId}&search=${search}`);
+            const students = await res.json();
+            if (students.length === 0) { document.getElementById('editStudentsList').innerHTML = '<div class="alert alert-warning">هیچ شاگردی یافت نشد</div>'; return; }
+            let html = '<div class="row g-4">';
+            for (const s of students) {
+                html += `<div class="col-md-6"><div class="payment-card" onclick="openEditFeeModal(${s.id})"><div class="d-flex justify-content-between"><h6><i class="bi bi-person-badge"></i> ${s.name}</h6></div>
+                    <p class="mb-1 text-muted small">آیدی کارت: ${s.student_card_id || '-'}</p><p class="mb-1 text-muted small">صنف: ${s.class_name}</p>
+                    <p><span class="text-dark">فیس کل: ${(s.total_fee || 0).toLocaleString()} AFN</span> | <span class="text-success">پرداخت شده: ${(s.paid_fee || 0).toLocaleString()} AFN</span> | <span class="text-danger">باقی مانده: ${(s.remaining_fee || 0).toLocaleString()} AFN</span></p>
+                    <p class="mb-0"><small>تاریخ انقضا: ${formatDate(s.due_date)}</small></p></div></div>`;
+            }
+            html += '</div>';
+            document.getElementById('editStudentsList').innerHTML = html;
+        }
+
+        async function openEditFeeModal(studentId) {
+            const studentRes = await fetch(`/api/students/${studentId}`);
+            const student = await studentRes.json();
+            document.getElementById('editFeeModalBody').innerHTML = `
+                <form id="editFeeForm"><div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number" id="editTotalFee" class="form-control" value="${student.total_fee || 0}" required></div>
+                <div class="mb-3"><label class="form-label">فیس پرداخت شده (AFN)</label><input type="number" id="editPaidFee" class="form-control" value="${student.paid_fee || 0}" required oninput="updateEditRemaining()"></div>
+                <div class="mb-3"><label class="form-label">باقی مانده (AFN)</label><input type="number" id="editRemainingFee" class="form-control" value="${student.remaining_fee || 0}" readonly style="background:#f1f5f9"></div>
+                <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date" id="editDueDate" class="form-control" value="${student.due_date || ''}"></div>
+                <button type="submit" class="btn btn-primary w-100">ذخیره تغییرات</button></form>`;
+            new bootstrap.Modal(document.getElementById('editFeeModal')).show();
+        }
+
+        function updateEditRemaining() {
+            const totalFee = parseFloat(document.getElementById('editTotalFee').value) || 0;
+            const paidFee = parseFloat(document.getElementById('editPaidFee').value) || 0;
+            document.getElementById('editRemainingFee').value = totalFee - paidFee;
+        }
+
+        document.getElementById('editFeeModalBody').addEventListener('submit', async (e) => {
+            if (e.target && e.target.id === 'editFeeForm') {
+                e.preventDefault();
+                const studentId = currentStudent;
+                const totalFee = document.getElementById('editTotalFee').value;
+                const paidFee = document.getElementById('editPaidFee').value;
+                const dueDate = document.getElementById('editDueDate').value;
+                const res = await fetch(`/api/students/${studentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ total_fee: totalFee, paid_fee: paidFee, due_date: dueDate }) });
+                if (res.ok) { alert('اطلاعات فیس به‌روز شد'); bootstrap.Modal.getInstance(document.getElementById('editFeeModal')).hide(); searchEditStudents(); loadDefaulters(); loadExpired(); }
+                else alert('خطا');
+            }
+        });
+
+        // ========== خروجی Excel ==========
+        function exportToExcel() {
+            const table = document.querySelector('#historyList');
+            const rows = table.querySelectorAll('tr');
+            const data = [['شاگرد', 'صنف', 'مبلغ', 'تاریخ پرداخت', 'شماره رسید', 'یادداشت']];
+            rows.forEach(row => { const cols = row.querySelectorAll('td'); if (cols.length > 0) data.push([cols[0]?.innerText, cols[1]?.innerText, cols[2]?.innerText, cols[3]?.innerText, cols[4]?.innerText, cols[5]?.innerText]); });
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'پرداختی‌ها');
+            XLSX.writeFile(wb, `پرداختی_فیس_${new Date().toLocaleDateString('fa-IR')}.xlsx`);
+        }
+
+        // مقداردهی اولیه
+        document.getElementById('historyStartDate').value = new Date(new Date().setDate(1)).toISOString().split('T')[0];
+        document.getElementById('historyEndDate').value = new Date().toISOString().split('T')[0];
         loadClasses();
         searchStudents();
+        loadDefaulters();
+        loadExpired();
+        loadPaymentHistory();
     </script>
 </body>
-
 </html>

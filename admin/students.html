@@ -291,7 +291,11 @@
                 <td class="text-dark">
                     <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="bi bi-pencil"></i></button>
                     <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="bi bi-trash"></i></button>
-                    <button class="btn btn-sm btn-info" onclick="window.open('/student-card.html?id=${s.id}','_blank')"><i class="bi bi-qr-code"></i></button>
+                    // <button class="btn btn-sm btn-info" onclick="window.open('/student-card.html?id=${s.id}','_blank')"><i class="bi bi-qr-code"></i></button>
+                    // جایگزین دکمه QR کد
+<button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})">
+    <i class="bi bi-qr-code"></i> کارت شناسایی
+</button>
                 </div></div></div>
             </div></div></div>`;
                 }).join('');
