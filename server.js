@@ -1148,6 +1148,90 @@ app.post("/api/change-password", authenticate, async (req, res) => {
   }
 });
 
+// ====================== API تنظیمات سیستم ======================
+
+// دریافت تمام تنظیمات
+app.get("/api/settings", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      "SELECT setting_key, setting_value FROM system_settings",
+    );
+    const settings = {};
+    results.forEach((row) => {
+      settings[row.setting_key] = row.setting_value;
+    });
+    res.json(settings);
+  } catch (err) {
+    console.error("Error in GET /api/settings:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ذخیره تنظیمات عمومی
+app.post("/api/settings", authenticate, isAdminOrCEO, async (req, res) => {
+  const {
+    institute_name,
+    institute_tagline,
+    institute_phone,
+    institute_email,
+    institute_address,
+    academic_year,
+  } = req.body;
+  try {
+    // به‌روزرسانی یا درج هر تنظیم
+    const updates = [
+      { key: "institute_name", value: institute_name },
+      { key: "institute_tagline", value: institute_tagline },
+      { key: "institute_phone", value: institute_phone },
+      { key: "institute_email", value: institute_email },
+      { key: "institute_address", value: institute_address },
+      { key: "academic_year", value: academic_year },
+    ];
+
+    for (const item of updates) {
+      if (item.value) {
+        await db.execute(
+          `INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) 
+                     ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+          [item.key, item.value],
+        );
+      }
+    }
+
+    res.json({ success: true, message: "تنظیمات با موفقیت ذخیره شد" });
+  } catch (err) {
+    console.error("Error in POST /api/settings:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ذخیره تنظیمات فیس
+app.post("/api/settings/fee", authenticate, isAdminOrCEO, async (req, res) => {
+  const { fee_warning_days, late_fee_percent, card_id_prefix } = req.body;
+  try {
+    const updates = [
+      { key: "fee_warning_days", value: fee_warning_days },
+      { key: "late_fee_percent", value: late_fee_percent },
+      { key: "card_id_prefix", value: card_id_prefix },
+    ];
+
+    for (const item of updates) {
+      if (item.value !== undefined) {
+        await db.execute(
+          `INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) 
+                     ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+          [item.key, item.value.toString()],
+        );
+      }
+    }
+
+    res.json({ success: true, message: "تنظیمات فیس با موفقیت ذخیره شد" });
+  } catch (err) {
+    console.error("Error in POST /api/settings/fee:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ====================== آمار داشبورد ======================
 
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
