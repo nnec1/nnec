@@ -132,113 +132,179 @@ function generateAutoPassword(name, fatherName) {
 // }
 
 // تابع چاپ رسید کامل با تمام اطلاعات
-function printReceipt(
-  studentName,
-  studentFather,
-  studentCardId,
-  totalFee,
-  paidFee,
-  remainingFee,
-  paymentAmount,
-  paymentDate,
-  expiryDate,
-  receiptNumber,
-  notes,
-) {
+// function printReceipt(
+//   studentName,
+//   studentFather,
+//   studentCardId,
+//   totalFee,
+//   paidFee,
+//   remainingFee,
+//   paymentAmount,
+//   paymentDate,
+//   expiryDate,
+//   receiptNumber,
+//   notes,
+// ) {
   // اطمینان از اینکه مقادیر عددی به درستی فرمت می‌شوند
-  const formatNumber = (num) => {
-    if (num === undefined || num === null || isNaN(num)) return "0";
-    return Number(num).toLocaleString();
-  };
+//   const formatNumber = (num) => {
+//     if (num === undefined || num === null || isNaN(num)) return "0";
+//     return Number(num).toLocaleString();
+//   };
 
-  const formatDate = (date) => {
-    if (!date || date === "null" || date === "undefined") return "-";
-    try {
-      return new Date(date).toLocaleDateString("fa-IR");
-    } catch (e) {
-      return date;
+//   const formatDate = (date) => {
+//     if (!date || date === "null" || date === "undefined") return "-";
+//     try {
+//       return new Date(date).toLocaleDateString("fa-IR");
+//     } catch (e) {
+//       return date;
+//     }
+//   };
+
+//   const today = new Date().toLocaleDateString("fa-IR");
+
+//   const win = window.open("", "_blank");
+//   win.document.write(`
+//         <!DOCTYPE html>
+//         <html dir="rtl">
+//         <head>
+//           <meta charset="UTF-8">
+//           <title>رسید پرداخت فیس</title>
+//           <style>
+//             * { margin: 0; padding: 0; box-sizing: border-box; }
+//             body { font-family: 'Tahoma', sans-serif; padding: 20px; background: #f5f7fb; }
+//             .receipt { max-width: 400px; margin: auto; background: white; border-radius: 24px; padding: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+//             .header { text-align: center; border-bottom: 2px dashed #667eea; padding-bottom: 20px; margin-bottom: 20px; }
+//             .header h2 { color: #667eea; margin: 0; font-size: 1.5rem; }
+//             .header h3 { color: #1e293b; margin: 5px 0 0; font-size: 1.1rem; }
+//             .header small { color: #64748b; }
+//             .row { display: flex; justify-content: space-between; margin: 14px 0; padding: 8px 0; border-bottom: 1px dotted #e2e8f0; }
+//             .row .label { font-weight: bold; color: #475569; width: 40%; }
+//             .row .value { color: #1e293b; width: 60%; text-align: left; }
+//             .amount-total { font-size: 1.2rem; }
+//             .amount-paid { color: #10b981; font-size: 1.3rem; font-weight: bold; }
+//             .amount-remaining { color: #dc2626; font-weight: bold; }
+//             .expiry-warning { background: #fef3c7; padding: 12px; border-radius: 12px; text-align: center; margin: 15px 0; color: #b45309; font-size: 0.8rem; }
+//             .footer { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; }
+//             .stamp { text-align: center; margin-top: 15px; font-family: monospace; color: #667eea; font-size: 0.7rem; }
+//             .signature { display: flex; justify-content: space-between; margin-top: 25px; padding-top: 15px; }
+//             @media print { body { background: white; } .receipt { box-shadow: none; margin: 0; } .no-print { display: none; } }
+//           </style>
+//         </head>
+//         <body>
+//           <div class="receipt">
+//             <div class="header">
+//               <h2>🏫 مؤسسه آموزشی پیشرو</h2>
+//               <h3>رسید پرداخت شهریه</h3>
+//               <small>تاریخ چاپ: ${today}</small>
+//             </div>
+            
+//             <div class="row"><span class="label">نام شاگرد:</span><span class="value"><strong>${studentName || "-"}</strong></span></div>
+//             <div class="row"><span class="label">نام پدر:</span><span class="value">${studentFather || "-"}</span></div>
+//             <div class="row"><span class="label">آیدی کارت:</span><span class="value">${studentCardId || "-"}</span></div>
+            
+//             <div class="row"><span class="label">📅 تاریخ پرداخت:</span><span class="value">${formatDate(paymentDate)}</span></div>
+//             <div class="row"><span class="label">⏰ تاریخ انقضا:</span><span class="value">${formatDate(expiryDate)}</span></div>
+            
+//             <div class="row amount-total"><span class="label">💰 فیس اصلی:</span><span class="value">${formatNumber(totalFee)} AFN</span></div>
+//             <div class="row"><span class="label">💳 مبلغ پرداختی:</span><span class="value amount-paid">${formatNumber(paymentAmount)} AFN</span></div>
+//             <div class="row"><span class="label">📊 جمع پرداخت شده:</span><span class="value amount-paid">${formatNumber(paidFee)} AFN</span></div>
+//             <div class="row"><span class="label">⚠️ باقی مانده:</span><span class="value amount-remaining">${formatNumber(remainingFee)} AFN</span></div>
+            
+//             <div class="row"><span class="label">🔢 شماره رسید:</span><span class="value">${receiptNumber || "-"}</span></div>
+//             ${notes ? `<div class="row"><span class="label">📝 یادداشت:</span><span class="value">${notes}</span></div>` : ""}
+            
+//             ${remainingFee > 0 ? `<div class="expiry-warning">⚠️ توجه: مبلغ ${formatNumber(remainingFee)} AFN باقی مانده است.</div>` : '<div class="expiry-warning" style="background:#dcfce7;color:#15803d;">✅ فیس به طور کامل پرداخت شد.</div>'}
+            
+//             <div class="footer">
+//               با تشکر از اعتماد شما<br>
+//               تیم مدیریت مؤسسه آموزشی پیشرو
+//             </div>
+//             <div class="stamp">
+//               ${today}
+//             </div>
+//             <div class="signature">
+//               <span>امضاء پرداخت‌کننده: ___________</span>
+//               <span>امضاء مسئول: ___________</span>
+//             </div>
+//           </div>
+//           <div class="text-center no-print" style="margin-top:20px;">
+//             <button onclick="window.print()" style="padding:10px 25px;background:#667eea;color:white;border:none;border-radius:12px;cursor:pointer;">🖨️ چاپ رسید</button>
+//             <button onclick="window.close()" style="padding:10px 25px;background:#94a3b8;color:white;border:none;border-radius:12px;margin-right:10px;cursor:pointer;">❌ بستن</button>
+//           </div>
+//           <script>setTimeout(() => window.print(), 500);<\/script>
+//         </body>
+//         </html>
+//     `);
+//   win.document.close();
+// }
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   setupSidebar();
+//   setCurrentDate();
+// });
+// تابع چاپ رسید با صفحه جداگانه
+// function printReceipt(studentName, studentFather, studentCardId, totalFee, paidFee, remainingFee, paymentAmount, paymentDate, expiryDate, receiptNumber, notes) {
+//     // ذخیره اطلاعات در localStorage برای استفاده در صفحه رسید
+//     const receiptData = {
+//         student_name: studentName,
+//         student_father: studentFather,
+//         student_card_id: studentCardId,
+//         total_fee: totalFee,
+//         paid_fee: paidFee,
+//         remaining_fee: remainingFee,
+//         payment_amount: paymentAmount,
+//         payment_date: paymentDate,
+//         expiry_date: expiryDate,
+//         receipt_number: receiptNumber,
+//         notes: notes
+//     };
+//     localStorage.setItem('lastReceipt', JSON.stringify(receiptData));
+    
+//     // ساخت URL با پارامترها
+//     const params = new URLSearchParams();
+//     params.append('student_name', studentName || '');
+//     params.append('student_father', studentFather || '');
+//     params.append('student_card_id', studentCardId || '');
+//     params.append('total_fee', totalFee || 0);
+//     params.append('paid_fee', paidFee || 0);
+//     params.append('remaining_fee', remainingFee || 0);
+//     params.append('payment_amount', paymentAmount || 0);
+//     params.append('payment_date', paymentDate || '');
+//     params.append('expiry_date', expiryDate || '');
+//     params.append('receipt_number', receiptNumber || '');
+//     if (notes) params.append('notes', notes);
+    
+//     // باز کردن صفحه رسید در پنجره جدید
+//     const receiptWindow = window.open(`/receipt.html?${params.toString()}`, '_blank');
+//     if (!receiptWindow) {
+//         alert('لطفاً pop-up را برای این سایت فعال کنید');
+//     }
+// }
+
+// تابع چاپ رسید با صفحه جداگانه
+function printReceipt(studentName, studentFather, studentCardId, totalFee, paidFee, remainingFee, paymentAmount, paymentDate, expiryDate, receiptNumber, notes) {
+    // ساخت URL با پارامترها
+    const params = new URLSearchParams();
+    params.append('student_name', studentName || '');
+    params.append('student_father', studentFather || '');
+    params.append('student_card_id', studentCardId || '');
+    params.append('total_fee', totalFee || 0);
+    params.append('paid_fee', paidFee || 0);
+    params.append('remaining_fee', remainingFee || 0);
+    params.append('payment_amount', paymentAmount || 0);
+    params.append('payment_date', paymentDate || '');
+    params.append('expiry_date', expiryDate || '');
+    params.append('receipt_number', receiptNumber || '');
+    if (notes) params.append('notes', notes);
+    
+    // باز کردن صفحه رسید در پنجره جدید
+    const receiptWindow = window.open(`/receipt.html?${params.toString()}`, '_blank');
+    if (!receiptWindow) {
+        alert('لطفاً pop-up را برای این سایت فعال کنید');
     }
-  };
-
-  const today = new Date().toLocaleDateString("fa-IR");
-
-  const win = window.open("", "_blank");
-  win.document.write(`
-        <!DOCTYPE html>
-        <html dir="rtl">
-        <head>
-          <meta charset="UTF-8">
-          <title>رسید پرداخت فیس</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Tahoma', sans-serif; padding: 20px; background: #f5f7fb; }
-            .receipt { max-width: 400px; margin: auto; background: white; border-radius: 24px; padding: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-            .header { text-align: center; border-bottom: 2px dashed #667eea; padding-bottom: 20px; margin-bottom: 20px; }
-            .header h2 { color: #667eea; margin: 0; font-size: 1.5rem; }
-            .header h3 { color: #1e293b; margin: 5px 0 0; font-size: 1.1rem; }
-            .header small { color: #64748b; }
-            .row { display: flex; justify-content: space-between; margin: 14px 0; padding: 8px 0; border-bottom: 1px dotted #e2e8f0; }
-            .row .label { font-weight: bold; color: #475569; width: 40%; }
-            .row .value { color: #1e293b; width: 60%; text-align: left; }
-            .amount-total { font-size: 1.2rem; }
-            .amount-paid { color: #10b981; font-size: 1.3rem; font-weight: bold; }
-            .amount-remaining { color: #dc2626; font-weight: bold; }
-            .expiry-warning { background: #fef3c7; padding: 12px; border-radius: 12px; text-align: center; margin: 15px 0; color: #b45309; font-size: 0.8rem; }
-            .footer { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; }
-            .stamp { text-align: center; margin-top: 15px; font-family: monospace; color: #667eea; font-size: 0.7rem; }
-            .signature { display: flex; justify-content: space-between; margin-top: 25px; padding-top: 15px; }
-            @media print { body { background: white; } .receipt { box-shadow: none; margin: 0; } .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          <div class="receipt">
-            <div class="header">
-              <h2>🏫 مؤسسه آموزشی پیشرو</h2>
-              <h3>رسید پرداخت شهریه</h3>
-              <small>تاریخ چاپ: ${today}</small>
-            </div>
-            
-            <div class="row"><span class="label">نام شاگرد:</span><span class="value"><strong>${studentName || "-"}</strong></span></div>
-            <div class="row"><span class="label">نام پدر:</span><span class="value">${studentFather || "-"}</span></div>
-            <div class="row"><span class="label">آیدی کارت:</span><span class="value">${studentCardId || "-"}</span></div>
-            
-            <div class="row"><span class="label">📅 تاریخ پرداخت:</span><span class="value">${formatDate(paymentDate)}</span></div>
-            <div class="row"><span class="label">⏰ تاریخ انقضا:</span><span class="value">${formatDate(expiryDate)}</span></div>
-            
-            <div class="row amount-total"><span class="label">💰 فیس اصلی:</span><span class="value">${formatNumber(totalFee)} AFN</span></div>
-            <div class="row"><span class="label">💳 مبلغ پرداختی:</span><span class="value amount-paid">${formatNumber(paymentAmount)} AFN</span></div>
-            <div class="row"><span class="label">📊 جمع پرداخت شده:</span><span class="value amount-paid">${formatNumber(paidFee)} AFN</span></div>
-            <div class="row"><span class="label">⚠️ باقی مانده:</span><span class="value amount-remaining">${formatNumber(remainingFee)} AFN</span></div>
-            
-            <div class="row"><span class="label">🔢 شماره رسید:</span><span class="value">${receiptNumber || "-"}</span></div>
-            ${notes ? `<div class="row"><span class="label">📝 یادداشت:</span><span class="value">${notes}</span></div>` : ""}
-            
-            ${remainingFee > 0 ? `<div class="expiry-warning">⚠️ توجه: مبلغ ${formatNumber(remainingFee)} AFN باقی مانده است.</div>` : '<div class="expiry-warning" style="background:#dcfce7;color:#15803d;">✅ فیس به طور کامل پرداخت شد.</div>'}
-            
-            <div class="footer">
-              با تشکر از اعتماد شما<br>
-              تیم مدیریت مؤسسه آموزشی پیشرو
-            </div>
-            <div class="stamp">
-              ${today}
-            </div>
-            <div class="signature">
-              <span>امضاء پرداخت‌کننده: ___________</span>
-              <span>امضاء مسئول: ___________</span>
-            </div>
-          </div>
-          <div class="text-center no-print" style="margin-top:20px;">
-            <button onclick="window.print()" style="padding:10px 25px;background:#667eea;color:white;border:none;border-radius:12px;cursor:pointer;">🖨️ چاپ رسید</button>
-            <button onclick="window.close()" style="padding:10px 25px;background:#94a3b8;color:white;border:none;border-radius:12px;margin-right:10px;cursor:pointer;">❌ بستن</button>
-          </div>
-          <script>setTimeout(() => window.print(), 500);<\/script>
-        </body>
-        </html>
-    `);
-  win.document.close();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupSidebar();
-  setCurrentDate();
-});
+// تابع نمایش کارت شناسایی
+function showStudentCard(studentId) {
+    window.open(`/student-card.html?id=${studentId}`, '_blank');
+}
