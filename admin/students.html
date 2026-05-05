@@ -177,8 +177,6 @@
                             <div class="col-md-6"><label class="form-label">نام پدر <span
                                         class="text-danger">*</span></label><input type="text" class="form-control"
                                     id="stuFather" required></div>
-                            <div class="col-md-6"><label class="form-label">نام مادر</label><input type="text"
-                                    class="form-control" id="stuMother"></div>
                             <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
                                     class="form-control" id="stuPhone"></div>
                             <div class="col-md-6"><label class="form-label">صنف <span
@@ -228,7 +226,6 @@
     <script>
         let currentEditId = null, studentModal = null;
 
-        // فرمت تاریخ میلادی
         function formatDate(dateString) {
             if (!dateString) return '-';
             try {
@@ -286,7 +283,7 @@
                 if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
 
                 if (!students || students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
+                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></td>';
                     return;
                 }
 
@@ -334,7 +331,6 @@
                 currentEditId = id;
                 document.getElementById('stuName').value = s.name || '';
                 document.getElementById('stuFather').value = s.father_name || '';
-                document.getElementById('stuMother').value = s.mother_name || '';
                 document.getElementById('stuPhone').value = s.phone || '';
                 document.getElementById('stuClassId').value = s.class_id || '';
                 document.getElementById('stuGender').value = s.gender || 'male';
@@ -362,7 +358,6 @@
             const formData = new FormData();
             formData.append('name', document.getElementById('stuName').value);
             formData.append('father_name', document.getElementById('stuFather').value);
-            formData.append('mother_name', document.getElementById('stuMother').value);
             formData.append('phone', document.getElementById('stuPhone').value);
             formData.append('class_id', document.getElementById('stuClassId').value);
             formData.append('gender', document.getElementById('stuGender').value);
@@ -387,7 +382,6 @@
                     loadStudents();
                     resetStudentForm();
 
-                    // اگر شاگرد جدید اضافه شده، کارت شناسایی و رسید را نشان بده
                     if (!currentEditId && data.id) {
                         window.open(`/student-card.html?id=${data.id}`, '_blank');
                         const totalFee = parseFloat(document.getElementById('stuTotalFee').value) || 0;
