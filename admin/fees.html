@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -19,88 +18,21 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-
-        .payment-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .expired-badge {
-            background: #dc2626;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-        }
-
-        .paid-badge {
-            background: #10b981;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-        }
-
-        .partial-badge {
-            background: #f59e0b;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-        }
-
-        .nav-tabs .nav-link {
-            color: #4a5568;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 12px;
-            margin-right: 5px;
-        }
-
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .table-container {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow-x: auto;
-        }
-
-        .fee-overdue-row {
-            background-color: #fee2e2 !important;
-            border-right: 3px solid #dc2626;
-        }
-
-        .payment-row:hover {
-            background-color: #f8fafc;
-        }
-
-        .remaining-amount {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #dc2626;
-        }
-
-        .amount-input {
-            font-size: 1.3rem;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-        }
-
+        .payment-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+        .expired-badge { background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .paid-badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .partial-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .debtor-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .nav-tabs .nav-link { color: #4a5568; border: none; padding: 10px 25px; border-radius: 12px; margin-right: 5px; }
+        .nav-tabs .nav-link.active { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .table-container { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; }
+        .fee-overdue-row { background-color: #fee2e2 !important; border-right: 3px solid #dc2626; }
+        .debtor-row { background-color: #fef3c7 !important; border-right: 3px solid #f59e0b; }
+        .payment-row:hover { background-color: #f8fafc; }
+        .remaining-amount { font-size: 1.5rem; font-weight: bold; color: #dc2626; }
+        .amount-input { font-size: 1.3rem; font-weight: bold; text-align: center; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); border: none; }
+        .btn-primary { background: linear-gradient(135deg, #10b981, #059669); border: none; }
         .menu-toggle {
             display: none;
             position: fixed;
@@ -116,12 +48,8 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
-
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
+            .menu-toggle { display: block; }
             .sidebar {
                 position: fixed;
                 right: -280px;
@@ -131,17 +59,8 @@
                 height: 100%;
                 top: 0;
             }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 15px 25px 15px;
-            }
-
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
             .overlay {
                 position: fixed;
                 top: 0;
@@ -152,14 +71,10 @@
                 z-index: 1030;
                 display: none;
             }
-
-            .overlay.show {
-                display: block;
-            }
+            .overlay.show { display: block; }
         }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -167,8 +82,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
@@ -180,14 +94,12 @@
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
                     <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
-                    <a href="fees.html" class="nav-link active"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
-                        فیس</a>
+                    <a href="fees.html" class="nav-link active"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
@@ -195,28 +107,19 @@
                 <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> مدیریت فیس</h3>
 
                 <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#collect"><i
-                                class="fa-solid fa-hand-holding-dollar"></i> پرداخت فیس</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#defaulters"><i
-                                class="fa-solid fa-triangle-exclamation"></i> بدهکاران</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i
-                                class="fa-solid fa-clock"></i> منقضی شده</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#history"><i
-                                class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#editFee"><i
-                                class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</a></li>
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#collect"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت فیس</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#defaulters"><i class="fa-solid fa-triangle-exclamation"></i> بدهکاران</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i class="fa-solid fa-clock"></i> منقضی شده</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#history"><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#editFee"><i class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</a></li>
                 </ul>
 
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="collect">
                         <div class="row g-3 mb-4">
-                            <div class="col-md-4"><select id="feeClassFilter" class="form-select">
-                                    <option value="">همه صنف‌ها</option>
-                                </select></div>
-                            <div class="col-md-4"><input type="text" id="searchStudentFee" class="form-control"
-                                    placeholder="نام یا آیدی کارت..."></div>
-                            <div class="col-md-4"><button class="btn btn-primary w-100" onclick="searchStudents()"><i
-                                        class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                            <div class="col-md-4"><select id="feeClassFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
+                            <div class="col-md-4"><input type="text" id="searchStudentFee" class="form-control" placeholder="نام یا آیدی کارت..."></div>
+                            <div class="col-md-4"><button class="btn btn-primary w-100" onclick="searchStudents()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                         </div>
                         <div id="studentsList"></div>
                     </div>
@@ -226,41 +129,24 @@
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
-                                        <tr>
-                                            <th>آیدی کارت</th>
-                                            <th>نام</th>
-                                            <th>صنف</th>
-                                            <th>باقی مانده</th>
-                                            <th>تاریخ انقضا</th>
-                                            <th>عملیات</th>
-                                            <th>پرداخت کامل</th>
-                                        </tr>
+                                        <tr><th>آیدی کارت</th><th>نام</th><th>صنف</th><th>باقی مانده</th><th>تاریخ انقضا</th><th>عملیات</th><th>پرداخت کامل</th></tr>
                                     </thead>
                                     <tbody id="defaultersList"></tbody>
-                                    追赶
+                                追赶
                             </div>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="expired">
-                        <div class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation"></i> شاگردانی که
-                            تاریخ فیس آنها گذشته است</div>
+                        <div class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation"></i> شاگردانی که تاریخ فیس آنها گذشته است</div>
                         <div class="table-container">
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
-                                        <tr>
-                                            <th>آیدی کارت</th>
-                                            <th>نام</th>
-                                            <th>صنف</th>
-                                            <th>باقی مانده</th>
-                                            <th>تاریخ انقضا</th>
-                                            <th>عملیات</th>
-                                            <th>پرداخت کامل</th>
-                                        </tr>
+                                        <tr><th>آیدی کارت</th><th>نام</th><th>صنف</th><th>باقی مانده</th><th>تاریخ انقضا</th><th>عملیات</th><th>پرداخت کامل</th></tr>
                                     </thead>
                                     <tbody id="expiredList"></tbody>
-                                    追赶
+                                追赶
                             </div>
                         </div>
                     </div>
@@ -269,42 +155,26 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-3"><input type="date" id="historyStartDate" class="form-control"></div>
                             <div class="col-md-3"><input type="date" id="historyEndDate" class="form-control"></div>
-                            <div class="col-md-3"><button class="btn btn-primary w-100"
-                                    onclick="loadPaymentHistory()"><i class="fa-solid fa-magnifying-glass"></i>
-                                    جستجو</button></div>
-                            <div class="col-md-3"><button class="btn btn-success w-100" onclick="exportToExcel()"><i
-                                        class="fa-solid fa-file-excel"></i> خروجی Excel</button></div>
+                            <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadPaymentHistory()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                            <div class="col-md-3"><button class="btn btn-success w-100" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی Excel</button></div>
                         </div>
                         <div class="table-container">
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
-                                        <tr>
-                                            <th>شاگرد</th>
-                                            <th>صنف</th>
-                                            <th>مبلغ</th>
-                                            <th>تاریخ پرداخت</th>
-                                            <th>شماره رسید</th>
-                                            <th>یادداشت</th>
-                                            <th>عملیات</th>
-                                        </tr>
+                                        <tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>تاریخ پرداخت</th><th>شماره رسید</th><th>یادداشت</th><th>عملیات</th></tr>
                                     </thead>
                                     <tbody id="historyList"></tbody>
-                                    追赶
+                                追赶
                             </div>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="editFee">
                         <div class="row g-3 mb-4">
-                            <div class="col-md-4"><select id="editClassFilter" class="form-select">
-                                    <option value="">همه صنف‌ها</option>
-                                </select></div>
-                            <div class="col-md-4"><input type="text" id="searchEditStudent" class="form-control"
-                                    placeholder="نام یا آیدی کارت..."></div>
-                            <div class="col-md-4"><button class="btn btn-primary w-100"
-                                    onclick="searchEditStudents()"><i class="fa-solid fa-magnifying-glass"></i>
-                                    جستجو</button></div>
+                            <div class="col-md-4"><select id="editClassFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
+                            <div class="col-md-4"><input type="text" id="searchEditStudent" class="form-control" placeholder="نام یا آیدی کارت..."></div>
+                            <div class="col-md-4"><button class="btn btn-primary w-100" onclick="searchEditStudents()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                         </div>
                         <div id="editStudentsList"></div>
                     </div>
@@ -402,7 +272,7 @@
                 let statusBadge = '';
                 if (remainingFee <= 0) statusBadge = '<span class="paid-badge"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</span>';
                 else if (isExpired) statusBadge = '<span class="expired-badge"><i class="fa-solid fa-clock"></i> منقضی شده</span>';
-                else statusBadge = '<span class="partial-badge"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار</span>';
+                else statusBadge = '<span class="debtor-badge"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار</span>';
                 html += `<div class="col-md-6"><div class="payment-card" onclick="openPaymentModal(${s.id})">
                     <div class="d-flex justify-content-between"><h6><i class="fa-solid fa-id-card"></i> ${s.name}</h6>${statusBadge}</div>
                     <p class="mb-1 text-muted small"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${s.student_card_id || '-'}</p>
@@ -425,6 +295,7 @@
                 const remainingFee = parseFloat(student.remaining_fee) || 0;
                 const totalFee = parseFloat(student.total_fee) || 0;
                 const paidFee = parseFloat(student.paid_fee) || 0;
+                const isExpired = isDateExpired(student.due_date);
 
                 if (remainingFee <= 0) { alert('✅ این شاگرد بدهی ندارد.'); return; }
 
@@ -440,7 +311,8 @@
                         <div class="bg-light p-3 rounded-3 mb-3"><h6>اطلاعات شاگرد</h6><div class="row">
                             <div class="col-6"><strong>نام:</strong> ${student.name}</div><div class="col-6"><strong>نام پدر:</strong> ${student.father_name || '-'}</div>
                             <div class="col-6"><strong>آیدی کارت:</strong> ${student.student_card_id || '-'}</div><div class="col-6"><strong>صنف:</strong> ${student.class_name || '-'}</div>
-                            <div class="col-6"><strong>تاریخ انقضا فعلی:</strong> <span class="${isDateExpired(student.due_date) ? 'text-danger fw-bold' : ''}">${formatDate(student.due_date)}</span></div>
+                            <div class="col-6"><strong>تاریخ انقضا فعلی:</strong> <span class="${isExpired ? 'text-danger fw-bold' : ''}">${formatDate(student.due_date)}</span></div>
+                            <div class="col-6"><strong>وضعیت:</strong> <span class="badge ${remainingFee > 0 ? 'bg-warning' : 'bg-success'}">${remainingFee > 0 ? (isExpired ? 'منقضی شده' : 'بدهکار') : 'پرداخت کامل'}</span></div>
                         </div></div>
                         <div class="bg-warning bg-opacity-10 p-3 rounded-3 mb-3"><h6>وضعیت فعلی فیس</h6><div class="row">
                             <div class="col-4"><strong>فیس کل:</strong> ${totalFee.toLocaleString()} AFN</div>
@@ -449,6 +321,7 @@
                         </div></div>
                         ${paymentHistoryHtml}
                         <input type="hidden" id="currentRemaining" value="${remainingFee}">
+                        <input type="hidden" id="currentPaidFee" value="${paidFee}">
                         <div class="bg-white p-3 rounded-3 border"><h6>پرداخت جدید</h6><div class="row g-3">
                             <div class="col-12"><label>مبلغ پرداختی</label><div class="input-group"><input type="number" id="payAmount" class="form-control amount-input" value="${remainingFee}" step="100" required><button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت کامل</button></div><small class="text-muted">هر مقدار دلخواه وارد کنید</small></div>
                             <div class="col-md-6"><label>تاریخ پرداخت</label><input type="date" id="payDate" class="form-control" value="${new Date().toISOString().split('T')[0]}" required></div>
@@ -483,6 +356,11 @@
                 e.preventDefault();
                 const amount = parseFloat(document.getElementById('payAmount')?.value);
                 if (isNaN(amount) || amount <= 0) { alert('مبلغ معتبر وارد کنید'); return; }
+                
+                const currentRemaining = parseFloat(document.getElementById('currentRemaining')?.value) || 0;
+                const currentPaidFee = parseFloat(document.getElementById('currentPaidFee')?.value) || 0;
+                const isOverpaid = amount > currentRemaining;
+                
                 const res = await fetch('/api/collect-fee', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ student_id: currentStudent, amount, payment_date: document.getElementById('payDate')?.value, new_due_date: document.getElementById('newDueDate')?.value, notes: document.getElementById('payNotes')?.value || '' })
@@ -495,12 +373,22 @@
                     if (typeof printReceipt === 'function') {
                         const studentRes = await fetch(`/api/students/${currentStudent}`);
                         const student = await studentRes.json();
+                        const newRemaining = data.remaining_fee;
+                        // تعیین وضعیت شاگرد برای رسید
+                        let studentStatus = '';
+                        if (newRemaining <= 0) studentStatus = 'paid';
+                        else if (isDateExpired(student.due_date)) studentStatus = 'expired';
+                        else studentStatus = 'debtor';
+                        
                         printReceipt(
                             data.student_name, data.student_father, data.student_card_id,
-                            data.total_fee, data.paid_fee, data.remaining_fee,
+                            data.total_fee, data.paid_fee, newRemaining,
                             data.payment_amount, data.payment_date, data.expiry_date,
                             data.receipt_number, data.notes || '',
-                            student.class_name || ''
+                            student.class_name || '',
+                            studentStatus,
+                            currentPaidFee,
+                            isOverpaid
                         );
                     }
                 } else { alert(data.error || 'خطا'); }
@@ -510,9 +398,9 @@
         async function loadDefaulters() {
             const res = await fetch('/api/fee-defaulters');
             const data = await res.json();
-            if (!data || data.length === 0) { document.getElementById('defaultersList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div><tr>'; return; }
+            if (!data || data.length === 0) { document.getElementById('defaultersList').innerHTML = '<td><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></td>'; return; }
             document.getElementById('defaultersList').innerHTML = data.map(d => `
-                <tr><td class="text-dark">${d.student_card_id || '-'}</td><td class="text-dark">${d.name}</td><td class="text-dark">${d.class_name}</td>
+                <tr class="debtor-row"><td class="text-dark">${d.student_card_id || '-'}</div></div></div><td class="text-dark">${d.name}</div></div></div><td class="text-dark">${d.class_name}</div></div></div>
                 <td class="text-danger">${(parseFloat(d.remaining_fee) || 0).toLocaleString()} AFN</div></div></div>
                 <td class="${isDateExpired(d.due_date) ? 'text-danger fw-bold' : ''}">${formatDate(d.due_date)}</div></div></div>
                 <td><button class="btn btn-sm btn-primary" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت جزئی</button></div></div></div>
@@ -548,12 +436,21 @@
                 if (typeof printReceipt === 'function') {
                     const studentRes = await fetch(`/api/students/${studentId}`);
                     const student = await studentRes.json();
+                    const newRemaining = data.remaining_fee;
+                    let studentStatus = '';
+                    if (newRemaining <= 0) studentStatus = 'paid';
+                    else if (isDateExpired(student.due_date)) studentStatus = 'expired';
+                    else studentStatus = 'debtor';
+                    
                     printReceipt(
                         data.student_name, data.student_father, data.student_card_id,
-                        data.total_fee, data.paid_fee, data.remaining_fee,
+                        data.total_fee, data.paid_fee, newRemaining,
                         data.payment_amount, data.payment_date, data.expiry_date,
                         data.receipt_number, 'پرداخت کامل یکجا',
-                        student.class_name || ''
+                        student.class_name || '',
+                        studentStatus,
+                        data.paid_fee - data.payment_amount,
+                        false
                     );
                 }
             } else { alert(data.error || 'خطا'); }
@@ -566,7 +463,7 @@
             if (start && end) url += `?start_date=${start}&end_date=${end}`;
             const res = await fetch(url);
             const data = await res.json();
-            if (!data || data.length === 0) { document.getElementById('historyList').innerHTML = '</td><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div><tr>'; return; }
+            if (!data || data.length === 0) { document.getElementById('historyList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div></td>'; return; }
             document.getElementById('historyList').innerHTML = data.map(p => `
                 <tr class="payment-row"><td class="text-dark">${p.student_name || '-'}</div></div></div><td class="text-dark">${p.class_name || '-'}</div></div></div>
                 <td class="text-success">${(p.amount || 0).toLocaleString()} AFN</div></div></div><td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
@@ -671,5 +568,4 @@
         loadPaymentHistory();
     </script>
 </body>
-
 </html>
