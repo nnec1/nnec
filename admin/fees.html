@@ -280,7 +280,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="expiredList"></tbody>
-                                    追赶
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -366,7 +366,6 @@
         let currentStudent = null;
         let paymentModal = null;
         let editFeeModal = null;
-        let selectedPaymentId = null;
 
         function formatDate(dateString) {
             if (!dateString) return '-';
@@ -482,7 +481,7 @@
                         <div class="payment-history-card">
                             <h6><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</h6>
                             ${payments.map(p => `
-                                <div class="payment-history-item" onclick="selectPaymentForEdit2(${p.id}, '${formatDate(p.payment_date)}', '${p.notes || ''}')">
+                                <div class="payment-history-item">
                                     <div class="d-flex justify-content-between">
                                         <span><i class="fa-regular fa-calendar"></i> ${formatDate(p.payment_date)}</span>
                                         <span class="text-success">${(p.amount || 0).toLocaleString()} AFN</span>
@@ -525,7 +524,7 @@
                                 <div class="col-12">
                                     <label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> مبلغ پرداختی <span class="text-danger">*</span></label>
                                     <div class="input-group">
-                                        <input type="number" id="payAmount" class="form-control amount-input" value="${remainingFee}" max="${remainingFee}" min="1" step="100" required>
+                                        <input type="number" id="payAmount" class="form-control amount-input" value="${remainingFee}" step="100" required>
                                         <button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت کامل</button>
                                     </div>
                                     <small class="text-muted">حداکثر: ${remainingFee.toLocaleString()} AFN</small>
@@ -594,6 +593,9 @@
             const newRemainingSpan = document.getElementById('newRemaining');
             if (newRemainingSpan) {
                 newRemainingSpan.innerHTML = newRemaining.toLocaleString() + ' AFN';
+                if (payAmount > currentRemaining) {
+                    newRemainingSpan.innerHTML += ' <span class="text-warning small">(اضافه پرداختی)</span>';
+                }
             }
         }
 
@@ -607,12 +609,6 @@
 
                 if (isNaN(amount) || amount <= 0) {
                     alert('❌ لطفاً مبلغ معتبر (بزرگتر از صفر) وارد کنید');
-                    return;
-                }
-
-                const currentRemaining = parseFloat(document.getElementById('currentRemaining')?.value) || 0;
-                if (amount > currentRemaining) {
-                    alert(`❌ مبلغ پرداختی (${amount.toLocaleString()} AFN) بیشتر از بدهی جاری (${currentRemaining.toLocaleString()} AFN) است`);
                     return;
                 }
 
@@ -654,7 +650,7 @@
                 const res = await fetch('/api/fee-defaulters');
                 const data = await res.json();
                 if (!data || data.length === 0) {
-                    document.getElementById('defaultersList').innerHTML = '</table><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></tr>';
+                    document.getElementById('defaultersList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></tr>';
                     return;
                 }
                 document.getElementById('defaultersList').innerHTML = data.map(d => `
@@ -713,7 +709,7 @@
                 let data = await res.json();
 
                 if (!data || data.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></td>';
+                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
                     return;
                 }
 
@@ -733,7 +729,7 @@
                 });
 
                 if (expiredStudents.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
+                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></td>';
                     return;
                 }
 
@@ -762,7 +758,7 @@
             const res = await fetch(url);
             const data = await res.json();
             if (!data || data.length === 0) {
-                document.getElementById('historyList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div></tr>';
+                document.getElementById('historyList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div><tr>';
                 return;
             }
             document.getElementById('historyList').innerHTML = data.map(p => `
@@ -774,7 +770,7 @@
                     <td class="text-dark"><span class="badge bg-info">${p.receipt_number || '-'}</span></div></div></div>
                     <td class="text-dark">${p.notes || '-'}</div></div></div>
                     <td><button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id}, ${p.student_id}, ${p.amount})"><i class="fa-solid fa-trash-can"></i></button></div></div></div>
-                </table>
+                 </div></div></div>
             `).join('');
         }
 
@@ -824,19 +820,18 @@
 
                 const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
                 const payments = await paymentsRes.json();
+                const lastPayment = payments.length > 0 ? payments[0] : null;
 
                 let dueDateValue = '';
                 if (student.due_date) {
                     dueDateValue = student.due_date.split('T')[0];
                 }
 
-                let paymentsListHtml = '<option value="">انتخاب پرداخت برای ویرایش تاریخ...</option>';
-                if (payments.length > 0) {
-                    paymentsListHtml = payments.map(p => `
-                        <option value="${p.id}" data-date="${formatDate(p.payment_date)}" data-notes="${p.notes || ''}">
-                            ${formatDate(p.payment_date)} - ${(p.amount || 0).toLocaleString()} AFN
-                        </option>
-                    `).join('');
+                let lastPaymentDate = '';
+                let lastPaymentId = null;
+                if (lastPayment) {
+                    lastPaymentDate = lastPayment.payment_date ? lastPayment.payment_date.split('T')[0] : '';
+                    lastPaymentId = lastPayment.id;
                 }
 
                 const modalBody = document.getElementById('editFeeModalBody');
@@ -862,24 +857,19 @@
                         </div>
                         
                         <hr class="my-3">
-                        <h6><i class="fa-solid fa-clock-rotate-left"></i> ویرایش تاریخ پرداخت</h6>
+                        <h6><i class="fa-solid fa-clock-rotate-left"></i> ویرایش آخرین تاریخ پرداخت</h6>
                         <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label">انتخاب پرداخت</label>
-                                <select id="editPaymentSelect" class="form-select" onchange="selectPaymentForEdit()">
-                                    ${paymentsListHtml}
-                                </select>
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ جدید پرداخت</label>
-                                <input type="date" id="editPaymentDate" class="form-control">
+                                <input type="date" id="editPaymentDate" class="form-control" value="${lastPaymentDate}">
+                                <small class="text-muted">آخرین پرداخت: ${lastPaymentDate || 'هیچ پرداختی ثبت نشده'}</small>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت جدید</label>
                                 <input type="text" id="editPaymentNotes" class="form-control" placeholder="یادداشت جدید">
                             </div>
                             <div class="col-12">
-                                <button type="button" class="btn btn-warning w-100" onclick="updatePaymentDate()">
+                                <button type="button" class="btn btn-warning w-100" onclick="updateLastPaymentDate()">
                                     <i class="fa-solid fa-save"></i> به‌روزرسانی تاریخ پرداخت
                                 </button>
                             </div>
@@ -889,6 +879,9 @@
                             <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات فیس</button>
                         </div>
                     </form>`;
+
+                // ذخیره آخرین Payment ID برای استفاده در به‌روزرسانی
+                window.currentLastPaymentId = lastPaymentId;
 
                 if (!editFeeModal) {
                     editFeeModal = new bootstrap.Modal(document.getElementById('editFeeModal'));
@@ -900,48 +893,28 @@
             }
         }
 
-        function selectPaymentForEdit() {
-            const select = document.getElementById('editPaymentSelect');
-            if (select && select.value) {
-                const selectedOption = select.options[select.selectedIndex];
-                selectedPaymentId = select.value;
-                document.getElementById('editPaymentDate').value = selectedOption.dataset.date || '';
-                document.getElementById('editPaymentNotes').value = selectedOption.dataset.notes || '';
-            }
-        }
-
-        function selectPaymentForEdit2(paymentId, date, notes) {
-            selectedPaymentId = paymentId;
-            document.getElementById('editPaymentDate').value = date;
-            document.getElementById('editPaymentNotes').value = notes;
-            const select = document.getElementById('editPaymentSelect');
-            if (select) {
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value == paymentId) {
-                        select.selectedIndex = i;
-                        break;
-                    }
-                }
-            }
-        }
-
-        async function updatePaymentDate() {
-            if (!selectedPaymentId) {
-                alert('❌ لطفاً ابتدا یک پرداخت را انتخاب کنید');
+        // تابع به‌روزرسانی آخرین تاریخ پرداخت
+        async function updateLastPaymentDate() {
+            const paymentId = window.currentLastPaymentId;
+            if (!paymentId) {
+                alert('❌ هیچ پرداختی برای این شاگرد وجود ندارد');
                 return;
             }
+
             const newDate = document.getElementById('editPaymentDate').value;
             const newNotes = document.getElementById('editPaymentNotes').value;
+
             if (!newDate) {
                 alert('❌ لطفاً تاریخ جدید را وارد کنید');
                 return;
             }
 
-            const res = await fetch(`/api/fee-payment/${selectedPaymentId}`, {
+            const res = await fetch(`/api/fee-payment/${paymentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ payment_date: newDate, notes: newNotes })
             });
+
             if (res.ok) {
                 alert('✅ تاریخ پرداخت با موفقیت به‌روز شد');
                 if (editFeeModal) editFeeModal.hide();
@@ -1021,8 +994,7 @@
 
         window.openFullPayment = openFullPayment;
         window.setFullPayment = setFullPayment;
-        window.selectPaymentForEdit = selectPaymentForEdit;
-        window.updatePaymentDate = updatePaymentDate;
+        window.updateLastPaymentDate = updateLastPaymentDate;
     </script>
 </body>
 
