@@ -705,48 +705,58 @@
 
         async function loadExpired() {
             try {
+                console.log('Fetching expired students...');
                 const res = await fetch('/api/fee-expired');
                 let data = await res.json();
+
+                console.log('Expired students from API:', data);
 
                 if (!data || data.length === 0) {
                     document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
                     return;
                 }
 
+                // فرمت تاریخ برای مقایسه صحیح
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
 
+                // فیلتر شاگردانی که واقعاً تاریخ انقضای آنها گذشته است
                 const expiredStudents = data.filter(s => {
                     if (!s.due_date) return false;
-                    let dueDate;
-                    if (s.due_date.includes('T')) {
-                        dueDate = new Date(s.due_date.split('T')[0]);
-                    } else {
-                        dueDate = new Date(s.due_date);
+                    // تبدیل تاریخ به فرمت صحیح
+                    let dueDateStr = s.due_date;
+                    if (dueDateStr.includes('T')) {
+                        dueDateStr = dueDateStr.split('T')[0];
                     }
+                    const dueDate = new Date(dueDateStr);
+                    dueDate.setHours(0, 0, 0, 0);
                     const remaining = parseFloat(s.remaining_fee) || 0;
-                    return dueDate < today && remaining > 0;
+                    const isExpired = dueDate < today && remaining > 0;
+                    console.log(`Student: ${s.name}, Due Date: ${dueDateStr}, Today: ${today.toISOString().split('T')[0]}, Is Expired: ${isExpired}, Remaining: ${remaining}`);
+                    return isExpired;
                 });
 
+                console.log('Filtered expired students:', expiredStudents);
+
                 if (expiredStudents.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></td>';
+                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
                     return;
                 }
 
                 document.getElementById('expiredList').innerHTML = expiredStudents.map(d => `
-                    <tr class="fee-overdue-row">
-                        <td class="text-dark">${d.student_card_id || '-'}</div></div></div>
-                        <td class="text-dark">${d.name || '-'}</div></div></div>
-                        <td class="text-dark">${d.class_name || '-'}</div></div></div>
-                        <td class="text-danger">${(parseFloat(d.remaining_fee) || 0).toLocaleString()} AFN</div></div></div>
-                        <td class="text-danger fw-bold">${formatDate(d.due_date)}</div></div></div>
-                        <td><button class="btn btn-sm btn-warning" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت جزیی</button></div></div></div>
-                        <td><button class="btn btn-sm btn-success" onclick="openFullPayment(${d.id}, ${parseFloat(d.remaining_fee) || 0})"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</button></div></div></div>
-                    </div></div></div>
-                `).join('');
+            <tr class="fee-overdue-row">
+                <td class="text-dark">${d.student_card_id || '-'}</div></div></div>
+                <td class="text-dark">${d.name || '-'}</div></div></div>
+                <td class="text-dark">${d.class_name || '-'}</div></div></div>
+                <td class="text-danger">${(parseFloat(d.remaining_fee) || 0).toLocaleString()} AFN</div></div></div>
+                <td class="text-danger fw-bold">${formatDate(d.due_date)}</div></div></div>
+                <td><button class="btn btn-sm btn-warning" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت جزیی</button></div></div></div>
+                <td><button class="btn btn-sm btn-success" onclick="openFullPayment(${d.id}, ${parseFloat(d.remaining_fee) || 0})"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</button></div></div></div>
+            </div></div></div>
+        `).join('');
             } catch (err) {
                 console.error('Error loading expired:', err);
-                document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+                document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگیری اطلاعات: ' + err.message + '</div></div></div></tr>';
             }
         }
 
