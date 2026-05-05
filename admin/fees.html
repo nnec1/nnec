@@ -276,7 +276,7 @@
 
     <!-- مودال ویرایش فیس شاگرد -->
     <div class="modal fade" id="editFeeModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
                     <h5 class="modal-title"><i class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</h5>
@@ -391,7 +391,6 @@
                     return;
                 }
 
-                // ساخت تاریخچه پرداخت‌ها برای نمایش در مودال
                 let paymentHistoryHtml = '';
                 if (payments.length > 0) {
                     paymentHistoryHtml = `
@@ -513,7 +512,6 @@
             }
         }
 
-        // ثبت پرداخت
         document.addEventListener('submit', async (e) => {
             if (e.target && e.target.id === 'paymentForm') {
                 e.preventDefault();
@@ -583,14 +581,13 @@
                         <td class="${isDateExpired(d.due_date) ? 'text-danger fw-bold' : ''}">${formatDate(d.due_date)}</div></div></div>
                         <td><button class="btn btn-sm btn-primary" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت جزیی</button></div></div></div>
                         <td><button class="btn btn-sm btn-success" onclick="openFullPayment(${d.id}, ${parseFloat(d.remaining_fee) || 0})"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</button></div></div></div>
-                    </div></div></div>
+                    </tr>
                 `).join('');
             } catch (err) {
                 console.error('Error loading defaulters:', err);
             }
         }
 
-        // پرداخت کامل یکجا
         async function openFullPayment(studentId, fullAmount) {
             if (!confirm(`⚠️ آیا مبلغ ${fullAmount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
 
@@ -631,7 +628,7 @@
                 let data = await res.json();
 
                 if (!data || data.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
+                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></table>';
                     return;
                 }
 
@@ -664,11 +661,11 @@
                         <td class="text-danger fw-bold">${formatDate(d.due_date)}</div></div></div>
                         <td><button class="btn btn-sm btn-warning" onclick="openPaymentModal(${d.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت جزیی</button></div></div></div>
                         <td><button class="btn btn-sm btn-success" onclick="openFullPayment(${d.id}, ${parseFloat(d.remaining_fee) || 0})"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</button></div></div></div>
-                    </div></div></div>
+                    </tr>
                 `).join('');
             } catch (err) {
                 console.error('Error loading expired:', err);
-                document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+                document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></td>';
             }
         }
 
@@ -692,7 +689,7 @@
                     <td class="text-dark"><span class="badge bg-info">${p.receipt_number || '-'}</span></div></div></div>
                     <td class="text-dark">${p.notes || '-'}</div></div></div>
                     <td><button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id}, ${p.student_id}, ${p.amount})"><i class="fa-solid fa-trash-can"></i></button></div></div></div>
-                </div></div></div>
+                </tr>
             `).join('');
         }
 
@@ -748,16 +745,6 @@
                     dueDateValue = student.due_date.split('T')[0];
                 }
 
-                // ساخت لیست پرداخت‌ها برای انتخاب تاریخ پرداخت
-                let paymentSelectHtml = '<option value="">انتخاب پرداخت برای ویرایش...</option>';
-                if (payments.length > 0) {
-                    paymentSelectHtml = payments.map(p => `
-                        <option value='${JSON.stringify({ id: p.id, date: p.payment_date, amount: p.amount, notes: p.notes || "" })}'>
-                            ${formatDate(p.payment_date)} - ${(p.amount || 0).toLocaleString()} AFN
-                        </option>
-                    `).join('');
-                }
-
                 const modalBody = document.getElementById('editFeeModalBody');
                 modalBody.innerHTML = `
                     <form id="editFeeForm">
@@ -778,32 +765,9 @@
                                 <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ انقضا</label>
                                 <input type="date" id="editDueDate" class="form-control" value="${dueDateValue}">
                             </div>
-                            <div class="col-12">
-                                <hr>
-                                <h6><i class="fa-solid fa-pen"></i> ویرایش تاریخ پرداخت</h6>
-                                <div class="row">
-                                    <div class="col-8">
-                                        <label class="form-label">انتخاب پرداخت</label>
-                                        <select id="editPaymentSelect" class="form-select" onchange="selectPaymentForEdit()">
-                                            ${paymentSelectHtml}
-                                        </select>
-                                    </div>
-                                    <div class="col-4">
-                                        <label class="form-label">تاریخ جدید</label>
-                                        <input type="date" id="editPaymentDate" class="form-control">
-                                    </div>
-                                    <div class="col-12 mt-2">
-                                        <label class="form-label">یادداشت جدید</label>
-                                        <textarea id="editPaymentNotes" class="form-control" rows="2"></textarea>
-                                    </div>
-                                    <div class="col-12 mt-2">
-                                        <button type="button" class="btn btn-warning btn-sm" onclick="updatePaymentDate()"><i class="fa-solid fa-save"></i> به‌روزرسانی تاریخ پرداخت</button>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات فیس</button>
+                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات</button>
                         </div>
                     </form>`;
 
@@ -817,43 +781,6 @@
             }
         }
 
-        let selectedPaymentId = null;
-
-        function selectPaymentForEdit() {
-            const select = document.getElementById('editPaymentSelect');
-            if (select && select.value) {
-                const payment = JSON.parse(select.value);
-                selectedPaymentId = payment.id;
-                document.getElementById('editPaymentDate').value = payment.date ? formatDate(payment.date) : '';
-                document.getElementById('editPaymentNotes').value = payment.notes || '';
-            }
-        }
-
-        async function updatePaymentDate() {
-            if (!selectedPaymentId) {
-                alert('لطفاً ابتدا یک پرداخت را انتخاب کنید');
-                return;
-            }
-            const newDate = document.getElementById('editPaymentDate').value;
-            const newNotes = document.getElementById('editPaymentNotes').value;
-            if (!newDate) {
-                alert('لطفاً تاریخ جدید را وارد کنید');
-                return;
-            }
-
-            const res = await fetch(`/api/fee-payment/${selectedPaymentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payment_date: newDate, notes: newNotes })
-            });
-            if (res.ok) {
-                alert('✅ تاریخ پرداخت با موفقیت به‌روز شد');
-                location.reload();
-            } else {
-                alert('❌ خطا در به‌روزرسانی تاریخ پرداخت');
-            }
-        }
-
         function updateEditRemaining() {
             const totalFee = parseFloat(document.getElementById('editTotalFee')?.value) || 0;
             const paidFee = parseFloat(document.getElementById('editPaidFee')?.value) || 0;
@@ -861,12 +788,6 @@
             if (remainingSpan) {
                 remainingSpan.value = totalFee - paidFee;
             }
-        }
-
-        // تابع برای دریافت اطلاعات پرداخت (برای استفاده در سرور)
-        async function getStudentPayments(studentId) {
-            const res = await fetch(`/api/student/payments/${studentId}`);
-            return await res.json();
         }
 
         document.addEventListener('submit', async (e) => {
@@ -909,7 +830,6 @@
             XLSX.writeFile(wb, `پرداختی_فیس_${new Date().toLocaleDateString('fa-IR')}.xlsx`);
         }
 
-        // مقداردهی اولیه
         const today = new Date();
         const startDateInput = document.getElementById('historyStartDate');
         const endDateInput = document.getElementById('historyEndDate');
@@ -926,11 +846,8 @@
         loadExpired();
         loadPaymentHistory();
 
-        // تعریف توابع global برای دسترسی از HTML
         window.openFullPayment = openFullPayment;
         window.setFullPayment = setFullPayment;
-        window.selectPaymentForEdit = selectPaymentForEdit;
-        window.updatePaymentDate = updatePaymentDate;
     </script>
 </body>
 
