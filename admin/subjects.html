@@ -1,105 +1,124 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدیریت دروس | پنل مدیریت</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت شاگردان | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
     <style>
-        .card {
+        .status-active { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 30px; font-size: 11px; }
+        .status-graduated { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 30px; font-size: 11px; }
+        .status-disabled { background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 30px; font-size: 11px; }
+        .fee-overdue-row { background-color: #fee2e2 !important; border-right: 3px solid #dc2626; }
+        .student-photo-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .table-container { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; }
+        .section-title { color: #1e293b; margin-bottom: 25px; border-right: 4px solid #10b981; padding-right: 15px; font-weight: 700; font-size: 1.6rem; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); border: none; }
+        .btn-primary { background: linear-gradient(135deg, #10b981, #059669); border: none; }
+        
+        /* دکمه همبرگر برای گوشی */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
             background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
         }
-
-        .section-title {
-            color: #2d3748;
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+            .overlay.show { display: block; }
         }
     </style>
 </head>
-
 <body>
-
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
-
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                        <i class="bi bi-building fs-1 text-white"></i>
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
-                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
-                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
-                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
-                        استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
-                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
-                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link active"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="graduates.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> فارغ التحصیلان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="accounts.html" class="nav-link"><i class="fa-solid fa-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارشات مالی</a>
+                    <a href="announcements.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> مدیریت اعلانات</a>
+                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-building-circle-xmark"></i> مدیریت شکایات</a>
+                    <a href="subjects.html" class="nav-link"><i class="fa-solid fa-book"></i> مدیریت دروس</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="bi bi-book-fill text-primary me-2"></i> مدیریت دروس</h3>
-
-                <div class="card">
-                    <form id="subjectForm">
-                        <div class="row g-3">
-                            <div class="col-md-5"><label class="form-label">نام مضمون</label><input type="text"
-                                    class="form-control" id="subjectName" required></div>
-                            <div class="col-md-4"><label class="form-label">کد مضمون</label><input type="text"
-                                    class="form-control" id="subjectCode"></div>
-                            <div class="col-md-2"><label class="form-label">نمره کل</label><input type="number"
-                                    class="form-control" id="totalMarks" value="100"></div>
-                            <div class="col-md-1"><label class="form-label">&nbsp;</label><button type="submit"
-                                    class="btn btn-primary w-100"><i class="bi bi-save"></i></button></div>
-                        </div>
-                    </form>
+                <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
+                    <h3 class="section-title"><i class="fa-solid fa-graduation-cap text-success me-2"></i> مدیریت شاگردان</h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#studentModal" onclick="resetStudentForm()">
+                        <i class="fa-solid fa-plus-circle"></i> شاگرد جدید
+                    </button>
                 </div>
 
-                <div class="card">
-                    <h5>لیست دروس</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="filterClass"><option value="">همه صنف‌ها</option></select></div>
+                    <div class="col-md-3"><select class="form-select" id="filterStatus"><option value="">همه وضعیت‌ها</option><option value="active">فعال</option><option value="graduated">فارغ‌التحصیل</option><option value="disabled">غیرفعال</option></select></div>
+                    <div class="col-md-3"><input type="text" class="form-control" id="searchStudent" placeholder="جستجوی نام..."></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadStudents()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                </div>
+
+                <div class="table-container">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-hover align-middle">
                             <thead class="table-light">
-                                <tr>
-                                    <th>نام مضمون</th>
-                                    <th>کد</th>
-                                    <th>نمره کل</th>
-                                    <th>وضعیت</th>
-                                    <th>عملیات</th>
-                                </tr>
+                                <tr><th>عکس</th><th>آیدی کارت</th><th>نام</th><th>نام پدر</th><th>شماره تماس</th><th>صنف</th><th>فیس کل</th><th>پرداخت شده</th><th>باقی مانده</th><th>تاریخ انقضا</th><th>وضعیت</th><th>عملیات</th></tr>
                             </thead>
-                            <tbody id="subjectsList"></tbody>
+                            <tbody id="studentsList"></tbody>
                         </table>
                     </div>
                 </div>
@@ -107,54 +126,239 @@
         </div>
     </div>
 
+    <!-- مودال شاگرد -->
+    <div class="modal fade" id="studentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title" id="studentModalLabel"><i class="fa-solid fa-user-plus"></i> شاگرد جدید</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="studentForm" enctype="multipart/form-data">
+                        <input type="hidden" id="stuId">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">نام کامل <span class="text-danger">*</span></label><input type="text" class="form-control" id="stuName" required></div>
+                            <div class="col-md-6"><label class="form-label">نام پدر <span class="text-danger">*</span></label><input type="text" class="form-control" id="stuFather" required></div>
+                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text" class="form-control" id="stuPhone"></div>
+                            <div class="col-md-6"><label class="form-label">صنف <span class="text-danger">*</span></label><select class="form-select" id="stuClassId" required><option value="">انتخاب صنف...</option></select></div>
+                            <div class="col-md-6"><label class="form-label">فیس اصلی (AFN)</label><input type="number" class="form-control" id="stuTotalFee" value="0" oninput="calculateRemaining()"></div>
+                            <div class="col-md-6"><label class="form-label">فیس پرداخت شده (AFN)</label><input type="number" class="form-control" id="stuPaidFee" value="0" oninput="calculateRemaining()"></div>
+                            <div class="col-md-6"><label class="form-label">باقی مانده (AFN)</label><input type="number" class="form-control" id="stuRemainingFee" readonly style="background:#f1f5f9"></div>
+                            <div class="col-md-6"><label class="form-label">تاریخ انقضای فیس</label><input type="date" class="form-control" id="stuDueDate"></div>
+                            <div class="col-md-6"><label class="form-label">وضعیت</label><select class="form-select" id="stuStatus"><option value="active">فعال</option><option value="graduated">فارغ‌التحصیل</option><option value="disabled">غیرفعال</option></select></div>
+                            <div class="col-12"><label class="form-label">آدرس</label><textarea class="form-control" id="stuAddress" rows="2"></textarea></div>
+                            <div class="col-12"><label class="form-label">عکس شاگرد</label><input type="file" class="form-control" id="stuPhoto" accept="image/*"></div>
+                            <div class="col-12"><label class="form-label">رمز عبور جدید</label><input type="password" class="form-control" id="stuPassword" placeholder="در صورت ویرایش خالی بگذارید"></div>
+                        </div>
+                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره شاگرد</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../main.js"></script>
+    <script src="/main.js"></script>
     <script>
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
-        function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
-        if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
-        if (overlay) overlay.addEventListener('click', closeSidebar);
-        window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        let currentEditId = null, studentModal = null;
 
-        async function logout() { await fetch('/api/logout', { method: 'POST' }); localStorage.clear(); window.location.href = '/login.html'; }
-
-        async function loadSubjects() {
-            const res = await fetch('/api/subjects');
-            const subjects = await res.json();
-            document.getElementById('subjectsList').innerHTML = subjects.map(s => `
-            <tr>
-                <td><strong>${s.subject_name}</strong></div></div></div><td class="text-dark">${s.subject_code || '-'}</div></div></div>
-                <td>${s.total_marks}</div></div></div>
-                <td><span class="badge bg-success bg-opacity-25 text-success">${s.is_active ? 'فعال' : 'غیرفعال'}</span></div></div></div>
-                <td><button class="btn btn-sm btn-danger" onclick="deleteSubject(${s.id})"><i class="bi bi-trash"></i></button></div></div></div>
-             </div></div></div>
-        `).join('');
-        }
-
-        async function deleteSubject(id) {
-            if (confirm('حذف شود؟')) {
-                await fetch(`/api/subjects/${id}`, { method: 'DELETE' });
-                loadSubjects();
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                let d;
+                if (dateString.includes('T')) {
+                    d = new Date(dateString.split('T')[0]);
+                } else {
+                    d = new Date(dateString);
+                }
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            } catch(e) { 
+                return dateString; 
             }
         }
 
-        document.getElementById('subjectForm').addEventListener('submit', async (e) => {
+        function setDefaultDueDate() {
+            const today = new Date();
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(today.getMonth() + 1);
+            document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
+        }
+
+        function calculateRemaining() {
+            const totalFee = parseFloat(document.getElementById('stuTotalFee').value) || 0;
+            const paidFee = parseFloat(document.getElementById('stuPaidFee').value) || 0;
+            const remaining = totalFee - paidFee;
+            document.getElementById('stuRemainingFee').value = remaining < 0 ? 0 : remaining;
+        }
+
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+            function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
+        async function loadClasses() {
+            try {
+                const res = await fetch('/api/classes');
+                const classes = await res.json();
+                const select = document.getElementById('stuClassId');
+                const filterSelect = document.getElementById('filterClass');
+                if (classes && classes.length > 0) {
+                    const options = classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                    select.innerHTML = '<option value="">انتخاب صنف...</option>' + options;
+                    filterSelect.innerHTML = '<option value="">همه صنف‌ها</option>' + options;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadStudents() {
+            try {
+                const res = await fetch('/api/students');
+                let students = await res.json();
+                const classId = document.getElementById('filterClass').value;
+                const status = document.getElementById('filterStatus').value;
+                const search = document.getElementById('searchStudent').value.toLowerCase();
+
+                if (classId) students = students.filter(s => s.class_id == classId);
+                if (status) students = students.filter(s => s.status === status);
+                if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
+
+                if (!students || students.length === 0) {
+                    document.getElementById('studentsList').innerHTML = '<table><td colspan="12" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
+                    return;
+                }
+
+                document.getElementById('studentsList').innerHTML = students.map(s => {
+                    const isExpired = s.due_date && new Date(s.due_date) < new Date() && s.remaining_fee > 0;
+                    const dueDateFormatted = formatDate(s.due_date);
+                    let statusClass = s.status === 'active' ? 'status-active' : (s.status === 'graduated' ? 'status-graduated' : 'status-disabled');
+                    let statusText = s.status === 'active' ? 'فعال' : (s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال');
+                    return `<tr class="${isExpired ? 'fee-overdue-row' : ''}">
+                        <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></td>
+                        <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></td>
+                        <td class="text-dark">${s.name}</td>
+                        <td class="text-dark">${s.father_name || '-'}</td>
+                        <td class="text-dark">${s.phone || '-'}</td>
+                        <td class="text-dark">${s.class_name || '-'}</td>
+                        <td class="text-dark">${(s.total_fee || 0).toLocaleString()}</td>
+                        <td class="text-success">${(s.paid_fee || 0).toLocaleString()}</td>
+                        <td class="text-danger">${(s.remaining_fee || 0).toLocaleString()}</td>
+                        <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">${dueDateFormatted}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="fa-solid fa-pencil"></i></button>
+                            <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (err) {
+                console.error('Error loading students:', err);
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="12" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+            }
+        }
+
+        async function deleteStudent(id) {
+            if (confirm('حذف شود؟')) {
+                await fetch(`/api/students/${id}`, { method: 'DELETE' });
+                loadStudents();
+            }
+        }
+
+        async function editStudent(id) {
+            try {
+                const res = await fetch(`/api/students/${id}`);
+                const s = await res.json();
+                currentEditId = id;
+                document.getElementById('stuName').value = s.name || '';
+                document.getElementById('stuFather').value = s.father_name || '';
+                document.getElementById('stuPhone').value = s.phone || '';
+                document.getElementById('stuClassId').value = s.class_id || '';
+                document.getElementById('stuTotalFee').value = s.total_fee || 0;
+                document.getElementById('stuPaidFee').value = s.paid_fee || 0;
+                calculateRemaining();
+                document.getElementById('stuDueDate').value = s.due_date ? formatDate(s.due_date) : '';
+                document.getElementById('stuStatus').value = s.status || 'active';
+                document.getElementById('stuAddress').value = s.address || '';
+                document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش شاگرد';
+                if (studentModal) studentModal.show();
+            } catch (err) { alert('خطا در بارگیری اطلاعات'); }
+        }
+
+        function resetStudentForm() {
+            currentEditId = null;
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
+            setDefaultDueDate();
+            calculateRemaining();
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
-                subject_name: document.getElementById('subjectName').value,
-                subject_code: document.getElementById('subjectCode').value,
-                total_marks: document.getElementById('totalMarks').value
-            };
-            const res = await fetch('/api/subjects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) { alert('مضمون با موفقیت اضافه شد'); loadSubjects(); document.getElementById('subjectForm').reset(); }
-            else alert('خطا');
+            const formData = new FormData();
+            formData.append('name', document.getElementById('stuName').value);
+            formData.append('father_name', document.getElementById('stuFather').value);
+            formData.append('phone', document.getElementById('stuPhone').value);
+            formData.append('class_id', document.getElementById('stuClassId').value);
+            formData.append('total_fee', document.getElementById('stuTotalFee').value);
+            formData.append('paid_fee', document.getElementById('stuPaidFee').value);
+            formData.append('due_date', document.getElementById('stuDueDate').value);
+            formData.append('status', document.getElementById('stuStatus').value);
+            formData.append('address', document.getElementById('stuAddress').value);
+
+            if (document.getElementById('stuPhoto').files[0]) formData.append('photo', document.getElementById('stuPhoto').files[0]);
+            if (document.getElementById('stuPassword').value) formData.append('password', document.getElementById('stuPassword').value);
+
+            const url = currentEditId ? `/api/students/${currentEditId}` : '/api/students';
+            const method = currentEditId ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, { method, body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(currentEditId ? 'شاگرد ویرایش شد' : 'شاگرد اضافه شد');
+                    if (studentModal) studentModal.hide();
+                    loadStudents();
+                    resetStudentForm();
+                    
+                    if (!currentEditId && data.id) {
+                        window.open(`/student-card.html?id=${data.id}`, '_blank');
+                        const totalFee = parseFloat(document.getElementById('stuTotalFee').value) || 0;
+                        const paidFee = parseFloat(document.getElementById('stuPaidFee').value) || 0;
+                        if (totalFee > 0 && paidFee > 0) {
+                            const studentInfo = await fetch(`/api/students/${data.id}`).then(r => r.json());
+                            if (typeof printReceipt === 'function') {
+                                printReceipt(
+                                    studentInfo.name, studentInfo.father_name, studentInfo.student_card_id,
+                                    totalFee, paidFee, totalFee - paidFee,
+                                    paidFee, new Date().toISOString().split('T')[0],
+                                    studentInfo.due_date, 'RCP-REG-' + Date.now(),
+                                    'پرداخت اولیه هنگام ثبت‌نام'
+                                );
+                            }
+                        }
+                    }
+                } else {
+                    alert(data.error || 'خطا در ثبت شاگرد');
+                }
+            } catch (err) { alert('خطا در ارتباط با سرور'); }
         });
 
-        loadSubjects();
+        setDefaultDueDate();
+        setupSidebar();
+        document.addEventListener('DOMContentLoaded', () => {
+            studentModal = new bootstrap.Modal(document.getElementById('studentModal'));
+            loadClasses();
+            loadStudents();
+        });
     </script>
 </body>
-
 </html>

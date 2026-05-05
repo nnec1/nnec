@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>مدیریت شاگردان</title>
+    <title>مدیریت شاگردان | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -57,10 +57,78 @@
         .section-title {
             color: #1e293b;
             margin-bottom: 25px;
-            border-right: 4px solid #667eea;
+            border-right: 4px solid #10b981;
             padding-right: 15px;
             font-weight: 700;
             font-size: 1.6rem;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+        }
+
+        /* دکمه همبرگر برای گوشی */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
@@ -73,7 +141,7 @@
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
@@ -108,7 +176,7 @@
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
-                    <h3 class="section-title"><i class="fa-solid fa-graduation-cap text-primary me-2"></i> مدیریت
+                    <h3 class="section-title"><i class="fa-solid fa-graduation-cap text-success me-2"></i> مدیریت
                         شاگردان</h3>
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#studentModal"
                         onclick="resetStudentForm()">
@@ -163,7 +231,7 @@
     <div class="modal fade" id="studentModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
                     <h5 class="modal-title" id="studentModalLabel"><i class="fa-solid fa-user-plus"></i> شاگرد جدید</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -183,11 +251,6 @@
                                         class="text-danger">*</span></label><select class="form-select" id="stuClassId"
                                     required>
                                     <option value="">انتخاب صنف...</option>
-                                </select></div>
-                            <div class="col-md-6"><label class="form-label">جنسیت</label><select class="form-select"
-                                    id="stuGender">
-                                    <option value="male">مرد</option>
-                                    <option value="female">زن</option>
                                 </select></div>
                             <div class="col-md-6"><label class="form-label">فیس اصلی (AFN)</label><input type="number"
                                     class="form-control" id="stuTotalFee" value="0" oninput="calculateRemaining()">
@@ -256,6 +319,18 @@
             document.getElementById('stuRemainingFee').value = remaining < 0 ? 0 : remaining;
         }
 
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+            function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
         async function loadClasses() {
             try {
                 const res = await fetch('/api/classes');
@@ -283,7 +358,7 @@
                 if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
 
                 if (!students || students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></td>';
+                    document.getElementById('studentsList').innerHTML = '<table><td colspan="12" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
                     return;
                 }
 
@@ -333,7 +408,6 @@
                 document.getElementById('stuFather').value = s.father_name || '';
                 document.getElementById('stuPhone').value = s.phone || '';
                 document.getElementById('stuClassId').value = s.class_id || '';
-                document.getElementById('stuGender').value = s.gender || 'male';
                 document.getElementById('stuTotalFee').value = s.total_fee || 0;
                 document.getElementById('stuPaidFee').value = s.paid_fee || 0;
                 calculateRemaining();
@@ -360,7 +434,6 @@
             formData.append('father_name', document.getElementById('stuFather').value);
             formData.append('phone', document.getElementById('stuPhone').value);
             formData.append('class_id', document.getElementById('stuClassId').value);
-            formData.append('gender', document.getElementById('stuGender').value);
             formData.append('total_fee', document.getElementById('stuTotalFee').value);
             formData.append('paid_fee', document.getElementById('stuPaidFee').value);
             formData.append('due_date', document.getElementById('stuDueDate').value);
@@ -406,6 +479,7 @@
         });
 
         setDefaultDueDate();
+        setupSidebar();
         document.addEventListener('DOMContentLoaded', () => {
             studentModal = new bootstrap.Modal(document.getElementById('studentModal'));
             loadClasses();
