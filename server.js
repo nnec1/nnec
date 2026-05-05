@@ -761,14 +761,9 @@ async function startServer() {
     await connectDB();
     app.listen(PORT, "0.0.0.0", () => {
         console.log(`\n✅ سرور با موفقیت روی پورت ${PORT} اجرا شد!`);
-        console.log(`🔗 آدرس لاگین: http://localhost:${PORT}/login.html`);
+        console.log(`🔗 آدرس لاگین: http://localhost:${PORT}/index.html`);
         console.log(`\n👤 اطلاعات ورود پیش‌فرض:`);
         console.log(`   📍 ریس سیستم: ceo@school.com / 123456`);
-        console.log(`\n🔑 ترتیب صحیح ایجاد:`);
-        console.log(`   1️⃣  ابتدا با حساب ریس وارد شوید و یک مدیر ایجاد کنید`);
-        console.log(`   2️⃣  با حساب مدیر وارد شوید و صنف ایجاد کنید`);
-        console.log(`   3️⃣  سپس استاد ایجاد کنید و به صنف تخصیص دهید`);
-        console.log(`   4️⃣  سپس شاگرد ثبت نام کنید\n`);
     });
 }
 

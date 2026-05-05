@@ -1,462 +1,450 @@
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 :root {
-  --primary: #667eea;
-  --primary-dark: #5a67d8;
-  --secondary: #764ba2;
-  --success: #28a745;
-  --danger: #dc3545;
-  --warning: #ffc107;
-  --info: #17a2b8;
-  --dark: #1e293b;
-  --light: #f8fafc;
-  --gray: #64748b;
+    --primary: #10b981;
+    --primary-dark: #059669;
+    --secondary: #0f172a;
+    --success: #10b981;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --gray: #64748b;
 }
 
 body {
-  background: #f0f2f5;
-  font-family: 'Segoe UI', 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: hidden;
+    background: #f0f2f5;
+    font-family: 'Segoe UI', 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
 }
 
 .container-fluid {
-  padding: 0 !important;
-  margin: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .row {
-  margin: 0 !important;
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
+    margin: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
-/* ========== سایدبار حرفه‌ای ========== */
+/* سایدبار */
 .sidebar {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
-  min-height: 100vh;
-  width: 280px;
-  border-left: 1px solid #e9ecef;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: fixed;
-  right: 0;
-  top: 0;
-  z-index: 1000;
-  overflow-y: auto;
-  height: 100%;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+    min-height: 100vh;
+    width: 280px;
+    border-left: 1px solid #e9ecef;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+    overflow-y: auto;
+    height: 100%;
 }
 
 .sidebar .nav-link {
-  color: #4a5568;
-  padding: 12px 20px;
-  border-radius: 12px;
-  margin: 4px 12px;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    color: #4a5568;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin: 4px 12px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .sidebar .nav-link:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  transform: translateX(-4px);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    transform: translateX(-4px);
 }
 
 .sidebar .nav-link.active {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .sidebar .nav-link i {
-  font-size: 1.2rem;
-  width: 24px;
-  text-align: center;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
 }
 
-/* ========== محتوای اصلی ========== */
+/* محتوای اصلی */
 .main-content {
-  padding: 25px 30px;
-  width: calc(100% - 280px);
-  background: #f5f7fb;
-  min-height: 100vh;
-  margin-right: 280px;
-  transition: all 0.3s ease;
+    padding: 25px 30px;
+    width: calc(100% - 280px);
+    background: #f5f7fb;
+    min-height: 100vh;
+    margin-right: 280px;
+    transition: all 0.3s ease;
 }
 
-/* ========== کارت‌های آمار ========== */
+/* کارت‌های آمار */
 .stat-card {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border: 1px solid rgba(0, 0, 0, 0.03);
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  border-radius: 20px 20px 0 0;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 20px 20px 0 0;
 }
 
 .stat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 10px 0 0;
-  color: #1e293b;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 10px 0 0;
+    color: #1e293b;
 }
 
 .stat-card i {
-  font-size: 2rem;
+    font-size: 2rem;
 }
 
-/* ========== جدول‌ها ========== */
+/* جدول‌ها */
 .table-container {
-  background: white;
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  overflow-x: auto;
-  border: 1px solid rgba(0, 0, 0, 0.03);
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+    border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .table {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .table thead th {
-  background: #f8fafc;
-  border-bottom: 2px solid #e2e8f0;
-  color: #475569;
-  font-weight: 600;
-  padding: 12px;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    padding: 12px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .table tbody td {
-  padding: 12px;
-  vertical-align: middle;
-  color: #334155;
-  border-bottom: 1px solid #f1f5f9;
+    padding: 12px;
+    vertical-align: middle;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .table tbody tr:hover {
-  background: #f8fafc;
+    background: #f8fafc;
 }
 
-/* ========== عنوان بخش ========== */
+/* عنوان بخش */
 .section-title {
-  color: #1e293b;
-  margin-bottom: 25px;
-  border-right: 4px solid #667eea;
-  padding-right: 15px;
-  font-weight: 700;
-  font-size: 1.6rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    color: #1e293b;
+    margin-bottom: 25px;
+    border-right: 4px solid #10b981;
+    padding-right: 15px;
+    font-weight: 700;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-/* ========== دکمه‌ها ========== */
+/* دکمه‌ها */
 .btn-primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border: none;
-  border-radius: 12px;
-  padding: 10px 24px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  color: white;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    color: white;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  border: none;
-  border-radius: 12px;
-  padding: 10px 24px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 .btn-success:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  border: none;
-  border-radius: 12px;
-  padding: 10px 24px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 .btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
 }
 
 .btn-warning {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
-  border: none;
-  border-radius: 12px;
-  padding: 10px 24px;
-  font-weight: 600;
-  color: #333;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 600;
+    color: white;
 }
 
-/* ========== فرم‌ها ========== */
+/* فرم‌ها */
 .form-control, .form-select {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 12px 16px;
-  transition: all 0.3s ease;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-  outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    outline: none;
 }
 
 .form-label {
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 8px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
 }
 
-/* ========== وضعیت‌ها ========== */
+/* وضعیت‌ها */
 .badge-active, .status-active {
-  background: #dcfce7;
-  color: #15803d;
-  padding: 4px 12px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 600;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .badge-inactive, .status-disabled {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 4px 12px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 600;
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .status-graduated {
-  background: #dbeafe;
-  color: #1e40af;
-  padding: 4px 12px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 600;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
-/* فیس منقضی شده */
 .fee-overdue-row {
-  background-color: #fee2e2 !important;
-  border-right: 3px solid #dc2626;
+    background-color: #fee2e2 !important;
+    border-right: 3px solid #dc2626;
 }
 
 .badge-present { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 30px; }
 .badge-absent { background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 30px; }
 .badge-late { background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 30px; }
 
-/* ========== مودال ========== */
+/* مودال */
 .modal-content {
-  background: white;
-  border-radius: 28px;
-  border: none;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    background: white;
+    border-radius: 28px;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  border-bottom: 1px solid #e2e8f0;
-  border-radius: 28px 28px 0 0;
-  padding: 20px 25px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 28px 28px 0 0;
+    padding: 20px 25px;
 }
 
 .modal-title {
-  font-weight: 700;
-  color: #1e293b;
+    font-weight: 700;
+    color: #1e293b;
 }
 
-/* ========== دکمه منوی موبایل ========== */
+/* منوی موبایل */
 .menu-toggle {
-  display: none;
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  z-index: 1050;
-  background: white;
-  border: none;
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  font-size: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: all 0.3s ease;
+    display: none;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1050;
+    background: white;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .menu-toggle:hover {
-  transform: scale(1.05);
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
 }
 
 .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1030;
-  display: none;
-  backdrop-filter: blur(2px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1030;
+    display: none;
+    backdrop-filter: blur(2px);
 }
 
 .overlay.show {
-  display: block;
-}
-
-/* ========== ریسپانسیو ========== */
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    right: -280px;
-    width: 280px;
-    z-index: 1040;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 100%;
-    top: 0;
-  }
-  
-  .sidebar.show {
-    right: 0;
-  }
-  
-  .main-content {
-    width: 100%;
-    margin-right: 0;
-    padding: 80px 15px 25px 15px;
-  }
-  
-  .menu-toggle {
     display: block;
-  }
-  
-  .stat-card h2 {
-    font-size: 1.5rem;
-  }
-  
-  .section-title {
-    font-size: 1.3rem;
-  }
-  
-  .table-container {
-    padding: 15px;
-  }
-  
-  .btn-sm {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
 }
 
-/* ========== انیمیشن‌ها ========== */
+/* ریسپانسیو */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        right: -280px;
+        width: 280px;
+        z-index: 1040;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        top: 0;
+    }
+    
+    .sidebar.show {
+        right: 0;
+    }
+    
+    .main-content {
+        width: 100%;
+        margin-right: 0;
+        padding: 80px 15px 25px 15px;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    .stat-card h2 {
+        font-size: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .table-container {
+        padding: 15px;
+    }
+    
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}
+
+/* انیمیشن‌ها */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 .fade-in {
-  animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* اسکرول بار سفارشی */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #e2e8f0;
-  border-radius: 10px;
+    background: #e2e8f0;
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 10px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5a67d8;
+    background: #059669;
 }
 
 /* کارت‌های نمودار */
 .chart-card {
-  background: white;
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
 }
 
 .chart-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
-/* اضافه کنید به انتهای فایل style.css */
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
+/* توست مسیج */
 .toast-message {
     animation: slideIn 0.3s ease;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);

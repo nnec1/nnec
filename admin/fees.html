@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>مدیریت فیس</title>
+    <title>مدیریت فیس | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -58,7 +58,7 @@
         }
 
         .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
 
@@ -111,12 +111,16 @@
             background: #e2e8f0;
         }
 
-        .selected-payment {
-            background: #dbeafe;
-            border-right: 3px solid #667eea;
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
         }
 
-        /* تنظیمات دکمه همبرگر برای گوشی */
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -184,7 +188,7 @@
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
@@ -208,7 +212,7 @@
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-primary me-2"></i> مدیریت فیس</h3>
+                <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> مدیریت فیس</h3>
 
                 <ul class="nav nav-tabs mb-4">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#collect"><i
@@ -250,10 +254,10 @@
                                             <th>تاریخ انقضا</th>
                                             <th>عملیات</th>
                                             <th>پرداخت کامل</th>
-                                </table>
-                                </thead>
-                                <tbody id="defaultersList"></tbody>
-                                </table>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="defaultersList"></tbody>
+                                    追赶
                             </div>
                         </div>
                     </div>
@@ -276,7 +280,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="expiredList"></tbody>
-                                </table>
+                                    追赶
                             </div>
                         </div>
                     </div>
@@ -333,7 +337,7 @@
     <div class="modal fade" id="paymentModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
                     <h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت فیس</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -346,7 +350,7 @@
     <div class="modal fade" id="editFeeModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
                     <h5 class="modal-title"><i class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -397,25 +401,16 @@
             }
         }
 
-        // ========== توابع سایدبار موبایل ==========
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             if (!toggleBtn) return;
-            function closeSidebar() {
-                if (sidebar) sidebar.classList.remove('show');
-                if (overlay) overlay.classList.remove('show');
-            }
-            function openSidebar() {
-                if (sidebar) sidebar.classList.add('show');
-                if (overlay) overlay.classList.add('show');
-            }
+            function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+            function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
             toggleBtn.addEventListener('click', openSidebar);
             if (overlay) overlay.addEventListener('click', closeSidebar);
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 768) closeSidebar();
-            });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
         async function loadClasses() {
@@ -487,7 +482,7 @@
                         <div class="payment-history-card">
                             <h6><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</h6>
                             ${payments.map(p => `
-                                <div class="payment-history-item" onclick="selectPaymentForEdit(${p.id}, '${formatDate(p.payment_date)}', '${p.notes || ''}')">
+                                <div class="payment-history-item" onclick="selectPaymentForEdit2(${p.id}, '${formatDate(p.payment_date)}', '${p.notes || ''}')">
                                     <div class="d-flex justify-content-between">
                                         <span><i class="fa-regular fa-calendar"></i> ${formatDate(p.payment_date)}</span>
                                         <span class="text-success">${(p.amount || 0).toLocaleString()} AFN</span>
@@ -531,7 +526,7 @@
                                     <label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> مبلغ پرداختی <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input type="number" id="payAmount" class="form-control amount-input" value="${remainingFee}" max="${remainingFee}" min="1" step="100" required>
-                                        <button type="button" class="btn btn-outline-primary" onclick="setFullPayment()">پرداخت کامل</button>
+                                        <button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت کامل</button>
                                     </div>
                                     <small class="text-muted">حداکثر: ${remainingFee.toLocaleString()} AFN</small>
                                 </div>
@@ -659,7 +654,7 @@
                 const res = await fetch('/api/fee-defaulters');
                 const data = await res.json();
                 if (!data || data.length === 0) {
-                    document.getElementById('defaultersList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></table>';
+                    document.getElementById('defaultersList').innerHTML = '</table><td colspan="7" class="text-center text-muted py-4">هیچ بدهکاری وجود ندارد</div></div></div></tr>';
                     return;
                 }
                 document.getElementById('defaultersList').innerHTML = data.map(d => `
@@ -718,7 +713,7 @@
                 let data = await res.json();
 
                 if (!data || data.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '</table><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></tr>';
+                    document.getElementById('expiredList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div></div></td>';
                     return;
                 }
 
@@ -779,7 +774,7 @@
                     <td class="text-dark"><span class="badge bg-info">${p.receipt_number || '-'}</span></div></div></div>
                     <td class="text-dark">${p.notes || '-'}</div></div></div>
                     <td><button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id}, ${p.student_id}, ${p.amount})"><i class="fa-solid fa-trash-can"></i></button></div></div></div>
-                </div></div></div>
+                </table>
             `).join('');
         }
 
@@ -912,6 +907,21 @@
                 selectedPaymentId = select.value;
                 document.getElementById('editPaymentDate').value = selectedOption.dataset.date || '';
                 document.getElementById('editPaymentNotes').value = selectedOption.dataset.notes || '';
+            }
+        }
+
+        function selectPaymentForEdit2(paymentId, date, notes) {
+            selectedPaymentId = paymentId;
+            document.getElementById('editPaymentDate').value = date;
+            document.getElementById('editPaymentNotes').value = notes;
+            const select = document.getElementById('editPaymentSelect');
+            if (select) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value == paymentId) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
             }
         }
 
