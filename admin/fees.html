@@ -450,7 +450,7 @@
                         ${paymentHistoryHtml}
                         <input type="hidden" id="currentRemaining" value="${remainingFee}">
                         <div class="bg-white p-3 rounded-3 border"><h6>پرداخت جدید</h6><div class="row g-3">
-                            <div class="col-12"><label>مبلغ پرداختی</label><div class="input-group"><input type="number" id="payAmount" class="form-control amount-input" value="${remainingFee}" step="100" required><button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت کامل</button></div></div>
+                            <div class="col-12"><label>مبلغ پرداختی</label><div class="input-group"><input type="number" id="payAmount" class="form-control amount-input" value="${remainingFee}" step="100" required><button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت کامل</button></div><small class="text-muted">هر مقدار دلخواه وارد کنید</small></div>
                             <div class="col-md-6"><label>تاریخ پرداخت</label><input type="date" id="payDate" class="form-control" value="${new Date().toISOString().split('T')[0]}" required></div>
                             <div class="col-md-6"><label>تاریخ انقضای جدید</label><input type="date" id="newDueDate" class="form-control" value="${new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]}"></div>
                             <div class="col-12"><label>باقی مانده پس از پرداخت</label><h3 class="text-danger" id="newRemaining">${remainingFee.toLocaleString()} AFN</h3></div>
@@ -492,7 +492,6 @@
                     alert('✅ پرداخت ثبت شد');
                     if (paymentModal) paymentModal.hide();
                     searchStudents(); loadDefaulters(); loadExpired(); loadPaymentHistory();
-                    // چاپ رسید
                     if (typeof printReceipt === 'function') {
                         const studentRes = await fetch(`/api/students/${currentStudent}`);
                         const student = await studentRes.json();
@@ -567,7 +566,7 @@
             if (start && end) url += `?start_date=${start}&end_date=${end}`;
             const res = await fetch(url);
             const data = await res.json();
-            if (!data || data.length === 0) { document.getElementById('historyList').innerHTML = '<td><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div><tr>'; return; }
+            if (!data || data.length === 0) { document.getElementById('historyList').innerHTML = '</td><td colspan="7" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div><tr>'; return; }
             document.getElementById('historyList').innerHTML = data.map(p => `
                 <tr class="payment-row"><td class="text-dark">${p.student_name || '-'}</div></div></div><td class="text-dark">${p.class_name || '-'}</div></div></div>
                 <td class="text-success">${(p.amount || 0).toLocaleString()} AFN</div></div></div><td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
