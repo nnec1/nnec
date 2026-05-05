@@ -4,24 +4,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>مدیریت تکالیف</title>
+    <title>مدیریت تکالیف | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-chalkboard-user fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل استاد</h5>
+                    <small class="text-muted" id="teacherNameSidebar">نام استاد</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="homework.html" class="nav-link active"><i class="fa-solid fa-book-open"></i> تکالیف</a>
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
+                </nav>
+            </div>
+
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
-                    <h3 class="section-title"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i> مدیریت
-                        تکالیف</h3>
+                    <h3 class="section-title"><i class="fa-solid fa-book-open text-success me-2"></i> مدیریت تکالیف</h3>
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#hwModal"><i
-                            class="bi bi-plus-circle"></i> تکلیف جدید</button>
+                            class="fa-solid fa-plus-circle"></i> تکلیف جدید</button>
                 </div>
 
                 <div class="row g-3 mb-4">
@@ -29,21 +107,19 @@
                             <option value="">همه صنف‌ها</option>
                         </select></div>
                     <div class="col-md-3"><button class="btn btn-primary" onclick="loadHomeworks()"><i
-                                class="bi bi-search"></i> جستجو</button></div>
+                                class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                 </div>
-
                 <div id="homeworksList"></div>
             </div>
         </div>
     </div>
 
-    <!-- مودال تکلیف -->
     <div class="modal fade" id="hwModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
-                    <h5 class="modal-title"><i class="bi bi-journal-plus"></i> تکلیف جدید</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-book-open"></i> تکلیف جدید</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="hwForm"><input type="hidden" id="hwId">
@@ -62,8 +138,7 @@
                                 </select></div>
                             <div class="col-12"><label class="form-label">متن تکلیف</label><textarea id="hwAssignment"
                                     class="form-control" rows="5" required></textarea></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 mt-3"><i class="bi bi-save"></i>
+                        </div><button type="submit" class="btn btn-primary w-100 mt-3"><i class="fa-solid fa-save"></i>
                             ذخیره</button>
                     </form>
                 </div>
@@ -76,6 +151,18 @@
     <script>
         let teacherId = localStorage.getItem('userId') || 3;
 
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
         async function loadClassesForSelect() {
             const res = await fetch(`/api/teacher/classes/${teacherId}`);
             const classes = await res.json();
@@ -84,15 +171,7 @@
             const options = classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
             selectClass.innerHTML = '<option value="">انتخاب صنف...</option>' + options;
             filterClass.innerHTML = '<option value="">همه صنف‌ها</option>' + options;
-
-            selectClass.onchange = async () => {
-                const classId = selectClass.value;
-                if (classId) {
-                    const subRes = await fetch(`/api/class-subjects/${classId}`);
-                    const subs = await subRes.json();
-                    document.getElementById('hwSubject').innerHTML = '<option value="">انتخاب مضمون...</option>' + subs.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
-                }
-            };
+            selectClass.onchange = async () => { const classId = selectClass.value; if (classId) { const subRes = await fetch(`/api/class-subjects/${classId}`); const subs = await subRes.json(); document.getElementById('hwSubject').innerHTML = '<option value="">انتخاب مضمون...</option>' + subs.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join(''); } };
         }
 
         async function loadHomeworks() {
@@ -101,13 +180,8 @@
             if (classId) url += `?class_id=${classId}`;
             const res = await fetch(url);
             const data = await res.json();
-            if (data.length === 0) {
-                document.getElementById('homeworksList').innerHTML = '<div class="alert alert-info text-center">تکلیفی ثبت نشده است</div>';
-                return;
-            }
-            document.getElementById('homeworksList').innerHTML = data.map(h => `
-                <div class="card mb-3 p-3"><div class="d-flex justify-content-between flex-wrap"><div><h5><i class="bi bi-journal-bookmark-fill text-primary"></i> ${h.class_name} - ${h.subject_name}</h5><small class="text-muted"><i class="bi bi-calendar"></i> تاریخ: ${h.homework_date} | <i class="bi bi-calendar-exclamation"></i> سررسید: ${h.due_date || '-'}</small></div><div><button class="btn btn-sm btn-warning me-1" onclick="editHomework(${h.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteHomework(${h.id})"><i class="bi bi-trash"></i></button></div></div><hr><p>${h.assignment}</p></div>
-            `).join('');
+            if (data.length === 0) { document.getElementById('homeworksList').innerHTML = '<div class="alert alert-info text-center">تکلیفی ثبت نشده است</div>'; return; }
+            document.getElementById('homeworksList').innerHTML = data.map(h => `<div class="card mb-3 p-3"><div class="d-flex justify-content-between flex-wrap"><div><h5><i class="fa-solid fa-book-open text-success"></i> ${h.class_name} - ${h.subject_name}</h5><small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${h.homework_date} | <i class="fa-regular fa-calendar-clock"></i> سررسید: ${h.due_date || '-'}</small></div><div><button class="btn btn-sm btn-warning me-1" onclick="editHomework(${h.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteHomework(${h.id})"><i class="fa-solid fa-trash"></i></button></div></div><hr><p>${h.assignment}</p></div>`).join('');
         }
 
         async function editHomework(id) {
@@ -124,12 +198,7 @@
             new bootstrap.Modal(document.getElementById('hwModal')).show();
         }
 
-        async function deleteHomework(id) {
-            if (confirm('حذف شود؟')) {
-                await fetch(`/api/homework/${id}`, { method: 'DELETE' });
-                loadHomeworks();
-            }
-        }
+        async function deleteHomework(id) { if (confirm('حذف شود؟')) { await fetch(`/api/homework/${id}`, { method: 'DELETE' }); loadHomeworks(); } }
 
         document.getElementById('hwForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -138,15 +207,11 @@
             const url = id ? `/api/homework/${id}` : '/api/homework';
             const method = id ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) {
-                alert(id ? 'تکلیف ویرایش شد' : 'تکلیف اضافه شد');
-                bootstrap.Modal.getInstance(document.getElementById('hwModal')).hide();
-                loadHomeworks();
-                document.getElementById('hwForm').reset();
-                document.getElementById('hwId').value = '';
-            } else alert('خطا');
+            if (res.ok) { alert(id ? 'تکلیف ویرایش شد' : 'تکلیف اضافه شد'); bootstrap.Modal.getInstance(document.getElementById('hwModal')).hide(); loadHomeworks(); document.getElementById('hwForm').reset(); document.getElementById('hwId').value = ''; }
+            else alert('خطا');
         });
 
+        setupSidebar();
         loadClassesForSelect();
         loadHomeworks();
         document.getElementById('hwDate').value = new Date().toISOString().split('T')[0];

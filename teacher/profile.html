@@ -4,43 +4,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>تنظیمات اکاونت</title>
+    <title>تنظیمات اکاونت | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">...</div>
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-chalkboard-user fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل استاد</h5>
+                    <small class="text-muted" id="teacherNameSidebar">نام استاد</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
+                    <a href="profile.html" class="nav-link active"><i class="fa-solid fa-user-circle"></i> تنظیمات
+                        اکاونت</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
+                </nav>
+            </div>
+
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="bi bi-person-circle text-primary me-2"></i> تنظیمات اکاونت</h3>
+                <h3 class="section-title"><i class="fa-solid fa-user-circle text-success me-2"></i> تنظیمات اکاونت</h3>
 
                 <div class="row">
                     <div class="col-md-4 text-center">
                         <img id="profilePhoto" src="/default-avatar.png" class="rounded-circle mb-3"
-                            style="width:120px;height:120px;object-fit:cover;border:3px solid #667eea;">
+                            style="width:120px;height:120px;object-fit:cover;border:3px solid #10b981;">
                         <button class="btn btn-primary btn-sm"
-                            onclick="document.getElementById('photoInput').click()">تغییر عکس</button>
+                            onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i>
+                            تغییر عکس</button>
                         <input type="file" id="photoInput" style="display:none" accept="image/*">
                     </div>
                     <div class="col-md-8">
                         <div class="card p-4">
                             <form id="profileForm" enctype="multipart/form-data">
-                                <div class="mb-3"><label class="form-label">نام کامل</label><input type="text"
-                                        id="fullName" class="form-control" required></div>
-                                <div class="mb-3"><label class="form-label">نام پدر</label><input type="text"
-                                        id="fatherName" class="form-control"></div>
-                                <div class="mb-3"><label class="form-label">شماره تماس</label><input type="text"
-                                        id="phone" class="form-control"></div>
-                                <div class="mb-3"><label class="form-label">آدرس</label><textarea id="address"
-                                        class="form-control" rows="2"></textarea></div>
-                                <div class="mb-3"><label class="form-label">رمز عبور جدید</label><input type="password"
-                                        id="newPassword" class="form-control" placeholder="در صورت تمایل"></div>
-                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> ذخیره
+                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-user"></i> نام
+                                        کامل</label><input type="text" id="fullName" class="form-control" required>
+                                </div>
+                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-user"></i> نام
+                                        پدر</label><input type="text" id="fatherName" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-phone"></i> شماره
+                                        تماس</label><input type="text" id="phone" class="form-control"></div>
+                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-location-dot"></i>
+                                        آدرس</label><textarea id="address" class="form-control" rows="2"></textarea>
+                                </div>
+                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-key"></i> رمز عبور
+                                        جدید</label><input type="password" id="newPassword" class="form-control"
+                                        placeholder="در صورت تمایل"></div><button type="submit"
+                                    class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
                                     تغییرات</button>
                             </form>
                         </div>
@@ -55,6 +139,18 @@
     <script>
         let teacherId = localStorage.getItem('userId') || 3;
 
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
         async function loadProfile() {
             const res = await fetch(`/api/teacher/info/${teacherId}`);
             const data = await res.json();
@@ -63,6 +159,7 @@
             document.getElementById('phone').value = data.phone || '';
             document.getElementById('address').value = data.home_address || '';
             if (data.photo) document.getElementById('profilePhoto').src = data.photo;
+            document.getElementById('teacherNameSidebar').innerText = data.name || 'استاد';
         }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -76,15 +173,12 @@
             if (pass) formData.append('password', pass);
             const photo = document.getElementById('photoInput').files[0];
             if (photo) formData.append('photo', photo);
-
             const res = await fetch(`/api/teacher/update-account/${teacherId}`, { method: 'PUT', body: formData });
-            if (res.ok) {
-                alert('پروفایل با موفقیت به‌روز شد');
-                loadProfile();
-                document.getElementById('newPassword').value = '';
-            } else alert('خطا در ویرایش پروفایل');
+            if (res.ok) { alert('پروفایل با موفقیت به‌روز شد'); loadProfile(); document.getElementById('newPassword').value = ''; }
+            else alert('خطا در ویرایش پروفایل');
         });
 
+        setupSidebar();
         loadProfile();
     </script>
 </body>
