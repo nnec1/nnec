@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>رسید پرداخت فیس</title>
+    <title>رسید پرداخت فیس | آموزشگاه نوی نور</title>
     <style>
         * {
             margin: 0;
@@ -19,10 +19,9 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            font-family: 'Tahoma', 'Segoe UI', 'Courier New', monospace;
+            font-family: 'Tahoma', 'Segoe UI', monospace;
         }
 
-        /* سایز کاغذ رسید: 50mm عرض (حدود 190px) */
         .receipt {
             width: 190px;
             max-width: 100%;
@@ -33,7 +32,6 @@
             direction: rtl;
         }
 
-        /* چاپ بدون حاشیه و پس‌زمینه */
         @media print {
             body {
                 background: white;
@@ -42,10 +40,10 @@
             }
 
             .receipt {
-                width: 100%;
                 box-shadow: none;
                 padding: 2px;
                 margin: 0;
+                width: 100%;
             }
 
             .no-print {
@@ -53,7 +51,6 @@
             }
         }
 
-        /* خط جداکننده */
         .hr {
             border-top: 1px dashed #aaa;
             margin: 5px 0;
@@ -64,17 +61,8 @@
             margin: 5px 0;
         }
 
-        /* متن‌ها */
         .text-center {
             text-align: center;
-        }
-
-        .text-left {
-            text-align: left;
-        }
-
-        .text-right {
-            text-align: right;
         }
 
         .bold {
@@ -93,7 +81,6 @@
             font-size: 12px;
         }
 
-        /* لوگو */
         .logo {
             text-align: center;
             margin-bottom: 5px;
@@ -106,7 +93,6 @@
             border-radius: 50%;
         }
 
-        /* ردیف اطلاعات */
         .row {
             display: flex;
             justify-content: space-between;
@@ -168,93 +154,53 @@
 
 <body>
     <div class="receipt">
-        <!-- لوگو و هدر -->
         <div class="logo">
             <img id="logoImg" src="/default-logo.png" class="logo-img"
-                onerror="this.src='https://placehold.co/40x40?text=logo'" alt="logo">
+                onerror="this.src='https://placehold.co/40x40?text=logo'">
         </div>
         <div class="text-center bold large" id="instName">آموزشگاه نوی نور</div>
         <div class="receipt-title">رسید فیس شاگرد</div>
         <div class="hr"></div>
 
-        <!-- تاریخ صدور و شماره رسید -->
         <div class="date-line">
             <span>تاریخ صدور: <span id="issueDate">-</span></span>
             <span>شماره: <span id="receiptNumber">-</span></span>
         </div>
         <div class="hr"></div>
 
-        <!-- اطلاعات شاگرد -->
-        <div class="row">
-            <span class="label">نام:</span>
-            <span id="studentName">-</span>
+        <div class="row"><span class="label">نام:</span><span id="studentName">-</span></div>
+        <div class="row"><span class="label">نام پدر:</span><span id="studentFather">-</span></div>
+        <div class="row"><span class="label">صنف:</span><span id="studentClass">-</span></div>
+        <div class="hr"></div>
+
+        <div class="row"><span class="label">فیس کل:</span><span id="totalFee">0 AFN</span></div>
+        <div class="row"><span class="label">پرداخت:</span><span class="amount-paid" id="paymentAmount">0 AFN</span>
         </div>
-        <div class="row">
-            <span class="label">نام پدر:</span>
-            <span id="studentFather">-</span>
-        </div>
-        <div class="row">
-            <span class="label">صنف:</span>
-            <span id="studentClass">-</span>
+        <div class="row"><span class="label">باقی:</span><span class="amount-remaining" id="remainingFee">0 AFN</span>
         </div>
         <div class="hr"></div>
 
-        <!-- اطلاعات مالی -->
-        <div class="row">
-            <span class="label">فیس کل:</span>
-            <span id="totalFee">0 AFN</span>
-        </div>
-        <div class="row">
-            <span class="label">پرداخت:</span>
-            <span class="amount-paid" id="paymentAmount">0 AFN</span>
-        </div>
-        <div class="row">
-            <span class="label">باقی:</span>
-            <span class="amount-remaining" id="remainingFee">0 AFN</span>
-        </div>
+        <div class="row"><span class="label">تاریخ پرداخت:</span><span id="paymentDate">-</span></div>
+        <div class="row"><span class="label">تاریخ انقضا:</span><span id="expiryDate">-</span></div>
         <div class="hr"></div>
 
-        <!-- تاریخ‌ها -->
-        <div class="row">
-            <span class="label">تاریخ پرداخت:</span>
-            <span id="paymentDate">-</span>
-        </div>
-        <div class="row">
-            <span class="label">تاریخ انقضا:</span>
-            <span id="expiryDate">-</span>
-        </div>
-        <div class="hr"></div>
+        <div id="notesRow" style="display:none;" class="row"><span class="label">یادداشت:</span><span
+                id="notes">-</span></div>
 
-        <!-- یادداشت (اختیاری) -->
-        <div id="notesRow" style="display:none;" class="row">
-            <span class="label">یادداشت:</span>
-            <span id="notes">-</span>
-        </div>
+        <div class="warning">⚠️ فیس تحویل شده دوباره مسترد نمیگردد</div>
+        <div class="contact">📞 0781304830</div>
 
-        <!-- هشدار قانونی -->
-        <div class="warning">
-            ⚠️ فیس تحویل شده دوباره مسترد نمیگردد
-        </div>
-
-        <!-- تماس -->
-        <div class="contact">
-            📞 0781304830
-        </div>
-
-        <!-- امضا -->
         <div class="signature">
             <span>امضاء پرداخت‌کننده: ___________</span>
             <span>امضاء مسئول: ___________</span>
         </div>
-
         <div class="hr-double"></div>
         <div class="text-center small">با تشکر از اعتماد شما</div>
     </div>
 
-    <!-- دکمه چاپ (در نسخه چاپی نمایش داده نمی‌شود) -->
     <div class="no-print" style="text-align:center; margin-top:15px;">
         <button onclick="window.print()"
-            style="padding:8px 20px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer;">🖨️
+            style="padding:8px 20px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;">🖨️
             چاپ رسید</button>
         <button onclick="window.close()"
             style="padding:8px 20px;background:#94a3b8;color:white;border:none;border-radius:8px;cursor:pointer;margin-right:10px;">❌
@@ -262,7 +208,6 @@
     </div>
 
     <script>
-        // دریافت اطلاعات از URL
         const urlParams = new URLSearchParams(window.location.search);
 
         function formatNumber(num) {
@@ -270,7 +215,6 @@
             return Number(num).toLocaleString();
         }
 
-        // تنظیم مقادیر
         document.getElementById('studentName').innerText = urlParams.get('student_name') || '-';
         document.getElementById('studentFather').innerText = urlParams.get('student_father') || '-';
         document.getElementById('studentClass').innerText = urlParams.get('class_name') || '-';
@@ -281,19 +225,16 @@
         document.getElementById('expiryDate').innerText = urlParams.get('expiry_date') || '-';
         document.getElementById('receiptNumber').innerText = urlParams.get('receipt_number') || '-';
 
-        // تاریخ صدور
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         document.getElementById('issueDate').innerText = todayStr;
 
-        // یادداشت
         const notes = urlParams.get('notes');
         if (notes && notes !== 'null' && notes !== '') {
             document.getElementById('notes').innerText = notes;
             document.getElementById('notesRow').style.display = 'flex';
         }
 
-        // بارگذاری نام آموزشگاه و لوگو از تنظیمات سیستم
         async function loadInstituteSettings() {
             try {
                 const res = await fetch('/api/settings');
@@ -301,17 +242,9 @@
                 if (settings.institute_name) {
                     document.getElementById('instName').innerText = settings.institute_name;
                 }
-                if (settings.institute_logo) {
-                    const logoImg = document.getElementById('logoImg');
-                    logoImg.src = settings.institute_logo;
-                    logoImg.onerror = () => { logoImg.src = 'https://placehold.co/40x40?text=logo'; };
-                }
-            } catch (e) {
-                console.error('خطا در بارگذاری تنظیمات:', e);
-            }
+            } catch (e) { }
         }
 
-        // fallback از localStorage
         if (!urlParams.get('student_name') || urlParams.get('student_name') === '-') {
             const lastReceipt = localStorage.getItem('lastReceipt');
             if (lastReceipt) {
@@ -333,9 +266,6 @@
         }
 
         loadInstituteSettings();
-
-        // چاپ خودکار (اختیاری - در صورت نیاز فعال کنید)
-        // setTimeout(() => window.print(), 200);
     </script>
 </body>
 
