@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>داشبورد مدیر</title>
+    <title>داشبورد | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/style.css">
     <style>
@@ -52,7 +53,7 @@
         }
 
         .period-active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
 
@@ -70,180 +71,190 @@
             background: #f8fafc;
         }
 
-        .income-positive {
-            color: #28a745;
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
         }
 
-        .expense-negative {
-            color: #dc3545;
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
 
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                        <i class="bi bi-building fs-1 text-white"></i>
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
-                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
-                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
-                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
-                        استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
-                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
-                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
+                    <a href="dashboard.html" class="nav-link active"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="graduates.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> فارغ
+                        التحصیلان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
+                    <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="accounts.html" class="nav-link"><i class="fa-solid fa-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارشات مالی</a>
+                    <a href="announcements.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> مدیریت
                         اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-building-circle-xmark"></i> مدیریت
+                        شکایات</a>
+                    <a href="subjects.html" class="nav-link"><i class="fa-solid fa-book"></i> مدیریت دروس</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
                         خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="bi bi-speedometer2 text-primary me-2"></i> داشبورد مدیریت</h3>
+                    <h3 class="section-title"><i class="fa-solid fa-gauge-high text-success me-2"></i> داشبورد مدیریت
+                    </h3>
                     <div class="bg-white px-3 py-2 rounded-3 shadow-sm">
-                        <i class="bi bi-calendar3 text-primary"></i>
+                        <i class="fa-regular fa-calendar text-success"></i>
                         <span id="currentDate" class="me-2 text-dark"></span>
                     </div>
                 </div>
 
-                <!-- کارت‌های آمار کلی -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-3 col-sm-6">
                         <div class="stat-card">
-                            <i class="bi bi-mortarboard-fill text-primary"></i>
+                            <i class="fa-solid fa-graduation-cap text-primary"></i>
                             <h2 id="totalStudents">0</h2>
                             <small>شاگردان فعال</small>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6">
                         <div class="stat-card">
-                            <i class="bi bi-people-fill text-info"></i>
+                            <i class="fa-solid fa-chalkboard-user text-info"></i>
                             <h2 id="totalTeachers">0</h2>
                             <small>استادان</small>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6">
                         <div class="stat-card">
-                            <i class="bi bi-cash-stack text-success" id="dailyIncomeIcon"></i>
+                            <i class="fa-solid fa-money-bill-wave text-success"></i>
                             <h2 id="dailyIncome">0</h2>
                             <small>درآمد امروز</small>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6">
                         <div class="stat-card">
-                            <i class="bi bi-receipt text-danger" id="dailyExpenseIcon"></i>
-                            <h2 id="dailyExpense">0</h2>
-                            <small>مصارف امروز</small>
+                            <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                            <h2 id="totalDebtors">0</h2>
+                            <small>بدهکاران</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- تب‌های انتخاب بازه زمانی -->
                 <div class="chart-container">
                     <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-                        <h5><i class="bi bi-graph-up text-primary me-2"></i> گزارش عواید و مصارف</h5>
+                        <h5><i class="fa-solid fa-chart-line text-success me-2"></i> گزارش عواید و مصارف</h5>
                         <div>
                             <button class="btn btn-sm period-btn" onclick="loadFinancialReport('daily')">روزانه</button>
                             <button class="btn btn-sm period-btn"
                                 onclick="loadFinancialReport('monthly')">ماهانه</button>
                             <button class="btn btn-sm period-btn"
                                 onclick="loadFinancialReport('yearly')">سالانه</button>
-                            <button class="btn btn-sm period-btn"
-                                onclick="loadFinancialReport('custom')">دلخواه</button>
                         </div>
                     </div>
-
-                    <!-- انتخاب بازه دلخواه -->
-                    <div id="customDateRange" class="row g-2 mb-3" style="display: none;">
-                        <div class="col-md-4"><input type="date" id="startDate" class="form-control"
-                                placeholder="از تاریخ"></div>
-                        <div class="col-md-4"><input type="date" id="endDate" class="form-control"
-                                placeholder="تا تاریخ"></div>
-                        <div class="col-md-4"><button class="btn btn-primary w-100"
-                                onclick="loadCustomReport()">نمایش</button></div>
-                    </div>
-
                     <canvas id="financeChart" height="280"></canvas>
                 </div>
 
-                <!-- آمار سریع روزانه/ماهانه/سالانه -->
                 <div class="row g-4 mb-4">
-                    <div class="col-md-4">
-                        <div class="stat-card">
-                            <i class="bi bi-calendar-day text-primary"></i>
-                            <h2 id="todayIncome">0</h2>
-                            <small>درآمد امروز</small>
-                            <p class="mb-0 text-muted small" id="todayTransactions">0 تراکنش</p>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5><i class="fa-solid fa-pie-chart text-success me-2"></i> توزیع درآمدها</h5>
+                            <canvas id="incomeDistributionChart" height="200"></canvas>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="stat-card">
-                            <i class="bi bi-calendar-month text-warning"></i>
-                            <h2 id="monthlyIncomeTotal">0</h2>
-                            <small>درآمد این ماه</small>
-                            <p class="mb-0 text-muted small" id="monthlyTransactions">0 تراکنش</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="stat-card">
-                            <i class="bi bi-calendar-year text-success"></i>
-                            <h2 id="yearlyIncomeTotal">0</h2>
-                            <small>درآمد امسال</small>
-                            <p class="mb-0 text-muted small" id="yearlyTransactions">0 تراکنش</p>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5><i class="fa-solid fa-chart-simple text-success me-2"></i> آخرین تراکنش‌ها</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>تاریخ</th>
+                                            <th>شاگرد</th>
+                                            <th>مبلغ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentTransactions"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- جزئیات تراکنش‌های اخیر -->
-                <div class="chart-container">
-                    <h5><i class="bi bi-clock-history text-primary me-2"></i> آخرین تراکنش‌های مالی</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>تاریخ</th>
-                                    <th>شاگرد</th>
-                                    <th>توضیحات</th>
-                                    <th>مبلغ</th>
-                                    <th>نوع</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentTransactions"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- کارت‌های گزارشات سریع -->
                 <div class="row g-4 mt-2">
                     <div class="col-md-4">
                         <div class="report-card" onclick="window.location.href='financial-reports.html?type=daily'">
-                            <i class="bi bi-calendar-day fs-3 text-primary float-start"></i>
+                            <i class="fa-regular fa-calendar-day fs-3 text-success float-start"></i>
                             <div class="text-end">
                                 <h6 class="mb-0">گزارش روزانه</h6><small class="text-muted">مشاهده جزئیات امروز</small>
                             </div>
@@ -251,7 +262,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="report-card" onclick="window.location.href='financial-reports.html?type=monthly'">
-                            <i class="bi bi-calendar-month fs-3 text-success float-start"></i>
+                            <i class="fa-regular fa-calendar-month fs-3 text-success float-start"></i>
                             <div class="text-end">
                                 <h6 class="mb-0">گزارش ماهانه</h6><small class="text-muted">مشاهده جزئیات این
                                     ماه</small>
@@ -260,7 +271,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="report-card" onclick="window.location.href='financial-reports.html?type=yearly'">
-                            <i class="bi bi-calendar-year fs-3 text-warning float-start"></i>
+                            <i class="fa-regular fa-calendar-year fs-3 text-success float-start"></i>
                             <div class="text-end">
                                 <h6 class="mb-0">گزارش سالانه</h6><small class="text-muted">مشاهده جزئیات امسال</small>
                             </div>
@@ -278,141 +289,55 @@
         let adminName = localStorage.getItem('userName') || 'مدیر';
         document.getElementById('adminName').innerText = adminName;
 
-        // فرمت تاریخ میلادی
-        function formatGregorianDate(dateString) {
+        function formatDate(dateString) {
             if (!dateString) return '-';
             try {
                 const d = new Date(dateString);
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             } catch (e) { return dateString; }
         }
 
-        // بارگذاری آمار کلی
         async function loadStats() {
             try {
                 const res = await fetch('/api/dashboard-stats');
                 const data = await res.json();
                 document.getElementById('totalStudents').innerText = (data.total_students || 0).toLocaleString();
                 document.getElementById('totalTeachers').innerText = (data.total_teachers || 0).toLocaleString();
+                document.getElementById('totalDebtors').innerText = (data.total_debtors || 0).toLocaleString();
             } catch (err) { console.error(err); }
         }
 
-        // بارگذاری درآمد و هزینه امروز
         async function loadDailyStats() {
             try {
                 const today = new Date().toISOString().split('T')[0];
                 const res = await fetch(`/api/financial-summary?start_date=${today}&end_date=${today}`);
                 const data = await res.json();
                 document.getElementById('dailyIncome').innerText = (data.total_income || 0).toLocaleString();
-                document.getElementById('dailyExpense').innerText = (data.total_expense || 0).toLocaleString();
-                document.getElementById('todayIncome').innerText = (data.total_income || 0).toLocaleString();
-                document.getElementById('todayTransactions').innerText = (data.transaction_count || 0) + ' تراکنش';
             } catch (err) { console.error(err); }
         }
 
-        // بارگذاری آمار ماهانه
-        async function loadMonthlyStats() {
-            try {
-                const now = new Date();
-                const startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-                const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-                const res = await fetch(`/api/financial-summary?start_date=${startDate}&end_date=${endDate}`);
-                const data = await res.json();
-                document.getElementById('monthlyIncomeTotal').innerText = (data.total_income || 0).toLocaleString();
-                document.getElementById('monthlyTransactions').innerText = (data.transaction_count || 0) + ' تراکنش';
-            } catch (err) { console.error(err); }
-        }
-
-        // بارگذاری آمار سالانه
-        async function loadYearlyStats() {
-            try {
-                const now = new Date();
-                const startDate = `${now.getFullYear()}-01-01`;
-                const endDate = `${now.getFullYear()}-12-31`;
-                const res = await fetch(`/api/financial-summary?start_date=${startDate}&end_date=${endDate}`);
-                const data = await res.json();
-                document.getElementById('yearlyIncomeTotal').innerText = (data.total_income || 0).toLocaleString();
-                document.getElementById('yearlyTransactions').innerText = (data.transaction_count || 0) + ' تراکنش';
-            } catch (err) { console.error(err); }
-        }
-
-        // بارگذاری آخرین تراکنش‌ها
         async function loadRecentTransactions() {
             try {
-                const res = await fetch('/api/recent-transactions');
+                const res = await fetch('/api/recent-transactions?limit=5');
                 const data = await res.json();
-                if (data.length === 0) {
-                    document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">هیچ تراکنشی ثبت نشده است</div></div></div></tr>';
+                if (!data || data.length === 0) {
+                    document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="3" class="text-center text-muted">هیچ تراکنشی ثبت نشده</td></tr>';
                     return;
                 }
                 document.getElementById('recentTransactions').innerHTML = data.map(t => `
-                    <tr>
-                        <td class="text-dark">${formatGregorianDate(t.payment_date)}</div></div></div>
-                        <td class="text-dark">${t.student_name}</div></div></div>
-                        <td class="text-dark">پرداخت فیس</div></div></div>
-                        <td class="text-success">${t.amount.toLocaleString()} AFN</div></div></div>
-                        <td class="text-dark"><span class="badge bg-success">درآمد</span></div></div></div>
-                    </tr>
+                    <tr><td>${formatDate(t.payment_date)}</td><td>${t.student_name}</td><td class="text-success">${(t.amount || 0).toLocaleString()} AFN</td></tr>
                 `).join('');
             } catch (err) { console.error(err); }
         }
 
-        // بارگذاری گزارش مالی با نمودار
         async function loadFinancialReport(period) {
-            // تنظیم استایل دکمه‌ها
             document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('period-active'));
-            event.target.classList.add('period-active');
-
-            // نمایش/مخفی کردن بازه دلخواه
-            const customRange = document.getElementById('customDateRange');
-            if (period === 'custom') {
-                customRange.style.display = 'flex';
-                return;
-            }
-            customRange.style.display = 'none';
-
+            if (event && event.target) event.target.classList.add('period-active');
             try {
-                let url = `/api/financial-reports?period=${period}`;
+                const url = `/api/financial-reports?period=${period}`;
                 const res = await fetch(url);
                 const data = await res.json();
-
-                let labels = data.periods || [];
-                let incomeData = data.incomes || [];
-                let expenseData = data.expenses || [];
-
-                if (financeChart) financeChart.destroy();
-                const ctx = document.getElementById('financeChart').getContext('2d');
-                financeChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { label: 'درآمد (AFN)', data: incomeData, backgroundColor: '#28a745', borderRadius: 8 },
-                            { label: 'هزینه (AFN)', data: expenseData, backgroundColor: '#dc3545', borderRadius: 8 }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} AFN` } } }
-                    }
-                });
-            } catch (err) { console.error(err); }
-        }
-
-        // بارگذاری گزارش دلخواه
-        async function loadCustomReport() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            if (!startDate || !endDate) { alert('لطفاً بازه زمانی را انتخاب کنید'); return; }
-
-            try {
-                const res = await fetch(`/api/financial-reports?start_date=${startDate}&end_date=${endDate}`);
-                const data = await res.json();
-
                 if (financeChart) financeChart.destroy();
                 const ctx = document.getElementById('financeChart').getContext('2d');
                 financeChart = new Chart(ctx, {
@@ -420,26 +345,40 @@
                     data: {
                         labels: data.periods || [],
                         datasets: [
-                            { label: 'درآمد (AFN)', data: data.incomes || [], backgroundColor: '#28a745', borderRadius: 8 },
-                            { label: 'هزینه (AFN)', data: data.expenses || [], backgroundColor: '#dc3545', borderRadius: 8 }
+                            { label: 'درآمد (AFN)', data: data.incomes || [], backgroundColor: '#10b981', borderRadius: 8 },
+                            { label: 'هزینه (AFN)', data: data.expenses || [], backgroundColor: '#dc2626', borderRadius: 8 }
                         ]
                     },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+                const totalIncome = (data.total_income || 0);
+                const totalExpense = (data.total_expense || 0);
+                const ctx2 = document.getElementById('incomeDistributionChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'pie',
+                    data: { labels: ['درآمد', 'هزینه'], datasets: [{ data: [totalIncome, totalExpense], backgroundColor: ['#10b981', '#dc2626'] }] },
                     options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                 });
             } catch (err) { console.error(err); }
         }
 
-        // بارگذاری همه آمار
-        async function loadAll() {
-            await loadStats();
-            await loadDailyStats();
-            await loadMonthlyStats();
-            await loadYearlyStats();
-            await loadRecentTransactions();
-            await loadFinancialReport('daily');
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
-        loadAll();
+        setupSidebar();
+        loadStats();
+        loadDailyStats();
+        loadRecentTransactions();
+        loadFinancialReport('monthly');
     </script>
 </body>
 
