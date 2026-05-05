@@ -64,7 +64,7 @@ function getTodayDate() {
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
 
-// تابع چاپ رسید با صفحه جداگانه
+// تابع چاپ رسید کامل با صفحه جداگانه
 function printReceipt(
   studentName,
   studentFather,
@@ -78,6 +78,9 @@ function printReceipt(
   receiptNumber,
   notes,
   className = "",
+  studentStatus = "",
+  prevPaidFee = null,
+  isOverpaid = false,
 ) {
   const params = new URLSearchParams();
   params.append("student_name", studentName || "");
@@ -91,7 +94,10 @@ function printReceipt(
   params.append("payment_date", paymentDate || "");
   params.append("expiry_date", expiryDate || "");
   params.append("receipt_number", receiptNumber || "");
+  if (prevPaidFee !== null) params.append("prev_paid_fee", prevPaidFee);
   if (notes) params.append("notes", notes);
+  if (studentStatus) params.append("student_status", studentStatus);
+  if (isOverpaid) params.append("overpaid", "true");
 
   const receiptWindow = window.open(
     `/receipt.html?${params.toString()}`,
