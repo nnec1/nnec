@@ -4,44 +4,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>مدیریت مدیران</title>
+    <title>مدیریت مدیران | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                        <i class="bi bi-star-fill fs-1 text-white"></i>
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-crown fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل ریس</h5>
                     <small class="text-muted" id="ceoNameSidebar">مدیر ارشد</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> پیشخوان</a>
-                    <a href="admins.html" class="nav-link active"><i class="bi bi-shield-lock-fill"></i> مدیریت
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="admins.html" class="nav-link active"><i class="fa-solid fa-shield-haltered"></i> مدیریت
                         مدیران</a>
-                    <a href="financial-reports.html" class="nav-link"><i class="bi bi-graph-up"></i> گزارش مالی</a>
-                    <a href="system-settings.html" class="nav-link"><i class="bi bi-gear-fill"></i> تنظیمات سیستم</a>
+                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> گزارش
+                        مالی</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات کلان</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات سیستم</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
-                    <h3 class="section-title"><i class="bi bi-shield-lock-fill text-primary me-2"></i> مدیریت مدیران
-                    </h3>
-                    <button class="btn btn-success" id="openAdminModalBtn">
-                        <i class="bi bi-plus-circle"></i> مدیر جدید
-                    </button>
+                    <h3 class="section-title"><i class="fa-solid fa-shield-haltered text-success me-2"></i> مدیریت
+                        مدیران</h3>
+                    <button class="btn btn-success" id="openAdminModalBtn"><i class="fa-solid fa-plus-circle"></i> مدیر
+                        جدید</button>
                 </div>
 
                 <div class="table-container">
@@ -65,12 +126,11 @@
         </div>
     </div>
 
-    <!-- مودال افزودن مدیر -->
     <div class="modal fade" id="addAdminModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
-                    <h5 class="modal-title"><i class="bi bi-person-plus-fill"></i> افزودن مدیر جدید</h5>
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-user-plus"></i> افزودن مدیر جدید</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -88,7 +148,7 @@
                         <div class="mb-3"><label class="form-label">رمز عبور</label><input type="password"
                                 class="form-control" id="adminPassword" placeholder="خالی = 123456"></div>
                         <div id="formMessage" style="display:none;" class="alert"></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> ایجاد
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ایجاد
                             مدیر</button>
                     </form>
                 </div>
@@ -96,12 +156,11 @@
         </div>
     </div>
 
-    <!-- مودال ویرایش مدیر -->
     <div class="modal fade" id="editAdminModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white">
-                    <h5 class="modal-title"><i class="bi bi-pencil-square"></i> ویرایش مدیر</h5>
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-pencil"></i> ویرایش مدیر</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -123,7 +182,7 @@
                                 <option value="inactive">غیرفعال</option>
                             </select></div>
                         <div id="editFormMessage" style="display:none;" class="alert"></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> ذخیره
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
                             تغییرات</button>
                     </form>
                 </div>
@@ -134,98 +193,35 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
-        let ceoName = localStorage.getItem('userName') || 'مدیر ارشد';
-        document.getElementById('ceoNameSidebar').innerText = ceoName;
-
         let addModal, editModal;
 
-        function showMessage(divId, message, isError) {
-            const msgDiv = document.getElementById(divId);
-            msgDiv.style.display = 'block';
-            msgDiv.className = isError ? 'alert alert-danger' : 'alert alert-success';
-            msgDiv.innerHTML = `<i class="bi bi-${isError ? 'exclamation-triangle-fill' : 'check-circle-fill'} me-2"></i> ${message}`;
-            setTimeout(() => msgDiv.style.display = 'none', 3000);
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
-        async function loadAdmins() {
-            const res = await fetch('/api/admins');
-            const admins = await res.json();
-            if (admins.length === 0) { document.getElementById('adminsList').innerHTML = '<td><td colspan="6" class="text-center text-muted py-4">هیچ مدیری ثبت نشده است</div></div></div><td>'; return; }
-            document.getElementById('adminsList').innerHTML = admins.map(a => `
-                <tr><td class="text-dark"><strong>${a.name}</strong>${a.father_name ? `<br><small>${a.father_name}</small>` : ''}</div></div></div>
-                <td class="text-dark">${a.father_name || '-'}</div></div></div><td class="text-dark">${a.phone || '-'}</div></div></div>
-                <td class="text-dark">${a.email}</div></div></div><td class="text-dark">${a.created_at ? new Date(a.created_at).toLocaleDateString('fa-IR') : '-'}</div></div></div>
-                <td class="text-dark"><button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${a.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteAdmin(${a.id})"><i class="bi bi-trash"></i></button></div></div></div>
-            `).join('');
-        }
+        function showMessage(divId, message, isError) { const msgDiv = document.getElementById(divId); msgDiv.style.display = 'block'; msgDiv.className = isError ? 'alert alert-danger' : 'alert alert-success'; msgDiv.innerHTML = `<i class="fa-solid fa-${isError ? 'circle-exclamation' : 'circle-check'} me-2"></i> ${message}`; setTimeout(() => msgDiv.style.display = 'none', 3000); }
 
-        async function deleteAdmin(id) {
-            if (!confirm('⚠️ آیا از حذف این مدیر اطمینان دارید؟')) return;
-            const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' });
-            if (res.ok) { showMessage('formMessage', 'مدیر حذف شد', false); loadAdmins(); }
-            else showMessage('formMessage', 'خطا در حذف', true);
-        }
+        async function loadAdmins() { const res = await fetch('/api/admins'); const admins = await res.json(); if (admins.length === 0) { document.getElementById('adminsList').innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">هیچ مدیری ثبت نشده است</div></div></div></tr>'; return; } document.getElementById('adminsList').innerHTML = admins.map(a => `<tr><td class="text-dark"><strong>${a.name}</strong>${a.father_name ? `<br><small>${a.father_name}</small>` : ''}</div></div></div><td class="text-dark">${a.father_name || '-'}</div></div></div><td class="text-dark">${a.phone || '-'}</div></div></div><td class="text-dark">${a.email}</div></div></div><td class="text-dark">${a.created_at ? new Date(a.created_at).toLocaleDateString('fa-IR') : '-'}</div></div></div><td class="text-dark"><button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${a.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteAdmin(${a.id})"><i class="fa-solid fa-trash"></i></button></div></div></div></tr>`).join(''); }
 
-        async function openEditModal(id) {
-            const res = await fetch(`/api/employees/${id}`);
-            const admin = await res.json();
-            document.getElementById('editAdminId').value = admin.id;
-            document.getElementById('editAdminName').value = admin.name || '';
-            document.getElementById('editAdminFather').value = admin.father_name || '';
-            document.getElementById('editAdminPhone').value = admin.phone || '';
-            document.getElementById('editAdminEmail').value = admin.email || '';
-            document.getElementById('editAdminStatus').value = admin.status || 'active';
-            document.getElementById('editAdminPassword').value = '';
-            document.getElementById('editFormMessage').style.display = 'none';
-            editModal.show();
-        }
+        async function deleteAdmin(id) { if (!confirm('⚠️ آیا از حذف این مدیر اطمینان دارید؟')) return; const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' }); if (res.ok) { showMessage('formMessage', 'مدیر حذف شد', false); loadAdmins(); } else showMessage('formMessage', 'خطا در حذف', true); }
 
-        document.getElementById('openAdminModalBtn').addEventListener('click', () => {
-            document.getElementById('addAdminForm').reset();
-            document.getElementById('formMessage').style.display = 'none';
-            addModal.show();
-        });
+        async function openEditModal(id) { const res = await fetch(`/api/employees/${id}`); const admin = await res.json(); document.getElementById('editAdminId').value = admin.id; document.getElementById('editAdminName').value = admin.name || ''; document.getElementById('editAdminFather').value = admin.father_name || ''; document.getElementById('editAdminPhone').value = admin.phone || ''; document.getElementById('editAdminEmail').value = admin.email || ''; document.getElementById('editAdminStatus').value = admin.status || 'active'; document.getElementById('editAdminPassword').value = ''; document.getElementById('editFormMessage').style.display = 'none'; editModal.show(); }
 
-        document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
-            const formData = new FormData();
-            formData.append('name', document.getElementById('adminName').value);
-            formData.append('father_name', document.getElementById('adminFather').value);
-            formData.append('phone', document.getElementById('adminPhone').value);
-            formData.append('email', document.getElementById('adminEmail').value);
-            formData.append('password', document.getElementById('adminPassword').value || '123456');
-            formData.append('position', 'admin');
-            const res = await fetch('/api/employees', { method: 'POST', body: formData });
-            if (res.ok) { showMessage('formMessage', 'مدیر اضافه شد', false); addModal.hide(); loadAdmins(); }
-            else { const err = await res.json(); showMessage('formMessage', err.error || 'خطا', true); }
-            submitBtn.disabled = false; submitBtn.innerHTML = 'ایجاد مدیر';
-        });
+        document.getElementById('openAdminModalBtn').addEventListener('click', () => { document.getElementById('addAdminForm').reset(); document.getElementById('formMessage').style.display = 'none'; addModal.show(); });
 
-        document.getElementById('editAdminForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editAdminId').value;
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ذخیره...';
-            const formData = new FormData();
-            formData.append('name', document.getElementById('editAdminName').value);
-            formData.append('father_name', document.getElementById('editAdminFather').value);
-            formData.append('phone', document.getElementById('editAdminPhone').value);
-            formData.append('email', document.getElementById('editAdminEmail').value);
-            formData.append('status', document.getElementById('editAdminStatus').value);
-            if (document.getElementById('editAdminPassword').value) formData.append('password', document.getElementById('editAdminPassword').value);
-            const res = await fetch(`/api/employees/${id}`, { method: 'PUT', body: formData });
-            if (res.ok) { showMessage('editFormMessage', 'اطلاعات به روز شد', false); editModal.hide(); loadAdmins(); }
-            else showMessage('editFormMessage', 'خطا در ویرایش', true);
-            submitBtn.disabled = false; submitBtn.innerHTML = 'ذخیره تغییرات';
-        });
+        document.getElementById('addAdminForm').addEventListener('submit', async (e) => { e.preventDefault(); const submitBtn = e.target.querySelector('button[type="submit"]'); submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...'; const formData = new FormData(); formData.append('name', document.getElementById('adminName').value); formData.append('father_name', document.getElementById('adminFather').value); formData.append('phone', document.getElementById('adminPhone').value); formData.append('email', document.getElementById('adminEmail').value); formData.append('password', document.getElementById('adminPassword').value || '123456'); formData.append('position', 'admin'); const res = await fetch('/api/employees', { method: 'POST', body: formData }); if (res.ok) { showMessage('formMessage', 'مدیر اضافه شد', false); addModal.hide(); loadAdmins(); } else { const err = await res.json(); showMessage('formMessage', err.error || 'خطا', true); } submitBtn.disabled = false; submitBtn.innerHTML = 'ایجاد مدیر'; });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            addModal = new bootstrap.Modal(document.getElementById('addAdminModal'));
-            editModal = new bootstrap.Modal(document.getElementById('editAdminModal'));
-            loadAdmins();
-        });
+        document.getElementById('editAdminForm').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('editAdminId').value; const submitBtn = e.target.querySelector('button[type="submit"]'); submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ذخیره...'; const formData = new FormData(); formData.append('name', document.getElementById('editAdminName').value); formData.append('father_name', document.getElementById('editAdminFather').value); formData.append('phone', document.getElementById('editAdminPhone').value); formData.append('email', document.getElementById('editAdminEmail').value); formData.append('status', document.getElementById('editAdminStatus').value); if (document.getElementById('editAdminPassword').value) formData.append('password', document.getElementById('editAdminPassword').value); const res = await fetch(`/api/employees/${id}`, { method: 'PUT', body: formData }); if (res.ok) { showMessage('editFormMessage', 'اطلاعات به روز شد', false); editModal.hide(); loadAdmins(); } else showMessage('editFormMessage', 'خطا در ویرایش', true); submitBtn.disabled = false; submitBtn.innerHTML = 'ذخیره تغییرات'; });
+
+        document.addEventListener('DOMContentLoaded', () => { addModal = new bootstrap.Modal(document.getElementById('addAdminModal')); editModal = new bootstrap.Modal(document.getElementById('editAdminModal')); setupSidebar(); loadAdmins(); });
     </script>
 </body>
 
