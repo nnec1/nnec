@@ -19,7 +19,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            font-family: 'Tahoma', 'Segoe UI', 'Courier New', monospace;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .receipt {
@@ -30,6 +30,7 @@
             margin: 0 auto;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             direction: rtl;
+            /* display: flex; */
         }
 
         @media print {
@@ -168,10 +169,10 @@
 <body>
     <div class="receipt">
         <!-- لوگو -->
-        <div class="logo">
+        <!-- <div class="logo">
             <img id="logoImg" src="/default-logo.png" class="logo-img"
                 onerror="this.src='https://placehold.co/35x35?text=logo'">
-        </div>
+        </div> -->
 
         <!-- نام آموزشگاه -->
         <div class="text-center bold xlarge" id="instName">آموزشگاه نوی نور</div>
@@ -180,7 +181,7 @@
 
         <!-- تاریخ صدور و شماره رسید -->
         <div class="date-line">
-            <span>صدور: <span id="issueDate">-</span></span>
+            <span style="font-weight: bolder; font-size: 11px;">صدور: <span id="issueDate">-</span></span>
             <span>شماره: <span id="receiptNumber">-</span></span>
         </div>
         <div class="hr"></div>
@@ -209,7 +210,8 @@
                 id="notes">-</span></div>
 
         <!-- متن قانونی -->
-        <div class="warning">⚠️ فیس تحویل شده مسترد نمیگردد</div>
+        <div class="warning" style="font-weight: bolder; font-size: 12px; font-family: Arial, Helvetica, sans-serif;">⚠️
+            فیس تحویل شده مسترد نمیگردد</div>
 
         <!-- تماس -->
         <div class="contact">📞 0781304830</div>
