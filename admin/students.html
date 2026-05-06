@@ -78,6 +78,31 @@
             border: none;
         }
 
+        .remaining-calc-box {
+            background: #fef3c7;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .barcode-preview {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .text-muted-small {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -198,7 +223,7 @@
                             <option value="disabled">غیرفعال</option>
                         </select></div>
                     <div class="col-md-3"><input type="text" class="form-control" id="searchStudent"
-                            placeholder="جستجوی نام..."></div>
+                            placeholder="جستجوی نام یا آیدی کارت..."></div>
                     <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadStudents()"><i
                                 class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                 </div>
@@ -217,6 +242,7 @@
                                     <th>فیس کل</th>
                                     <th>پرداخت شده</th>
                                     <th>باقی مانده</th>
+                                    <th>تاریخ ثبت</th>
                                     <th>تاریخ انقضا</th>
                                     <th>وضعیت</th>
                                     <th>عملیات</th>
@@ -242,45 +268,95 @@
                     <form id="studentForm" enctype="multipart/form-data">
                         <input type="hidden" id="stuId">
                         <div class="row g-3">
-                            <div class="col-md-6"><label class="form-label">نام کامل <span
-                                        class="text-danger">*</span></label><input type="text" class="form-control"
-                                    id="stuName" required></div>
-                            <div class="col-md-6"><label class="form-label">نام پدر <span
-                                        class="text-danger">*</span></label><input type="text" class="form-control"
-                                    id="stuFather" required></div>
-                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
-                                    class="form-control" id="stuPhone"></div>
-                            <div class="col-md-6"><label class="form-label">صنف <span
-                                        class="text-danger">*</span></label><select class="form-select" id="stuClassId"
-                                    required>
-                                    <option value="">انتخاب صنف...</option>
-                                </select></div>
-                            <div class="col-md-6"><label class="form-label">فیس اصلی (AFN)</label><input type="number"
-                                    class="form-control" id="stuTotalFee" value="0" oninput="calculateRemaining()">
+                            <!-- اطلاعات پایه (اجباری) -->
+                            <div class="col-md-6">
+                                <label class="form-label">نام کامل <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="stuName" required>
                             </div>
-                            <div class="col-md-6"><label class="form-label">فیس پرداخت شده (AFN)</label><input
-                                    type="number" class="form-control" id="stuPaidFee" value="0"
-                                    oninput="calculateRemaining()"></div>
-                            <div class="col-md-6"><label class="form-label">باقی مانده (AFN)</label><input type="number"
-                                    class="form-control" id="stuRemainingFee" readonly style="background:#f1f5f9"></div>
-                            <div class="col-md-6"><label class="form-label">تاریخ انقضای فیس</label><input type="date"
-                                    class="form-control" id="stuDueDate"></div>
-                            <div class="col-md-6"><label class="form-label">وضعیت</label><select class="form-select"
-                                    id="stuStatus">
+                            <div class="col-md-6">
+                                <label class="form-label">نام پدر <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="stuFather" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">شماره تماس</label>
+                                <input type="text" class="form-control" id="stuPhone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">صنف <span class="text-danger">*</span></label>
+                                <select class="form-select" id="stuClassId" required>
+                                    <option value="">انتخاب صنف...</option>
+                                </select>
+                            </div>
+
+                            <!-- بارکد / آیدی کارت (خودکار تولید می‌شود) -->
+                            <div class="col-md-12">
+                                <label class="form-label"><i class="fa-solid fa-barcode"></i> آیدی کارت / بارکد</label>
+                                <div class="barcode-preview" id="barcodePreview">
+                                    در حال تولید...
+                                </div>
+                                <small class="text-muted">به طور خودکار تولید می‌شود و شاگرد می‌تواند با آن وارد
+                                    شود</small>
+                            </div>
+
+                            <!-- تاریخ ثبت و انقضا -->
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ ثبت <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="stuRegDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ انقضا</label>
+                                <input type="date" class="form-control" id="stuDueDate">
+                                <small class="text-muted">خالی = یک ماه بعد از تاریخ ثبت</small>
+                            </div>
+
+                            <!-- فیلدهای فیس (اختیاری) -->
+                            <div class="col-md-6">
+                                <label class="form-label">فیس اصلی (AFN) <span
+                                        class="text-muted-small">(اختیاری)</span></label>
+                                <input type="number" class="form-control" id="stuTotalFee" value=""
+                                    placeholder="مثال: 5000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">پرداخت اولیه (AFN) <span
+                                        class="text-muted-small">(اختیاری)</span></label>
+                                <input type="number" class="form-control" id="stuPaidFee" value=""
+                                    placeholder="مثال: 2000">
+                            </div>
+
+                            <!-- نمایش باقی مانده -->
+                            <div class="col-12">
+                                <div id="remainingCalcBox" class="remaining-calc-box">
+                                    <span class="text-dark">💰 باقی مانده:</span>
+                                    <strong id="remainingAmountDisplay" class="text-danger">0 AFN</strong>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">وضعیت</label>
+                                <select class="form-select" id="stuStatus">
                                     <option value="active">فعال</option>
                                     <option value="graduated">فارغ‌التحصیل</option>
                                     <option value="disabled">غیرفعال</option>
-                                </select></div>
-                            <div class="col-12"><label class="form-label">آدرس</label><textarea class="form-control"
-                                    id="stuAddress" rows="2"></textarea></div>
-                            <div class="col-12"><label class="form-label">عکس شاگرد</label><input type="file"
-                                    class="form-control" id="stuPhoto" accept="image/*"></div>
-                            <div class="col-12"><label class="form-label">رمز عبور جدید</label><input type="password"
-                                    class="form-control" id="stuPassword" placeholder="در صورت ویرایش خالی بگذارید">
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">آدرس</label>
+                                <textarea class="form-control" id="stuAddress" rows="2"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">عکس شاگرد</label>
+                                <input type="file" class="form-control" id="stuPhoto" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">رمز عبور (خالی = خودکار)</label>
+                                <input type="password" class="form-control" id="stuPassword"
+                                    placeholder="در صورت خالی، رمز خودکار تولید می‌شود">
                             </div>
                         </div>
-                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i
-                                    class="fa-solid fa-save"></i> ذخیره شاگرد</button></div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
+                                شاگرد</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -291,6 +367,73 @@
     <script src="/main.js"></script>
     <script>
         let currentEditId = null, studentModal = null;
+        let generatedCardId = null;
+
+        // تولید آیدی کارت خودکار
+        function generateStudentCardId() {
+            const prefix = "STU";
+            const year = new Date().getFullYear().toString().slice(-2);
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+            return `${prefix}-${year}-${random}`;
+        }
+
+        // به روزرسانی پیش‌نمایش بارکد
+        function updateBarcodePreview() {
+            const preview = document.getElementById('barcodePreview');
+            if (preview) {
+                generatedCardId = generateStudentCardId();
+                preview.innerHTML = `<i class="fa-solid fa-barcode"></i> ${generatedCardId}`;
+            }
+        }
+
+        // محاسبه تاریخ انقضا بر اساس تاریخ ثبت
+        function updateExpiryByRegDate() {
+            const regDate = document.getElementById('stuRegDate').value;
+            const expiryInput = document.getElementById('stuDueDate');
+            if (regDate && !expiryInput.value) {
+                const date = new Date(regDate);
+                date.setMonth(date.getMonth() + 1);
+                expiryInput.value = date.toISOString().split('T')[0];
+            }
+        }
+
+        // محاسبه باقی مانده (اختیاری)
+        function calculateRemainingOptional() {
+            const totalFee = document.getElementById('stuTotalFee').value;
+            const paidFee = document.getElementById('stuPaidFee').value;
+
+            const hasTotal = totalFee !== null && totalFee !== '';
+            const hasPaid = paidFee !== null && paidFee !== '';
+
+            const remainingBox = document.getElementById('remainingCalcBox');
+            const remainingSpan = document.getElementById('remainingAmountDisplay');
+
+            if (hasTotal && hasPaid) {
+                const totalNum = parseFloat(totalFee) || 0;
+                const paidNum = parseFloat(paidFee) || 0;
+                const remaining = totalNum - paidNum;
+
+                remainingBox.style.display = 'block';
+
+                if (remaining > 0) {
+                    remainingSpan.innerHTML = remaining.toLocaleString() + ' AFN';
+                    remainingSpan.style.color = '#dc2626';
+                } else if (remaining === 0) {
+                    remainingSpan.innerHTML = '0 AFN (پرداخت کامل)';
+                    remainingSpan.style.color = '#10b981';
+                } else {
+                    remainingSpan.innerHTML = '0 AFN (اضافه پرداختی)';
+                    remainingSpan.style.color = '#f59e0b';
+                }
+            } else if (hasTotal && !hasPaid) {
+                const totalNum = parseFloat(totalFee) || 0;
+                remainingBox.style.display = 'block';
+                remainingSpan.innerHTML = totalNum.toLocaleString() + ' AFN (پرداخت نشده)';
+                remainingSpan.style.color = '#dc2626';
+            } else {
+                remainingBox.style.display = 'none';
+            }
+        }
 
         function formatDate(dateString) {
             if (!dateString) return '-';
@@ -301,20 +444,6 @@
                 if (isNaN(d.getTime())) return dateString;
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             } catch (e) { return dateString; }
-        }
-
-        function setDefaultDueDate() {
-            const today = new Date();
-            const nextMonth = new Date(today);
-            nextMonth.setMonth(today.getMonth() + 1);
-            document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
-        }
-
-        function calculateRemaining() {
-            const totalFee = parseFloat(document.getElementById('stuTotalFee').value) || 0;
-            const paidFee = parseFloat(document.getElementById('stuPaidFee').value) || 0;
-            const remaining = totalFee - paidFee;
-            document.getElementById('stuRemainingFee').value = remaining < 0 ? 0 : remaining;
         }
 
         function setupSidebar() {
@@ -351,16 +480,17 @@
 
                 if (classId) students = students.filter(s => s.class_id == classId);
                 if (status) students = students.filter(s => s.status === status);
-                if (search) students = students.filter(s => s.name.toLowerCase().includes(search));
+                if (search) students = students.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
 
                 if (!students || students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
+                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="13" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
                     return;
                 }
 
                 document.getElementById('studentsList').innerHTML = students.map(s => {
                     const isExpired = s.due_date && new Date(s.due_date) < new Date() && s.remaining_fee > 0;
                     const isDebtor = !isExpired && s.remaining_fee > 0;
+                    const regDateFormatted = formatDate(s.registration_date);
                     const dueDateFormatted = formatDate(s.due_date);
                     let statusClass = s.status === 'active' ? 'status-active' : (s.status === 'graduated' ? 'status-graduated' : 'status-disabled');
                     let statusText = s.status === 'active' ? 'فعال' : (s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال');
@@ -377,6 +507,7 @@
                         <td class="text-dark">${(s.total_fee || 0).toLocaleString()}</div></div></div>
                         <td class="text-success">${(s.paid_fee || 0).toLocaleString()}</div></div></div>
                         <td class="text-danger">${(s.remaining_fee || 0).toLocaleString()}</div></div></div>
+                        <td class="text-dark">${regDateFormatted}</div></div></div>
                         <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">${dueDateFormatted}</div></div></div>
                         <td><span class="${statusClass}">${statusText}</span></div></div></div>
                         <td>
@@ -388,7 +519,7 @@
                 }).join('');
             } catch (err) {
                 console.error('Error loading students:', err);
-                document.getElementById('studentsList').innerHTML = '<tr><td colspan="12" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="13" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></table>';
             }
         }
 
@@ -403,13 +534,15 @@
                 document.getElementById('stuFather').value = s.father_name || '';
                 document.getElementById('stuPhone').value = s.phone || '';
                 document.getElementById('stuClassId').value = s.class_id || '';
-                document.getElementById('stuTotalFee').value = s.total_fee || 0;
-                document.getElementById('stuPaidFee').value = s.paid_fee || 0;
-                calculateRemaining();
+                document.getElementById('stuRegDate').value = s.registration_date ? formatDate(s.registration_date) : new Date().toISOString().split('T')[0];
                 document.getElementById('stuDueDate').value = s.due_date ? formatDate(s.due_date) : '';
+                document.getElementById('stuTotalFee').value = s.total_fee || '';
+                document.getElementById('stuPaidFee').value = s.paid_fee || '';
                 document.getElementById('stuStatus').value = s.status || 'active';
                 document.getElementById('stuAddress').value = s.address || '';
+                document.getElementById('barcodePreview').innerHTML = `<i class="fa-solid fa-barcode"></i> ${s.student_card_id || generateStudentCardId()}`;
                 document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش شاگرد';
+                calculateRemainingOptional();
                 if (studentModal) studentModal.show();
             } catch (err) { alert('خطا در بارگیری اطلاعات'); }
         }
@@ -418,22 +551,52 @@
             currentEditId = null;
             document.getElementById('studentForm').reset();
             document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-            setDefaultDueDate();
-            calculateRemaining();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('stuRegDate').value = today;
+            updateBarcodePreview();
+            updateExpiryByRegDate();
+            document.getElementById('remainingCalcBox').style.display = 'none';
         }
 
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const totalFee = document.getElementById('stuTotalFee').value;
+            const paidFee = document.getElementById('stuPaidFee').value;
+            const dueDate = document.getElementById('stuDueDate').value;
+            const regDate = document.getElementById('stuRegDate').value;
+
+            const hasTotal = totalFee !== null && totalFee !== '';
+            const hasPaid = paidFee !== null && paidFee !== '';
+
+            let finalTotalFee = 0;
+            let finalPaidFee = 0;
+            let finalRemainingFee = 0;
+
+            if (hasTotal) finalTotalFee = parseFloat(totalFee) || 0;
+            if (hasPaid) finalPaidFee = parseFloat(paidFee) || 0;
+            finalRemainingFee = finalTotalFee - finalPaidFee;
+            if (finalRemainingFee < 0) finalRemainingFee = 0;
+
+            let finalDueDate = dueDate;
+            if (!finalDueDate && (hasTotal || hasPaid)) {
+                const date = new Date(regDate);
+                date.setMonth(date.getMonth() + 1);
+                finalDueDate = date.toISOString().split('T')[0];
+            }
+
             const formData = new FormData();
             formData.append('name', document.getElementById('stuName').value);
             formData.append('father_name', document.getElementById('stuFather').value);
             formData.append('phone', document.getElementById('stuPhone').value);
             formData.append('class_id', document.getElementById('stuClassId').value);
-            formData.append('total_fee', document.getElementById('stuTotalFee').value);
-            formData.append('paid_fee', document.getElementById('stuPaidFee').value);
-            formData.append('due_date', document.getElementById('stuDueDate').value);
+            formData.append('registration_date', regDate);
+            formData.append('total_fee', finalTotalFee);
+            formData.append('paid_fee', finalPaidFee);
+            formData.append('due_date', finalDueDate || '');
             formData.append('status', document.getElementById('stuStatus').value);
             formData.append('address', document.getElementById('stuAddress').value);
+            formData.append('student_card_id', generatedCardId);
 
             if (document.getElementById('stuPhoto').files[0]) formData.append('photo', document.getElementById('stuPhoto').files[0]);
             if (document.getElementById('stuPassword').value) formData.append('password', document.getElementById('stuPassword').value);
@@ -450,32 +613,21 @@
                     loadStudents();
                     resetStudentForm();
 
-                    if (!currentEditId && data.id) {
+                    if (!currentEditId && data.id && finalPaidFee > 0) {
                         window.open(`/student-card.html?id=${data.id}`, '_blank');
-                        const totalFee = parseFloat(document.getElementById('stuTotalFee').value) || 0;
-                        const paidFee = parseFloat(document.getElementById('stuPaidFee').value) || 0;
-                        if (totalFee > 0 && paidFee > 0) {
-                            const studentInfo = await fetch(`/api/students/${data.id}`).then(r => r.json());
-                            const remainingFee = totalFee - paidFee;
-                            // تعیین وضعیت شاگرد برای رسید
-                            let studentStatus = '';
-                            if (remainingFee <= 0) studentStatus = 'paid';
-                            else if (studentInfo.due_date && new Date(studentInfo.due_date) < new Date()) studentStatus = 'expired';
-                            else studentStatus = 'debtor';
-
-                            if (typeof printReceipt === 'function') {
-                                printReceipt(
-                                    studentInfo.name, studentInfo.father_name, studentInfo.student_card_id,
-                                    totalFee, paidFee, remainingFee,
-                                    paidFee, new Date().toISOString().split('T')[0],
-                                    studentInfo.due_date, 'RCP-REG-' + Date.now(),
-                                    'پرداخت اولیه هنگام ثبت‌نام',
-                                    studentInfo.class_name || '',
-                                    studentStatus,
-                                    0,
-                                    false
-                                );
-                            }
+                        const studentInfo = await fetch(`/api/students/${data.id}`).then(r => r.json());
+                        if (typeof printReceipt === 'function') {
+                            printReceipt(
+                                studentInfo.name, studentInfo.father_name, generatedCardId,
+                                finalTotalFee, finalPaidFee, finalRemainingFee,
+                                finalPaidFee, regDate, finalDueDate,
+                                'RCP-REG-' + Date.now(),
+                                hasTotal ? `فیس کل: ${finalTotalFee.toLocaleString()} AFN` : 'بدون فیس کل',
+                                studentInfo.class_name || '',
+                                finalRemainingFee <= 0 ? 'paid' : 'debtor',
+                                0,
+                                false
+                            );
                         }
                     }
                 } else {
@@ -484,7 +636,12 @@
             } catch (err) { alert('خطا در ارتباط با سرور'); }
         });
 
-        setDefaultDueDate();
+        // رویدادها
+        document.getElementById('stuTotalFee').addEventListener('input', calculateRemainingOptional);
+        document.getElementById('stuPaidFee').addEventListener('input', calculateRemainingOptional);
+        document.getElementById('stuRegDate').addEventListener('change', updateExpiryByRegDate);
+
+        resetStudentForm();
         setupSidebar();
         document.addEventListener('DOMContentLoaded', () => {
             studentModal = new bootstrap.Modal(document.getElementById('studentModal'));
