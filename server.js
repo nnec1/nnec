@@ -1017,6 +1017,65 @@ app.get("/api/dashboard-stats", authenticate, async (req, res) => {
     }
 });
 
+// ====================== API پرداخت جدید مستقل ======================
+app.post("/api/new-payment", authenticate, async (req, res) => {
+    const { student_id, amount, payment_date, due_date, notes } = req.body;
+    const receipt_number = generateReceiptNumber();
+    const paymentAmount = parseFloat(amount);
+    
+    if (isNaN(paymentAmount) || paymentAmount <= 0) {
+        return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
+    }
+    
+    const paymentDate = payment_date || new Date().toISOString().split("T")[0];
+    const finalDueDate = due_date || calculateExpiryDate(paymentDate);
+    
+    try {
+        const [student] = await db.execute(
+            `SELECT s.*, c.class_name FROM students s 
+             JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+            [student_id]
+        );
+        
+        if (student.length === 0) {
+            return res.status(404).json({ error: "شاگرد یافت نشد" });
+        }
+        
+        // فقط ثبت پرداخت جدید در جدول fee_payments (بدون به‌روزرسانی students)
+        await db.execute(
+            `INSERT INTO fee_payments (student_id, amount, payment_date, receipt_number, notes) 
+             VALUES (?, ?, ?, ?, ?)`,
+            [student_id, paymentAmount, paymentDate, receipt_number, notes || null]
+        );
+        
+        res.json({ 
+            success: true, 
+            receipt_number, 
+            student_name: student[0].name || "", 
+            student_father: student[0].father_name || "", 
+            student_card_id: student[0].student_card_id || "", 
+            student_phone: student[0].phone || "",
+            class_name: student[0].class_name || "",
+            amount: paymentAmount, 
+            payment_date: paymentDate, 
+            due_date: finalDueDate, 
+            notes: notes || "",
+            issue_date: new Date().toISOString().split("T")[0]
+        });
+    } catch (err) {
+        console.error("Error in /api/new-payment:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+function calculateExpiryDate(dateString) {
+    if (!dateString) return '';
+    let date = new Date(dateString);
+    date.setMonth(date.getMonth() + 1);
+    return date.toISOString().split('T')[0];
+}
+
+
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, "404.html"));
