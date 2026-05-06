@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت فیس | آموزشگاه نوی نور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* کارت بدهکاران */
+        .debtor-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-right: 4px solid #f59e0b;
+            transition: all 0.3s ease;
+        }
+        .debtor-card:hover { transform: translateX(-5px); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
+        
+        /* کارت منقضی شده */
+        .expired-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-right: 4px solid #dc2626;
+            transition: all 0.3s ease;
+        }
+        .expired-card:hover { transform: translateX(-5px); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
+        
+        .badge-debtor { background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .badge-expired { background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        .badge-paid { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+        
+        .nav-tabs .nav-link {
+            color: #4a5568;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            margin-right: 5px;
+        }
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .filter-box {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-payment {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .btn-payment:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
+        
+        .btn-fullpay {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .btn-fullpay:hover { transform: translateY(-2px); }
+        
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+            .overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link active"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> مدیریت فیس</h3>
+                    <button class="btn-payment" onclick="window.location.href='payment-page.html'">
+                        <i class="fa-solid fa-plus-circle"></i> پرداخت جدید
+                    </button>
+                </div>
+
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#debtors"><i class="fa-solid fa-triangle-exclamation"></i> ⚠️ بدهکاران</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i class="fa-solid fa-clock"></i> ⌛ منقضی شده</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- ==================== تب بدهکاران ==================== -->
+                    <div class="tab-pane fade show active" id="debtors">
+                        <div class="filter-box">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <select id="debtorClassFilter" class="form-select">
+                                        <option value="">همه صنف‌ها</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="debtorSearch" class="form-control" placeholder="جستجوی نام یا آیدی...">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="debtorDateFrom" class="form-control" placeholder="از تاریخ">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="debtorDateTo" class="form-control" placeholder="تا تاریخ">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" onclick="loadDebtors()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="debtorsList" class="row"></div>
+                    </div>
+
+                    <!-- ==================== تب منقضی شده ==================== -->
+                    <div class="tab-pane fade" id="expired">
+                        <div class="filter-box">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <select id="expiredClassFilter" class="form-select">
+                                        <option value="">همه صنف‌ها</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="expiredSearch" class="form-control" placeholder="جستجوی نام یا آیدی...">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="expiredDateFrom" class="form-control" placeholder="از تاریخ انقضا">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="expiredDateTo" class="form-control" placeholder="تا تاریخ انقضا">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" onclick="loadExpired()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="expiredList" class="row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
+            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                let d = new Date(dateString);
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            } catch (e) { return dateString; }
+        }
+
+        function isDateExpired(dateString) {
+            if (!dateString) return false;
+            try {
+                let dueDate = new Date(dateString);
+                let today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return dueDate < today;
+            } catch (e) { return false; }
+        }
+
+        async function loadClasses() {
+            try {
+                const res = await fetch('/api/classes');
+                const classes = await res.json();
+                const options = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                document.getElementById('debtorClassFilter').innerHTML = options;
+                document.getElementById('expiredClassFilter').innerHTML = options;
+            } catch (err) { console.error(err); }
+        }
+
+        // ========== بارگذاری بدهکاران ==========
+        async function loadDebtors() {
+            const res = await fetch('/api/fee-defaulters');
+            let data = await res.json();
+            
+            const classId = document.getElementById('debtorClassFilter').value;
+            const search = document.getElementById('debtorSearch').value.toLowerCase();
+            const dateFrom = document.getElementById('debtorDateFrom').value;
+            const dateTo = document.getElementById('debtorDateTo').value;
+            
+            if (classId) data = data.filter(d => d.class_id == classId);
+            if (search) data = data.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.includes(search)));
+            if (dateFrom) data = data.filter(d => d.due_date >= dateFrom);
+            if (dateTo) data = data.filter(d => d.due_date <= dateTo);
+            
+            if (!data || data.length === 0) {
+                document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
+                return;
+            }
+            
+            let html = '';
+            for (const d of data) {
+                const remainingFee = parseFloat(d.remaining_fee) || 0;
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="debtor-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6><i class="fa-solid fa-user-circle"></i> ${d.name}</h6>
+                                <span class="badge-debtor"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار</span>
+                            </div>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-phone"></i> تماس: ${d.phone || '-'}</p>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>فیس کل:</strong></span>
+                                <span>${(parseFloat(d.total_fee) || 0).toLocaleString()} AFN</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>پرداخت شده:</strong></span>
+                                <span class="text-success">${(parseFloat(d.paid_fee) || 0).toLocaleString()} AFN</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>باقی مانده:</strong></span>
+                                <span class="text-danger fw-bold">${remainingFee.toLocaleString()} AFN</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span><strong>تاریخ انقضا:</strong></span>
+                                <span class="${isDateExpired(d.due_date) ? 'text-danger' : ''}">${formatDate(d.due_date)}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-payment w-50" onclick="openPaymentPage(${d.id})">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i> پرداخت
+                                </button>
+                                <button class="btn btn-sm btn-fullpay w-50" onclick="openFullPayment(${d.id}, ${remainingFee})">
+                                    <i class="fa-solid fa-check-circle"></i> تسویه کامل
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('debtorsList').innerHTML = html;
+        }
+
+        // ========== بارگذاری منقضی شده ==========
+        async function loadExpired() {
+            const res = await fetch('/api/fee-expired');
+            let data = await res.json();
+            
+            const classId = document.getElementById('expiredClassFilter').value;
+            const search = document.getElementById('expiredSearch').value.toLowerCase();
+            const dateFrom = document.getElementById('expiredDateFrom').value;
+            const dateTo = document.getElementById('expiredDateTo').value;
+            
+            if (classId) data = data.filter(d => d.class_id == classId);
+            if (search) data = data.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.includes(search)));
+            if (dateFrom) data = data.filter(d => d.due_date >= dateFrom);
+            if (dateTo) data = data.filter(d => d.due_date <= dateTo);
+            
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const expired = (data || []).filter(s => s.due_date && new Date(s.due_date) < today && (parseFloat(s.remaining_fee) || 0) > 0);
+            
+            if (expired.length === 0) {
+                document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div>';
+                return;
+            }
+            
+            let html = '';
+            for (const d of expired) {
+                const remainingFee = parseFloat(d.remaining_fee) || 0;
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="expired-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6><i class="fa-solid fa-user-circle"></i> ${d.name}</h6>
+                                <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
+                            </div>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>فیس کل:</strong></span>
+                                <span>${(parseFloat(d.total_fee) || 0).toLocaleString()} AFN</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>پرداخت شده:</strong></span>
+                                <span class="text-success">${(parseFloat(d.paid_fee) || 0).toLocaleString()} AFN</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>باقی مانده:</strong></span>
+                                <span class="text-danger fw-bold">${remainingFee.toLocaleString()} AFN</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span><strong>تاریخ انقضا:</strong></span>
+                                <span class="text-danger fw-bold">${formatDate(d.due_date)}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-payment w-50" onclick="openPaymentPage(${d.id})">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i> پرداخت
+                                </button>
+                                <button class="btn btn-sm btn-fullpay w-50" onclick="openFullPayment(${d.id}, ${remainingFee})">
+                                    <i class="fa-solid fa-check-circle"></i> تسویه کامل
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('expiredList').innerHTML = html;
+        }
+
+        // ========== باز کردن صفحه پرداخت ==========
+        function openPaymentPage(studentId) {
+            window.location.href = `payment-page.html?id=${studentId}`;
+        }
+
+        // ========== پرداخت کامل یکجا ==========
+        async function openFullPayment(studentId, amount) {
+            if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+            
+            const res = await fetch('/api/collect-fee', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('✅ پرداخت کامل ثبت شد');
+                loadDebtors();
+                loadExpired();
+                if (typeof printReceipt === 'function') {
+                    const studentRes = await fetch(`/api/students/${studentId}`);
+                    const student = await studentRes.json();
+                    let studentStatus = 'paid';
+                    printReceipt(
+                        data.student_name, data.student_father, data.student_card_id,
+                        data.total_fee, data.paid_fee, data.remaining_fee,
+                        data.payment_amount, data.payment_date, data.expiry_date,
+                        data.receipt_number, 'پرداخت کامل یکجا',
+                        student.class_name || '',
+                        studentStatus,
+                        data.paid_fee - data.payment_amount,
+                        false
+                    );
+                }
+            } else { alert(data.error || 'خطا'); }
+        }
+
+        setupSidebar();
+        loadClasses();
+        loadDebtors();
+        loadExpired();
+    </script>
+</body>
+</html>
