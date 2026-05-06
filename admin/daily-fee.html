@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>گزارش فیس روزانه | آموزشگاه نوی نور</title>
+    <title>آمار روزانه فیس | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -17,6 +17,11 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
         }
 
         .stat-card h2 {
@@ -25,18 +30,16 @@
             margin: 10px 0 0;
         }
 
-        .table-container {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow-x: auto;
+        .stat-card h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0 0;
         }
 
         .today-card {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 25px;
             text-align: center;
             margin-bottom: 25px;
@@ -45,6 +48,22 @@
         .today-card h1 {
             font-size: 2.5rem;
             font-weight: bold;
+        }
+
+        .filter-box {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
         }
 
         .menu-toggle {
@@ -121,13 +140,13 @@
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
                     <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
                         فیس</a>
-                    <a href="daily-fee.html" class="nav-link active"><i class="fa-solid fa-calendar-day"></i> فیس
+                    <a href="daily-fee.html" class="nav-link active"><i class="fa-solid fa-calendar-day"></i> آمار
                         روزانه</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
@@ -140,7 +159,7 @@
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="fa-solid fa-calendar-day text-success me-2"></i> گزارش فیس روزانه
+                <h3 class="section-title"><i class="fa-solid fa-calendar-day text-success me-2"></i> آمار روزانه فیس
                 </h3>
 
                 <!-- کارت فیس امروز -->
@@ -148,18 +167,38 @@
                     <h5><i class="fa-solid fa-calendar-day"></i> فیس جمع‌آوری شده امروز</h5>
                     <h1 id="todayTotal">0 AFN</h1>
                     <p id="todayCount">0 تراکنش</p>
-                    <small>تاریخ: <span id="todayDate">-</span></small>
+                    <small>تاریخ صدور: <span id="todayDate">-</span></small>
+                </div>
+
+                <!-- کارت فیس دیروز -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <i class="fa-regular fa-calendar-day text-primary"></i>
+                            <h2 id="yesterdayTotal">0 AFN</h2>
+                            <small>فیس دیروز</small>
+                            <p class="mb-0 text-muted small" id="yesterdayCount">0 تراکنش</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <i class="fa-solid fa-chart-line text-success"></i>
+                            <h2 id="monthTotal">0 AFN</h2>
+                            <small>فیس این ماه</small>
+                            <p class="mb-0 text-muted small" id="monthCount">0 تراکنش</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- فیلتر بازه زمانی -->
-                <div class="filter-box bg-white p-3 rounded-3 mb-4 shadow-sm">
+                <div class="filter-box">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">از تاریخ</label>
+                            <label class="form-label"><i class="fa-regular fa-calendar"></i> از تاریخ</label>
                             <input type="date" id="startDate" class="form-control">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">تا تاریخ</label>
+                            <label class="form-label"><i class="fa-regular fa-calendar"></i> تا تاریخ</label>
                             <input type="date" id="endDate" class="form-control">
                         </div>
                         <div class="col-md-4">
@@ -184,14 +223,14 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>تاریخ</th>
+                                    <th>تاریخ صدور</th>
                                     <th>تعداد تراکنش</th>
                                     <th>جمع فیس (AFN)</th>
                                     <th>عملیات</th>
                                 </tr>
                             </thead>
                             <tbody id="dailyTable"></tbody>
-                        </table>
+                            追赶
                     </div>
                 </div>
             </div>
@@ -233,6 +272,45 @@
                 document.getElementById('todayDate').innerHTML = formatDate(data.date);
             } catch (err) {
                 console.error(err);
+                document.getElementById('todayTotal').innerHTML = '0 AFN';
+                document.getElementById('todayCount').innerHTML = '0 تراکنش';
+            }
+        }
+
+        // بارگذاری آمار دیروز و این ماه
+        async function loadExtraStats() {
+            try {
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                const monthStartStr = firstDayOfMonth.toISOString().split('T')[0];
+                const todayStr = today.toISOString().split('T')[0];
+
+                // آمار دیروز
+                const yesterdayRes = await fetch(`/api/daily-fee-summary?start_date=${yesterdayStr}&end_date=${yesterdayStr}`);
+                const yesterdayData = await yesterdayRes.json();
+                const yesterdayTotal = yesterdayData.length > 0 ? yesterdayData[0].total_amount : 0;
+                const yesterdayCount = yesterdayData.length > 0 ? yesterdayData[0].payment_count : 0;
+                document.getElementById('yesterdayTotal').innerHTML = (yesterdayTotal || 0).toLocaleString() + ' AFN';
+                document.getElementById('yesterdayCount').innerHTML = (yesterdayCount || 0) + ' تراکنش';
+
+                // آمار این ماه
+                const monthRes = await fetch(`/api/daily-fee-summary?start_date=${monthStartStr}&end_date=${todayStr}`);
+                const monthData = await monthRes.json();
+                let monthTotal = 0, monthCount = 0;
+                if (monthData.length > 0) {
+                    monthData.forEach(item => {
+                        monthTotal += item.total_amount || 0;
+                        monthCount += item.payment_count || 0;
+                    });
+                }
+                document.getElementById('monthTotal').innerHTML = (monthTotal || 0).toLocaleString() + ' AFN';
+                document.getElementById('monthCount').innerHTML = (monthCount || 0) + ' تراکنش';
+            } catch (err) {
+                console.error(err);
             }
         }
 
@@ -250,9 +328,14 @@
                 const res = await fetch(url);
                 const data = await res.json();
 
-                // به روزرسانی جدول
                 if (!data || data.length === 0) {
-                    document.getElementById('dailyTable').innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">هیچ داده‌ای موجود نیست</div></div></div></td>';
+                    document.getElementById('dailyTable').innerHTML = '｜｜DSML｜｜<td colspan="4" class="text-center text-muted py-4">هیچ داده‌ای موجود نیست</div></div></div></table>';
+                    if (dailyChart) dailyChart.destroy();
+                    dailyChart = new Chart(document.getElementById('dailyFeeChart').getContext('2d'), {
+                        type: 'bar',
+                        data: { labels: [], datasets: [{ label: 'جمع فیس (AFN)', data: [], backgroundColor: '#10b981' }] },
+                        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                    });
                     return;
                 }
 
@@ -298,19 +381,23 @@
                 });
             } catch (err) {
                 console.error(err);
+                document.getElementById('dailyTable').innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
             }
         }
 
         // نمایش جزئیات یک روز خاص
         async function showDailyDetails(date) {
             try {
-                const res = await fetch(`/api/fee-payments-history?start_date=${date}&end_date=${date}`);
+                const res = await fetch(`/api/daily-fee-details?date=${date}`);
                 const payments = await res.json();
 
                 if (!payments || payments.length === 0) {
                     alert('هیچ پرداختی در این تاریخ ثبت نشده است');
                     return;
                 }
+
+                // محاسبه مجموع
+                const totalAmount = payments.reduce((a, b) => a + (b.amount || 0), 0);
 
                 let detailsHtml = `
                     <div class="modal fade" id="dailyDetailsModal" tabindex="-1">
@@ -324,22 +411,25 @@
                                     <div class="table-responsive">
                                         <table class="table table-bordered">
                                             <thead class="table-light">
-                                                <tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>شماره رسید</th></tr>
+                                                <tr><th>شاگرد</th><th>نام پدر</th><th>صنف</th><th>مبلغ</th><th>شماره رسید</th><th>منبع</th></tr>
                                             </thead>
                                             <tbody>
                                                 ${payments.map(p => `
-                                                    <tr><td class="text-dark">${p.student_name || '-'}</div></div></div>
-                                                    <td class="text-dark">${p.class_name || '-'}</div></div></div>
-                                                    <td class="text-success">${(p.amount || 0).toLocaleString()} AFN</div></div></div>
-                                                    <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
-                                                </tr>
+                                                    <tr>
+                                                        <td class="text-dark">${p.student_name || '-'}</div></div></div>
+                                                        <td class="text-dark">${p.father_name || '-'}</div></div></div>
+                                                        <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                                                        <td class="text-success fw-bold">${(p.amount || 0).toLocaleString()} AFN</div></div></div>
+                                                        <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                                                        <td class="text-dark">${p.notes && p.notes.includes('پرداخت اولیه') ? 'ثبت نام' : 'پرداخت فیس'}</div></div></div>
+                                                    </tr>
                                                 `).join('')}
                                             </tbody>
                                             <tfoot class="table-light">
-                                                <tr><td colspan="2"><strong>مجموع</strong></div></div></div>
-                                                <td class="text-success fw-bold"><strong>${payments.reduce((a, b) => a + (b.amount || 0), 0).toLocaleString()} AFN</strong></div></div></div>
-                                                <td></div></div></div>
-                                            </tr>
+                                                <tr><td colspan="3"><strong>مجموع</strong></div></div></div>
+                                                <td class="text-success fw-bold"><strong>${totalAmount.toLocaleString()} AFN</strong></div></div></div>
+                                                <td colspan="2"></div></div></div>
+                                            </table>
                                         </table>
                                     </div>
                                 </div>
@@ -348,7 +438,6 @@
                     </div>
                 `;
 
-                // حذف مودال قبلی در صورت وجود
                 const existingModal = document.getElementById('dailyDetailsModal');
                 if (existingModal) existingModal.remove();
 
@@ -356,7 +445,6 @@
                 const modal = new bootstrap.Modal(document.getElementById('dailyDetailsModal'));
                 modal.show();
 
-                // حذف مودال بعد از بسته شدن
                 document.getElementById('dailyDetailsModal').addEventListener('hidden.bs.modal', function () {
                     this.remove();
                 });
@@ -373,6 +461,7 @@
 
         setupSidebar();
         loadTodayFee();
+        loadExtraStats();
         loadDailyReport();
 
         window.showDailyDetails = showDailyDetails;

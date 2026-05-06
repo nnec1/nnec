@@ -19,16 +19,16 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            font-family: 'Tahoma', 'Segoe UI', monospace;
+            font-family: 'Tahoma', 'Segoe UI', 'Courier New', monospace;
         }
 
         .receipt {
-            width: 190px;
+            width: 200px;
             max-width: 100%;
             background: white;
-            padding: 6px 8px;
+            padding: 5px 8px;
             margin: 0 auto;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             direction: rtl;
         }
 
@@ -41,7 +41,7 @@
 
             .receipt {
                 box-shadow: none;
-                padding: 2px;
+                padding: 3px 5px;
                 margin: 0;
                 width: 100%;
             }
@@ -53,12 +53,12 @@
 
         .hr {
             border-top: 1px dashed #aaa;
-            margin: 5px 0;
+            margin: 3px 0;
         }
 
         .hr-double {
             border-top: 2px solid #333;
-            margin: 5px 0;
+            margin: 3px 0;
         }
 
         .text-center {
@@ -74,21 +74,25 @@
         }
 
         .normal {
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .large {
-            font-size: 12px;
+            font-size: 13px;
+        }
+
+        .xlarge {
+            font-size: 14px;
         }
 
         .logo {
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .logo-img {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             object-fit: cover;
             border-radius: 50%;
         }
@@ -96,8 +100,9 @@
         .row {
             display: flex;
             justify-content: space-between;
-            margin: 4px 0;
-            font-size: 10px;
+            margin: 2px 0;
+            font-size: 11px;
+            line-height: 1.3;
         }
 
         .row .label {
@@ -106,73 +111,87 @@
 
         .amount-paid {
             color: #15803d;
+            font-weight: bold;
         }
 
         .amount-remaining {
             color: #dc2626;
+            font-weight: bold;
         }
 
         .warning {
             background: #fef3c7;
             color: #b45309;
-            padding: 3px;
+            padding: 2px 3px;
             text-align: center;
             font-size: 8px;
-            margin: 6px 0;
+            margin: 4px 0;
             border-radius: 3px;
         }
 
         .contact {
             text-align: center;
-            font-size: 8px;
-            margin-top: 6px;
+            font-size: 9px;
+            margin-top: 4px;
         }
 
         .signature {
             display: flex;
             justify-content: space-between;
-            margin-top: 8px;
+            margin-top: 5px;
             font-size: 8px;
-            padding-top: 4px;
+            padding-top: 3px;
         }
 
         .receipt-title {
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
-            margin: 3px 0;
+            margin: 2px 0;
         }
 
         .date-line {
             display: flex;
             justify-content: space-between;
-            font-size: 8px;
-            margin: 3px 0;
+            font-size: 9px;
+            margin: 2px 0;
+        }
+
+        .inst-name {
+            font-size: 13px;
+            font-weight: bold;
+            margin: 2px 0;
         }
     </style>
 </head>
 
 <body>
     <div class="receipt">
+        <!-- لوگو -->
         <div class="logo">
             <img id="logoImg" src="/default-logo.png" class="logo-img"
-                onerror="this.src='https://placehold.co/40x40?text=logo'">
+                onerror="this.src='https://placehold.co/35x35?text=logo'">
         </div>
-        <div class="text-center bold large" id="instName">آموزشگاه نوی نور</div>
+
+        <!-- نام آموزشگاه -->
+        <div class="text-center bold xlarge" id="instName">آموزشگاه نوی نور</div>
         <div class="receipt-title">رسید فیس شاگرد</div>
         <div class="hr"></div>
 
+        <!-- تاریخ صدور و شماره رسید -->
         <div class="date-line">
-            <span>تاریخ صدور: <span id="issueDate">-</span></span>
+            <span>صدور: <span id="issueDate">-</span></span>
             <span>شماره: <span id="receiptNumber">-</span></span>
         </div>
         <div class="hr"></div>
 
+        <!-- اطلاعات شاگرد -->
         <div class="row"><span class="label">نام:</span><span id="studentName">-</span></div>
-        <div class="row"><span class="label">نام پدر:</span><span id="studentFather">-</span></div>
+        <div class="row"><span class="label">پدر:</span><span id="studentFather">-</span></div>
         <div class="row"><span class="label">صنف:</span><span id="studentClass">-</span></div>
         <div class="hr"></div>
 
+        <!-- اطلاعات مالی -->
         <div class="row"><span class="label">فیس کل:</span><span id="totalFee">0 AFN</span></div>
         <div class="row"><span class="label">پرداخت:</span><span class="amount-paid" id="paymentAmount">0 AFN</span>
         </div>
@@ -180,30 +199,38 @@
         </div>
         <div class="hr"></div>
 
-        <div class="row"><span class="label">تاریخ پرداخت:</span><span id="paymentDate">-</span></div>
-        <div class="row"><span class="label">تاریخ انقضا:</span><span id="expiryDate">-</span></div>
+        <!-- تاریخ‌ها -->
+        <div class="row"><span class="label">پرداخت:</span><span id="paymentDate">-</span></div>
+        <div class="row"><span class="label">انقضا:</span><span id="expiryDate">-</span></div>
         <div class="hr"></div>
 
+        <!-- یادداشت -->
         <div id="notesRow" style="display:none;" class="row"><span class="label">یادداشت:</span><span
                 id="notes">-</span></div>
 
-        <div class="warning">⚠️ فیس تحویل شده دوباره مسترد نمیگردد</div>
+        <!-- متن قانونی -->
+        <div class="warning">⚠️ فیس تحویل شده مسترد نمیگردد</div>
+
+        <!-- تماس -->
         <div class="contact">📞 0781304830</div>
 
-        <div class="signature">
-            <span>امضاء پرداخت‌کننده: ___________</span>
-            <span>امضاء مسئول: ___________</span>
-        </div>
+        <!-- امضا -->
+        <!-- <div class="signature">
+            <span>پرداخت‌کننده: ___________</span>
+            <span>مسئول: ___________</span>
+        </div> -->
+
         <div class="hr-double"></div>
         <div class="text-center small">با تشکر از اعتماد شما</div>
     </div>
 
+    <!-- دکمه‌های چاپ و بستن (فقط در صفحه نمایش) -->
     <div class="no-print" style="text-align:center; margin-top:15px;">
         <button onclick="window.print()"
-            style="padding:8px 20px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;">🖨️
-            چاپ رسید</button>
+            style="padding:6px 15px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;">🖨️
+            چاپ</button>
         <button onclick="window.close()"
-            style="padding:8px 20px;background:#94a3b8;color:white;border:none;border-radius:8px;cursor:pointer;margin-right:10px;">❌
+            style="padding:6px 15px;background:#94a3b8;color:white;border:none;border-radius:8px;cursor:pointer;margin-right:8px;font-size:12px;">❌
             بستن</button>
     </div>
 
@@ -215,6 +242,7 @@
             return Number(num).toLocaleString();
         }
 
+        // تنظیم اطلاعات از پارامترها
         document.getElementById('studentName').innerText = urlParams.get('student_name') || '-';
         document.getElementById('studentFather').innerText = urlParams.get('student_father') || '-';
         document.getElementById('studentClass').innerText = urlParams.get('class_name') || '-';
@@ -225,16 +253,19 @@
         document.getElementById('expiryDate').innerText = urlParams.get('expiry_date') || '-';
         document.getElementById('receiptNumber').innerText = urlParams.get('receipt_number') || '-';
 
+        // تاریخ صدور (امروز)
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         document.getElementById('issueDate').innerText = todayStr;
 
+        // یادداشت
         const notes = urlParams.get('notes');
         if (notes && notes !== 'null' && notes !== '') {
             document.getElementById('notes').innerText = notes;
             document.getElementById('notesRow').style.display = 'flex';
         }
 
+        // بارگذاری تنظیمات آموزشگاه
         async function loadInstituteSettings() {
             try {
                 const res = await fetch('/api/settings');
@@ -245,6 +276,7 @@
             } catch (e) { }
         }
 
+        // پشتیبان از localStorage
         if (!urlParams.get('student_name') || urlParams.get('student_name') === '-') {
             const lastReceipt = localStorage.getItem('lastReceipt');
             if (lastReceipt) {
