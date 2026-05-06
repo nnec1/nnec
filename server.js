@@ -1076,6 +1076,35 @@ function calculateExpiryDate(dateString) {
 }
 
 
+// ورود شاگرد با آیدی کارت
+app.post("/api/student-login-with-card", async (req, res) => {
+    const { student_card_id } = req.body;
+    try {
+        const [results] = await db.execute(
+            `SELECT * FROM students WHERE student_card_id = ? AND status = 'active'`,
+            [student_card_id]
+        );
+        if (results.length === 0) {
+            return res.status(401).json({ error: "آیدی کارت معتبر نیست یا حساب غیرفعال است" });
+        }
+        const user = results[0];
+        const token = jwt.sign(
+            { id: user.id, name: user.name, role: "student", student_card_id: user.student_card_id },
+            JWT_SECRET,
+            { expiresIn: "24h" }
+        );
+        res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+        res.json({
+            success: true,
+            redirectUrl: "/student/dashboard.html",
+            user: { id: user.id, name: user.name }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "خطای سرور" });
+    }
+});
+
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, "404.html"));

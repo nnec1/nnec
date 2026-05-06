@@ -160,15 +160,24 @@
             text-decoration: underline;
         }
 
-        .qr-link {
+        .login-options {
             text-align: center;
             margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        .qr-link a {
+        .login-options a {
             color: #64748b;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .login-options a:hover {
+            color: #10b981;
         }
 
         .alert-custom {
@@ -195,6 +204,10 @@
 
             .user-type-btn small {
                 font-size: 10px;
+            }
+
+            .login-options {
+                gap: 10px;
             }
         }
     </style>
@@ -240,6 +253,7 @@
             </div>
         </div>
 
+        <!-- فرم لاگین برای مدیر، استاد، ریس -->
         <form id="loginForm">
             <div class="mb-3">
                 <label class="form-label"><i class="fa-solid fa-envelope me-2"></i> ایمیل</label>
@@ -253,25 +267,54 @@
             <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket me-2"></i> ورود</button>
         </form>
 
+        <!-- فرم لاگین شاگرد (مخفی در ابتدا) -->
+        <form id="studentLoginForm" style="display: none;">
+            <div class="mb-3">
+                <label class="form-label"><i class="fa-solid fa-barcode me-2"></i> آیدی کارت / بارکد</label>
+                <input type="text" class="form-control" id="studentCardId" placeholder="مثال: STU-2501-1234" required>
+                <small class="text-muted">آیدی کارت خود را از کارت شناسایی وارد کنید</small>
+            </div>
+            <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket me-2"></i> ورود با
+                بارکد</button>
+        </form>
+
         <div class="register-link">
             <a href="register.html"><i class="fa-solid fa-user-plus me-1"></i> ثبت نام شاگرد جدید</a>
         </div>
-        <div class="qr-link">
+
+        <div class="login-options">
+            <a href="#" onclick="showStudentLogin()"><i class="fa-solid fa-barcode me-1"></i> ورود شاگرد با بارکد</a>
+            <span class="text-muted">|</span>
             <a href="scan-qr.html"><i class="fa-solid fa-qrcode me-1"></i> ورود با QR کد</a>
         </div>
     </div>
 
     <script>
         // انتخاب نوع کاربر
+        let currentUserType = 'admin';
+
         document.querySelectorAll('.user-type-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 document.querySelectorAll('.user-type-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                document.getElementById('userType').value = this.dataset.type;
+                currentUserType = this.dataset.type;
+                document.getElementById('userType').value = currentUserType;
+
+                // تغییر فرم بر اساس نوع کاربر
+                const adminForm = document.getElementById('loginForm');
+                const studentForm = document.getElementById('studentLoginForm');
+
+                if (currentUserType === 'student') {
+                    adminForm.style.display = 'none';
+                    studentForm.style.display = 'block';
+                } else {
+                    adminForm.style.display = 'block';
+                    studentForm.style.display = 'none';
+                }
             });
         });
 
-        // فرم لاگین
+        // فرم لاگین برای مدیر، استاد، ریس
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -280,12 +323,6 @@
 
             const errorDiv = document.getElementById('errorMsg');
             errorDiv.style.display = 'none';
-
-            // اگر شاگرد باشد، هدایت به صفحه اسکن QR
-            if (userType === 'student') {
-                window.location.href = 'scan-qr.html';
-                return;
-            }
 
             const res = await fetch('/api/login', {
                 method: 'POST',
@@ -304,6 +341,55 @@
                 setTimeout(() => errorDiv.style.display = 'none', 3000);
             }
         });
+
+        // فرم لاگین شاگرد با آیدی کارت
+        document.getElementById('studentLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentCardId = document.getElementById('studentCardId').value;
+
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.style.display = 'none';
+
+            if (!studentCardId) {
+                errorDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> لطفاً آیدی کارت خود را وارد کنید`;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/student-login-with-card', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_card_id: studentCardId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('studentId', data.user.id);
+                    localStorage.setItem('studentName', data.user.name);
+                    localStorage.setItem('userRole', 'student');
+                    window.location.href = data.redirectUrl;
+                } else {
+                    errorDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> ${data.error || 'آیدی کارت معتبر نیست'}`;
+                    errorDiv.style.display = 'block';
+                    setTimeout(() => errorDiv.style.display = 'none', 3000);
+                }
+            } catch (err) {
+                errorDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> خطا در ارتباط با سرور`;
+                errorDiv.style.display = 'block';
+                setTimeout(() => errorDiv.style.display = 'none', 3000);
+            }
+        });
+
+        // نمایش فرم ورود شاگرد (در صورت کلیک روی لینک)
+        function showStudentLogin() {
+            document.querySelectorAll('.user-type-btn').forEach(b => b.classList.remove('active'));
+            const studentBtn = document.querySelector('.user-type-btn[data-type="student"]');
+            if (studentBtn) studentBtn.classList.add('active');
+            currentUserType = 'student';
+            document.getElementById('userType').value = 'student';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('studentLoginForm').style.display = 'block';
+        }
 
         // بارگذاری اعلانات عمومی
         fetch('/api/announcements/public').then(r => r.json()).then(data => {
