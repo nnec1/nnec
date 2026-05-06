@@ -349,6 +349,82 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
   }
 });
 
+// app.post(
+//   "/api/students",
+//   authenticate,
+//   upload.single("photo"),
+//   async (req, res) => {
+//     const {
+//       name,
+//       father_name,
+//       phone,
+//       class_id,
+//       total_fee,
+//       paid_fee,
+//       due_date,
+//       address,
+//       status,
+//     } = req.body;
+//     if (req.user.role === "teacher")
+//       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+//     const autoPass = Math.random().toString(36).substring(2, 8);
+//     const hashedPass = await bcrypt.hash(autoPass, 10);
+//     const qr_token = generateQrToken();
+//     const student_card_id = generateStudentCardId();
+//     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+//     const finalTotalFee = parseFloat(total_fee) || 0;
+//     const finalPaidFee = parseFloat(paid_fee) || 0;
+//     const finalRemainingFee = finalTotalFee - finalPaidFee;
+//     let finalDueDate = due_date;
+//     if (!finalDueDate) {
+//       const nextMonth = new Date();
+//       nextMonth.setMonth(nextMonth.getMonth() + 1);
+//       finalDueDate = nextMonth.toISOString().split("T")[0];
+//     }
+//     try {
+//       const [result] = await db.execute(
+//         `
+//             INSERT INTO students
+//             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+//              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
+//             VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
+//         `,
+//         [
+//           student_card_id,
+//           name,
+//           toNull(father_name),
+//           toNull(phone),
+//           hashedPass,
+//           class_id,
+//           status || "active",
+//           qr_token,
+//           finalTotalFee,
+//           finalPaidFee,
+//           finalRemainingFee,
+//           finalDueDate,
+//           toNull(address),
+//           toNull(photoPath),
+//         ],
+//       );
+
+//       res.json({
+//         id: result.insertId,
+//         qr_token,
+//         student_card_id,
+//         password: autoPass,
+//         total_fee: finalTotalFee,
+//         paid_fee: finalPaidFee,
+//         remaining_fee: finalRemainingFee,
+//         due_date: finalDueDate,
+//       });
+//     } catch (err) {
+//       console.error("Error in POST /api/students:", err);
+//       res.status(500).json({ error: err.message });
+//     }
+//   },
+// );
+
+// POST /api/students - ثبت شاگرد جدید
 app.post(
   "/api/students",
   authenticate,
@@ -364,57 +440,91 @@ app.post(
       due_date,
       address,
       status,
+      registration_date,
+      student_card_id,
     } = req.body;
-    if (req.user.role === "teacher")
+
+    if (req.user.role === "teacher") {
       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+    }
+
     const autoPass = Math.random().toString(36).substring(2, 8);
     const hashedPass = await bcrypt.hash(autoPass, 10);
     const qr_token = generateQrToken();
-    const student_card_id = generateStudentCardId();
+    const finalStudentCardId = student_card_id || generateStudentCardId();
     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
     const finalTotalFee = parseFloat(total_fee) || 0;
     const finalPaidFee = parseFloat(paid_fee) || 0;
     const finalRemainingFee = finalTotalFee - finalPaidFee;
+
     let finalDueDate = due_date;
-    if (!finalDueDate) {
+    if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       finalDueDate = nextMonth.toISOString().split("T")[0];
     }
+
+    let finalRegDate = registration_date;
+    if (!finalRegDate) {
+      finalRegDate = new Date().toISOString().split("T")[0];
+    }
+
     try {
       const [result] = await db.execute(
         `
             INSERT INTO students 
             (student_card_id, name, father_name, phone, password, class_id, registration_date, 
              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo) 
-            VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
-          student_card_id,
+          finalStudentCardId,
           name,
           toNull(father_name),
           toNull(phone),
           hashedPass,
           class_id,
+          finalRegDate,
           status || "active",
           qr_token,
           finalTotalFee,
           finalPaidFee,
-          finalRemainingFee,
+          finalRemainingFee < 0 ? 0 : finalRemainingFee,
           finalDueDate,
           toNull(address),
           toNull(photoPath),
         ],
       );
 
+      const studentId = result.insertId;
+
+      // ========== کد جدید: ثبت پرداخت اولیه در fee_payments ==========
+      if (finalPaidFee > 0) {
+        const receipt_number = generateReceiptNumber();
+        const paymentDate = finalRegDate; // تاریخ ثبت به عنوان تاریخ پرداخت
+        await db.execute(
+          `INSERT INTO fee_payments (student_id, amount, payment_date, receipt_number, notes) 
+                 VALUES (?, ?, ?, ?, ?)`,
+          [
+            studentId,
+            finalPaidFee,
+            paymentDate,
+            receipt_number,
+            "پرداخت اولیه هنگام ثبت‌نام",
+          ],
+        );
+      }
+      // ========== پایان کد جدید ==========
+
       res.json({
-        id: result.insertId,
+        id: studentId,
         qr_token,
-        student_card_id,
+        student_card_id: finalStudentCardId,
         password: autoPass,
         total_fee: finalTotalFee,
         paid_fee: finalPaidFee,
-        remaining_fee: finalRemainingFee,
+        remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
         due_date: finalDueDate,
       });
     } catch (err) {
@@ -1442,9 +1552,82 @@ app.post("/api/student-login-with-card", async (req, res) => {
   }
 });
 
-// ====================== API گزارش فیس روزانه ======================
+// // ====================== API گزارش فیس روزانه ======================
 
-// دریافت جمع فیس روزانه در یک بازه زمانی
+// // دریافت جمع فیس روزانه در یک بازه زمانی
+// app.get("/api/daily-fee-summary", authenticate, async (req, res) => {
+//   const { start_date, end_date } = req.query;
+//   let query = `
+//         SELECT
+//             DATE(payment_date) as date,
+//             COUNT(*) as payment_count,
+//             SUM(amount) as total_amount
+//         FROM fee_payments
+//         WHERE 1=1
+//     `;
+//   let params = [];
+
+//   if (start_date && end_date) {
+//     query += ` AND payment_date BETWEEN ? AND ?`;
+//     params.push(start_date, end_date);
+//   }
+
+//   query += ` GROUP BY DATE(payment_date) ORDER BY date DESC`;
+
+//   try {
+//     const [results] = await db.execute(query, params);
+//     res.json(results);
+//   } catch (err) {
+//     console.error("Error in /api/daily-fee-summary:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// // دریافت جمع فیس امروز
+// app.get("/api/today-fee", authenticate, async (req, res) => {
+//   const today = new Date().toISOString().split("T")[0];
+//   try {
+//     const [results] = await db.execute(
+//       `SELECT COALESCE(SUM(amount),0) as today_total, COUNT(*) as today_count
+//              FROM fee_payments WHERE payment_date = ?`,
+//       [today],
+//     );
+//     res.json({
+//       today_total: results[0]?.today_total || 0,
+//       today_count: results[0]?.today_count || 0,
+//       date: today,
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/today-fee:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ====================== API آمار روزانه بر اساس تاریخ صدور ======================
+
+// دریافت جمع فیس امروز (بر اساس payment_date)
+app.get("/api/today-fee", authenticate, async (req, res) => {
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    const [results] = await db.execute(
+      `SELECT COALESCE(SUM(amount),0) as today_total, 
+                    COUNT(*) as today_count 
+             FROM fee_payments 
+             WHERE payment_date = ?`,
+      [today],
+    );
+    res.json({
+      today_total: results[0]?.today_total || 0,
+      today_count: results[0]?.today_count || 0,
+      date: today,
+    });
+  } catch (err) {
+    console.error("Error in /api/today-fee:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// دریافت جمع فیس در بازه زمانی (بر اساس payment_date)
 app.get("/api/daily-fee-summary", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
   let query = `
@@ -1466,29 +1649,49 @@ app.get("/api/daily-fee-summary", authenticate, async (req, res) => {
 
   try {
     const [results] = await db.execute(query, params);
-    res.json(results);
+
+    // فرمت تاریخ برای خروجی
+    const formatted = results.map((r) => ({
+      ...r,
+      date: r.date ? new Date(r.date).toISOString().split("T")[0] : null,
+    }));
+
+    res.json(formatted);
   } catch (err) {
     console.error("Error in /api/daily-fee-summary:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// دریافت جمع فیس امروز
-app.get("/api/today-fee", authenticate, async (req, res) => {
-  const today = new Date().toISOString().split("T")[0];
+// دریافت جزئیات تراکنش‌های یک روز خاص
+app.get("/api/daily-fee-details", authenticate, async (req, res) => {
+  const { date } = req.query;
+  if (!date) {
+    return res.status(400).json({ error: "تاریخ مشخص نشده است" });
+  }
+
   try {
     const [results] = await db.execute(
-      `SELECT COALESCE(SUM(amount),0) as today_total, COUNT(*) as today_count 
-             FROM fee_payments WHERE payment_date = ?`,
-      [today],
+      `SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name 
+             FROM fee_payments fp 
+             JOIN students s ON fp.student_id = s.id 
+             JOIN classes c ON s.class_id = c.id 
+             WHERE fp.payment_date = ?
+             ORDER BY fp.id DESC`,
+      [date],
     );
-    res.json({
-      today_total: results[0]?.today_total || 0,
-      today_count: results[0]?.today_count || 0,
-      date: today,
+
+    const formatted = results.map((p) => {
+      if (p.payment_date) {
+        const d = new Date(p.payment_date);
+        if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
+      }
+      return p;
     });
+
+    res.json(formatted);
   } catch (err) {
-    console.error("Error in /api/today-fee:", err);
+    console.error("Error in /api/daily-fee-details:", err);
     res.status(500).json({ error: err.message });
   }
 });
