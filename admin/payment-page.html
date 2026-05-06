@@ -17,7 +17,7 @@
         }
 
         .payment-container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
@@ -49,11 +49,40 @@
             color: white;
         }
 
+        /* کارت شاگردان */
+        .student-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .student-card:hover {
+            transform: translateX(-5px);
+            border-color: #10b981;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .student-card.selected {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border-color: #10b981;
+        }
+
+        /* فرم پرداخت */
+        .payment-form-container {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px dashed #e2e8f0;
+        }
+
         .info-box {
             background: #f8fafc;
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .info-row {
@@ -113,6 +142,38 @@
             background: #475569;
         }
 
+        .filter-box {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-debtor {
+            background: #fef3c7;
+            color: #b45309;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .badge-expired {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .badge-paid {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
         .form-control,
         .form-select {
             border-radius: 14px;
@@ -127,12 +188,6 @@
             outline: none;
         }
 
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
         .btn-edit-fee {
             background: #f59e0b;
             border: none;
@@ -141,7 +196,10 @@
             color: white;
             font-weight: 500;
             transition: 0.3s;
-            flex: 1;
+        }
+
+        .btn-edit-fee:hover {
+            background: #d97706;
         }
 
         .btn-delete-fee {
@@ -152,15 +210,20 @@
             color: white;
             font-weight: 500;
             transition: 0.3s;
-            flex: 1;
-        }
-
-        .btn-edit-fee:hover {
-            background: #d97706;
         }
 
         .btn-delete-fee:hover {
             background: #b91c1c;
+        }
+
+        @media (max-width: 768px) {
+            .payment-card {
+                padding: 20px;
+            }
+
+            .student-card {
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -174,74 +237,111 @@
                 <p class="text-muted small">آموزشگاه نوی نور</p>
             </div>
 
-            <div id="studentInfo" class="info-box">
-                <div class="info-row"><span><i class="fa-solid fa-user"></i> نام شاگرد:</span><span
-                        id="studentName">-</span></div>
-                <div class="info-row"><span><i class="fa-solid fa-user"></i> نام پدر:</span><span
-                        id="studentFather">-</span></div>
-                <div class="info-row"><span><i class="fa-solid fa-id-card"></i> آیدی کارت:</span><span
-                        id="studentCardId">-</span></div>
-                <div class="info-row"><span><i class="fa-solid fa-table-cells-large"></i> صنف:</span><span
-                        id="studentClass">-</span></div>
-                <div class="info-row"><span><i class="fa-solid fa-phone"></i> شماره تماس:</span><span
-                        id="studentPhone">-</span></div>
-            </div>
-
-            <div id="feeInfo" class="info-box">
-                <div class="info-row"><span><i class="fa-solid fa-money-bill-wave"></i> فیس کل:</span><span
-                        id="totalFee">0 AFN</span></div>
-                <div class="info-row"><span><i class="fa-solid fa-circle-check text-success"></i> پرداخت
-                        شده:</span><span id="paidFee">0 AFN</span></div>
-                <div class="info-row"><span><i class="fa-solid fa-triangle-exclamation text-danger"></i> باقی
-                        مانده:</span><span id="remainingFee">0 AFN</span></div>
-                <div class="info-row"><span><i class="fa-regular fa-calendar"></i> تاریخ انقضا فعلی:</span><span
-                        id="currentDueDate">-</span></div>
-            </div>
-
-            <div class="header-buttons">
-                <button class="btn-edit-fee" onclick="openEditFeeModal()"><i class="fa-solid fa-pen"></i> ویرایش
-                    فیس</button>
-                <button class="btn-delete-fee" onclick="deleteStudentFee()"><i class="fa-solid fa-trash-can"></i> حذف
-                    فیس</button>
-            </div>
-
-            <form id="paymentForm">
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> مبلغ پرداختی <span
-                            class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <input type="number" id="payAmount" class="form-control amount-input" step="100" required>
-                        <button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت
-                            کامل</button>
+            <!-- بخش جستجو و فیلتر -->
+            <div class="filter-box">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <select id="classFilter" class="form-select">
+                            <option value="">همه صنف‌ها</option>
+                        </select>
                     </div>
-                    <small class="text-muted">هر مقدار دلخواه وارد کنید</small>
+                    <div class="col-md-4">
+                        <input type="text" id="searchStudent" class="form-control" placeholder="جستجوی نام یا آیدی...">
+                    </div>
+                    <div class="col-md-4">
+                        <select id="statusFilter" class="form-select">
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="debtor">بدهکار</option>
+                            <option value="expired">منقضی شده</option>
+                            <option value="paid">پرداخت کامل</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- لیست شاگردان -->
+            <div id="studentsList" class="mb-3" style="max-height: 400px; overflow-y: auto;">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success"></div>
+                    <p class="text-muted mt-2">در حال بارگیری شاگردان...</p>
+                </div>
+            </div>
+
+            <!-- فرم پرداخت (در ابتدا مخفی) -->
+            <div id="paymentFormContainer" class="payment-form-container" style="display: none;">
+                <div id="selectedStudentInfo" class="info-box">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6><i class="fa-solid fa-user-circle"></i> اطلاعات شاگرد انتخاب شده</h6>
+                        <button class="btn btn-sm btn-secondary" onclick="clearSelectedStudent()">
+                            <i class="fa-solid fa-xmark"></i> تغییر شاگرد
+                        </button>
+                    </div>
+                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام:</span><span
+                            id="selectedName">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام پدر:</span><span
+                            id="selectedFather">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-id-card"></i> آیدی کارت:</span><span
+                            id="selectedCardId">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-table-cells-large"></i> صنف:</span><span
+                            id="selectedClass">-</span></div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ پرداخت <span
-                            class="text-danger">*</span></label>
-                    <input type="date" id="paymentDate" class="form-control" required>
+                <div id="selectedFeeInfo" class="info-box">
+                    <div class="info-row"><span><i class="fa-solid fa-money-bill-wave"></i> فیس کل:</span><span
+                            id="selectedTotalFee">0 AFN</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-circle-check text-success"></i> پرداخت
+                            شده:</span><span id="selectedPaidFee">0 AFN</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-triangle-exclamation text-danger"></i> باقی
+                            مانده:</span><span id="selectedRemainingFee">0 AFN</span></div>
+                    <div class="info-row"><span><i class="fa-regular fa-calendar"></i> تاریخ انقضا:</span><span
+                            id="selectedDueDate">-</span></div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضای جدید</label>
-                    <input type="date" id="newDueDate" class="form-control">
-                    <small class="text-muted">خالی = یک ماه بعد</small>
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn-edit-fee w-50" onclick="openEditFeeModal()"><i class="fa-solid fa-pen"></i>
+                        ویرایش فیس</button>
+                    <button class="btn-delete-fee w-50" onclick="deleteStudentFee()"><i
+                            class="fa-solid fa-trash-can"></i> حذف فیس</button>
                 </div>
 
-                <div class="remaining-box" id="remainingBox">
-                    <span class="text-dark">💰 باقی مانده پس از پرداخت:</span>
-                    <h3 class="text-danger mb-0" id="newRemaining">0 AFN</h3>
-                </div>
+                <form id="paymentForm">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> مبلغ پرداختی <span
+                                class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" id="payAmount" class="form-control amount-input" step="100" required>
+                            <button type="button" class="btn btn-outline-success" onclick="setFullPayment()">پرداخت
+                                کامل</button>
+                        </div>
+                        <small class="text-muted">هر مقدار دلخواه وارد کنید</small>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت</label>
-                    <textarea id="notes" class="form-control" rows="2" placeholder="توضیحات..."></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ پرداخت <span
+                                class="text-danger">*</span></label>
+                        <input type="date" id="paymentDate" class="form-control" required>
+                    </div>
 
-                <button type="submit" class="btn-payment"><i class="fa-solid fa-print"></i> ثبت پرداخت و چاپ
-                    رسید</button>
-            </form>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضای جدید</label>
+                        <input type="date" id="newDueDate" class="form-control">
+                        <small class="text-muted">خالی = یک ماه بعد</small>
+                    </div>
+
+                    <div class="remaining-box" id="remainingBox">
+                        <span class="text-dark">💰 باقی مانده پس از پرداخت:</span>
+                        <h3 class="text-danger mb-0" id="newRemaining">0 AFN</h3>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت</label>
+                        <textarea id="notes" class="form-control" rows="2" placeholder="توضیحات..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-payment"><i class="fa-solid fa-print"></i> ثبت پرداخت و چاپ
+                        رسید</button>
+                </form>
+            </div>
 
             <button class="btn-back" onclick="window.location.href='fee-management.html'">
                 <i class="fa-solid fa-arrow-right"></i> بازگشت به مدیریت فیس
@@ -279,19 +379,9 @@
     <script src="/main.js"></script>
     <script>
         let currentStudentId = null;
+        let currentStudentData = null;
         let editFeeModal = null;
-
-        // دریافت ID از URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const studentId = urlParams.get('id');
-
-        if (!studentId) {
-            alert('❌ شناسه شاگرد مشخص نشده است');
-            window.location.href = 'fee-management.html';
-        } else {
-            currentStudentId = studentId;
-            loadStudentData();
-        }
+        let allStudents = [];
 
         function formatDate(dateString) {
             if (!dateString) return '-';
@@ -302,25 +392,108 @@
             } catch (e) { return dateString; }
         }
 
-        async function loadStudentData() {
+        function isDateExpired(dateString) {
+            if (!dateString) return false;
             try {
-                const res = await fetch(`/api/students/${currentStudentId}`);
-                const student = await res.json();
+                let dueDate = new Date(dateString);
+                let today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return dueDate < today;
+            } catch (e) { return false; }
+        }
 
-                document.getElementById('studentName').innerText = student.name || '-';
-                document.getElementById('studentFather').innerText = student.father_name || '-';
-                document.getElementById('studentCardId').innerText = student.student_card_id || '-';
-                document.getElementById('studentClass').innerText = student.class_name || '-';
-                document.getElementById('studentPhone').innerText = student.phone || '-';
+        async function loadClasses() {
+            try {
+                const res = await fetch('/api/classes');
+                const classes = await res.json();
+                const options = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                document.getElementById('classFilter').innerHTML = options;
+            } catch (err) { console.error(err); }
+        }
 
-                const totalFee = parseFloat(student.total_fee) || 0;
-                const paidFee = parseFloat(student.paid_fee) || 0;
+        async function loadStudents() {
+            try {
+                const res = await fetch('/api/students');
+                allStudents = await res.json();
+                filterAndDisplayStudents();
+            } catch (err) {
+                document.getElementById('studentsList').innerHTML = '<div class="alert alert-danger">خطا در بارگیری اطلاعات</div>';
+            }
+        }
+
+        function filterAndDisplayStudents() {
+            const classId = document.getElementById('classFilter').value;
+            const search = document.getElementById('searchStudent').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filtered = [...allStudents];
+
+            if (classId) filtered = filtered.filter(s => s.class_id == classId);
+            if (search) filtered = filtered.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
+
+            if (statusFilter) {
+                filtered = filtered.filter(s => {
+                    const remaining = (s.total_fee - s.paid_fee) || 0;
+                    const expired = isDateExpired(s.due_date);
+                    if (statusFilter === 'debtor') return remaining > 0 && !expired;
+                    if (statusFilter === 'expired') return remaining > 0 && expired;
+                    if (statusFilter === 'paid') return remaining <= 0;
+                    return true;
+                });
+            }
+
+            if (filtered.length === 0) {
+                document.getElementById('studentsList').innerHTML = '<div class="alert alert-info text-center">هیچ شاگردی یافت نشد</div>';
+                return;
+            }
+
+            let html = '';
+            for (const s of filtered) {
+                const remaining = (s.total_fee - s.paid_fee) || 0;
+                const expired = isDateExpired(s.due_date);
+                let statusBadge = '';
+                if (remaining <= 0) statusBadge = '<span class="badge-paid"><i class="fa-solid fa-check-circle"></i> پرداخت کامل</span>';
+                else if (expired) statusBadge = '<span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>';
+                else statusBadge = '<span class="badge-debtor"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار</span>';
+
+                const isSelected = (currentStudentId == s.id);
+                html += `
+                    <div class="student-card ${isSelected ? 'selected' : ''}" onclick="selectStudent(${s.id})">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1"><i class="fa-solid fa-user-circle"></i> ${s.name}</h6>
+                                <p class="mb-0 small text-muted">آیدی: ${s.student_card_id || '-'} | صنف: ${s.class_name || '-'}</p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="mt-2 small">
+                            <span class="text-dark">باقی مانده: <strong class="text-danger">${remaining.toLocaleString()} AFN</strong></span>
+                            ${expired ? `<span class="text-danger me-2"><i class="fa-regular fa-calendar"></i> ${formatDate(s.due_date)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('studentsList').innerHTML = html;
+        }
+
+        async function selectStudent(studentId) {
+            currentStudentId = studentId;
+            try {
+                const res = await fetch(`/api/students/${studentId}`);
+                currentStudentData = await res.json();
+
+                const totalFee = parseFloat(currentStudentData.total_fee) || 0;
+                const paidFee = parseFloat(currentStudentData.paid_fee) || 0;
                 const remainingFee = totalFee - paidFee;
 
-                document.getElementById('totalFee').innerHTML = totalFee.toLocaleString() + ' AFN';
-                document.getElementById('paidFee').innerHTML = paidFee.toLocaleString() + ' AFN';
-                document.getElementById('remainingFee').innerHTML = remainingFee.toLocaleString() + ' AFN';
-                document.getElementById('currentDueDate').innerText = formatDate(student.due_date);
+                document.getElementById('selectedName').innerText = currentStudentData.name || '-';
+                document.getElementById('selectedFather').innerText = currentStudentData.father_name || '-';
+                document.getElementById('selectedCardId').innerText = currentStudentData.student_card_id || '-';
+                document.getElementById('selectedClass').innerText = currentStudentData.class_name || '-';
+                document.getElementById('selectedTotalFee').innerHTML = totalFee.toLocaleString() + ' AFN';
+                document.getElementById('selectedPaidFee').innerHTML = paidFee.toLocaleString() + ' AFN';
+                document.getElementById('selectedRemainingFee').innerHTML = remainingFee.toLocaleString() + ' AFN';
+                document.getElementById('selectedDueDate').innerText = formatDate(currentStudentData.due_date);
 
                 document.getElementById('payAmount').value = remainingFee;
                 document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
@@ -329,17 +502,32 @@
                 nextMonth.setMonth(nextMonth.getMonth() + 1);
                 document.getElementById('newDueDate').value = nextMonth.toISOString().split('T')[0];
 
+                document.getElementById('payAmount').oninput = () => updateRemainingDisplay();
                 updateRemainingDisplay();
 
-                document.getElementById('payAmount').addEventListener('input', () => updateRemainingDisplay());
+                document.getElementById('paymentFormContainer').style.display = 'block';
+
+                // اسکرول به فرم پرداخت
+                document.getElementById('paymentFormContainer').scrollIntoView({ behavior: 'smooth' });
+
+                // هایلایت کارت انتخاب شده
+                filterAndDisplayStudents();
             } catch (err) {
                 alert('❌ خطا در بارگیری اطلاعات شاگرد');
             }
         }
 
+        function clearSelectedStudent() {
+            currentStudentId = null;
+            currentStudentData = null;
+            document.getElementById('paymentFormContainer').style.display = 'none';
+            filterAndDisplayStudents();
+        }
+
         function updateRemainingDisplay() {
-            const totalFee = parseFloat(document.getElementById('totalFee').innerHTML.replace(' AFN', '').replace(/,/g, '')) || 0;
-            const paidFee = parseFloat(document.getElementById('paidFee').innerHTML.replace(' AFN', '').replace(/,/g, '')) || 0;
+            if (!currentStudentData) return;
+            const totalFee = parseFloat(currentStudentData.total_fee) || 0;
+            const paidFee = parseFloat(currentStudentData.paid_fee) || 0;
             const currentRemaining = totalFee - paidFee;
             const payAmount = parseFloat(document.getElementById('payAmount').value) || 0;
             let newRemaining = currentRemaining - payAmount;
@@ -348,8 +536,9 @@
         }
 
         function setFullPayment() {
-            const totalFee = parseFloat(document.getElementById('totalFee').innerHTML.replace(' AFN', '').replace(/,/g, '')) || 0;
-            const paidFee = parseFloat(document.getElementById('paidFee').innerHTML.replace(' AFN', '').replace(/,/g, '')) || 0;
+            if (!currentStudentData) return;
+            const totalFee = parseFloat(currentStudentData.total_fee) || 0;
+            const paidFee = parseFloat(currentStudentData.paid_fee) || 0;
             const remaining = totalFee - paidFee;
             document.getElementById('payAmount').value = remaining;
             updateRemainingDisplay();
@@ -357,6 +546,11 @@
 
         document.getElementById('paymentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!currentStudentId) {
+                alert('لطفاً ابتدا یک شاگرد را انتخاب کنید');
+                return;
+            }
+
             const amount = parseFloat(document.getElementById('payAmount').value);
             if (isNaN(amount) || amount <= 0) {
                 alert('❌ مبلغ معتبر وارد کنید');
@@ -376,11 +570,12 @@
             const data = await res.json();
             if (res.ok) {
                 alert('✅ پرداخت با موفقیت ثبت شد');
-                const totalFee = parseFloat(document.getElementById('totalFee').innerHTML.replace(' AFN', '').replace(/,/g, '')) || 0;
-                const paidFee = parseFloat(document.getElementById('paidFee').innerHTML.replace(' AFN', '').replace(/,/g, '')) || 0;
+
+                const totalFee = parseFloat(currentStudentData.total_fee) || 0;
+                const paidFee = parseFloat(currentStudentData.paid_fee) || 0;
                 const currentPaidFee = paidFee;
-                const newRemaining = totalFee - (currentPaidFee + amount);
                 let studentStatus = '';
+                const newRemaining = totalFee - (currentPaidFee + amount);
                 if (newRemaining <= 0) studentStatus = 'paid';
 
                 if (typeof printReceipt === 'function') {
@@ -389,13 +584,16 @@
                         data.total_fee, data.paid_fee, data.remaining_fee,
                         data.payment_amount, data.payment_date, data.expiry_date,
                         data.receipt_number, data.notes || '',
-                        document.getElementById('studentClass').innerText,
+                        currentStudentData.class_name || '',
                         studentStatus,
                         currentPaidFee,
                         amount > (totalFee - paidFee)
                     );
                 }
-                window.location.href = 'fee-management.html';
+
+                // بارگیری مجدد اطلاعات
+                await loadStudents();
+                clearSelectedStudent();
             } else {
                 alert(data.error || '❌ خطا در ثبت پرداخت');
             }
@@ -403,16 +601,13 @@
 
         // ========== ویرایش فیس ==========
         async function openEditFeeModal() {
-            try {
-                const res = await fetch(`/api/students/${currentStudentId}`);
-                const student = await res.json();
-                document.getElementById('editTotalFee').value = student.total_fee || 0;
-                document.getElementById('editPaidFee').value = student.paid_fee || 0;
-                document.getElementById('editRemainingFee').value = (student.total_fee - student.paid_fee) || 0;
-                document.getElementById('editDueDate').value = student.due_date ? formatDate(student.due_date) : '';
-                if (!editFeeModal) editFeeModal = new bootstrap.Modal(document.getElementById('editFeeModal'));
-                editFeeModal.show();
-            } catch (err) { alert('❌ خطا در بارگیری اطلاعات'); }
+            if (!currentStudentData) return;
+            document.getElementById('editTotalFee').value = currentStudentData.total_fee || 0;
+            document.getElementById('editPaidFee').value = currentStudentData.paid_fee || 0;
+            document.getElementById('editRemainingFee').value = (currentStudentData.total_fee - currentStudentData.paid_fee) || 0;
+            document.getElementById('editDueDate').value = currentStudentData.due_date ? formatDate(currentStudentData.due_date) : '';
+            if (!editFeeModal) editFeeModal = new bootstrap.Modal(document.getElementById('editFeeModal'));
+            editFeeModal.show();
         }
 
         function updateEditRemaining() {
@@ -423,6 +618,7 @@
 
         document.getElementById('editFeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!currentStudentId) return;
             const totalFee = document.getElementById('editTotalFee').value;
             const paidFee = document.getElementById('editPaidFee').value;
             const dueDate = document.getElementById('editDueDate').value;
@@ -434,12 +630,14 @@
             if (res.ok) {
                 alert('✅ اطلاعات فیس به‌روز شد');
                 if (editFeeModal) editFeeModal.hide();
-                loadStudentData();
+                await loadStudents();
+                await selectStudent(currentStudentId);
             } else { alert('❌ خطا در به‌روزرسانی'); }
         });
 
         // ========== حذف فیس شاگرد ==========
         async function deleteStudentFee() {
+            if (!currentStudentId) return;
             if (!confirm('⚠️ آیا از حذف تمام اطلاعات فیس این شاگرد اطمینان دارید؟\n\nاین عمل بازگشت‌ناپذیر است.')) return;
             if (!confirm('برای تأیید نهایی، دوباره کلیک کنید')) return;
 
@@ -450,9 +648,28 @@
             });
             if (res.ok) {
                 alert('✅ اطلاعات فیس با موفقیت حذف شد');
-                window.location.href = 'fee-management.html';
+                await loadStudents();
+                clearSelectedStudent();
             } else { alert('❌ خطا در حذف فیس'); }
         }
+
+        // رویدادهای فیلترها
+        document.getElementById('classFilter').addEventListener('change', () => {
+            filterAndDisplayStudents();
+            clearSelectedStudent();
+        });
+        document.getElementById('searchStudent').addEventListener('input', () => {
+            filterAndDisplayStudents();
+            clearSelectedStudent();
+        });
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            filterAndDisplayStudents();
+            clearSelectedStudent();
+        });
+
+        // مقداردهی اولیه
+        loadClasses();
+        loadStudents();
     </script>
 </body>
 
