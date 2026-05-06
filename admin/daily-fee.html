@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>گزارش فیس روزانه | آموزشگاه نوی نور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0 0;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .today-card {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .today-card h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
+                        فیس</a>
+                    <a href="daily-fee.html" class="nav-link active"><i class="fa-solid fa-calendar-day"></i> فیس
+                        روزانه</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <h3 class="section-title"><i class="fa-solid fa-calendar-day text-success me-2"></i> گزارش فیس روزانه
+                </h3>
+
+                <!-- کارت فیس امروز -->
+                <div class="today-card" id="todayCard">
+                    <h5><i class="fa-solid fa-calendar-day"></i> فیس جمع‌آوری شده امروز</h5>
+                    <h1 id="todayTotal">0 AFN</h1>
+                    <p id="todayCount">0 تراکنش</p>
+                    <small>تاریخ: <span id="todayDate">-</span></small>
+                </div>
+
+                <!-- فیلتر بازه زمانی -->
+                <div class="filter-box bg-white p-3 rounded-3 mb-4 shadow-sm">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">از تاریخ</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">تا تاریخ</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-primary w-100" onclick="loadDailyReport()">
+                                <i class="fa-solid fa-magnifying-glass"></i> نمایش گزارش
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- نمودار -->
+                <div class="chart-card bg-white p-3 rounded-3 shadow-sm mb-4">
+                    <h5><i class="fa-solid fa-chart-line text-success me-2"></i> روند فیس روزانه</h5>
+                    <canvas id="dailyFeeChart" height="250"></canvas>
+                </div>
+
+                <!-- جدول جزئیات -->
+                <div class="table-container">
+                    <h5><i class="fa-solid fa-table me-2"></i> جزئیات روزانه</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>تاریخ</th>
+                                    <th>تعداد تراکنش</th>
+                                    <th>جمع فیس (AFN)</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailyTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let dailyChart = null;
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                let d = new Date(dateString);
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            } catch (e) { return dateString; }
+        }
+
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
+            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
+        }
+
+        // بارگذاری آمار امروز
+        async function loadTodayFee() {
+            try {
+                const res = await fetch('/api/today-fee');
+                const data = await res.json();
+                document.getElementById('todayTotal').innerHTML = (data.today_total || 0).toLocaleString() + ' AFN';
+                document.getElementById('todayCount').innerHTML = (data.today_count || 0) + ' تراکنش';
+                document.getElementById('todayDate').innerHTML = formatDate(data.date);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // بارگذاری گزارش روزانه
+        async function loadDailyReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            let url = '/api/daily-fee-summary';
+            if (startDate && endDate) {
+                url += `?start_date=${startDate}&end_date=${endDate}`;
+            }
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+
+                // به روزرسانی جدول
+                if (!data || data.length === 0) {
+                    document.getElementById('dailyTable').innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">هیچ داده‌ای موجود نیست</div></div></div></td>';
+                    return;
+                }
+
+                let tableHtml = '';
+                const labels = [];
+                const totals = [];
+
+                for (const item of data) {
+                    labels.push(formatDate(item.date));
+                    totals.push(item.total_amount);
+                    tableHtml += `
+                        <tr>
+                            <td class="text-dark"><strong>${formatDate(item.date)}</strong></div></div></div>
+                            <td class="text-dark">${item.payment_count} تراکنش</div></div></div>
+                            <td class="text-success fw-bold">${(item.total_amount || 0).toLocaleString()} AFN</div></div></div>
+                            <td><button class="btn btn-sm btn-info" onclick="showDailyDetails('${item.date}')"><i class="fa-solid fa-list"></i> جزئیات</button></div></div></div>
+                        </div></div></div>
+                    `;
+                }
+                document.getElementById('dailyTable').innerHTML = tableHtml;
+
+                // رسم نمودار
+                if (dailyChart) dailyChart.destroy();
+                const ctx = document.getElementById('dailyFeeChart').getContext('2d');
+                dailyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'جمع فیس روزانه (AFN)',
+                            data: totals,
+                            backgroundColor: '#10b981',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toLocaleString()} AFN` } }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // نمایش جزئیات یک روز خاص
+        async function showDailyDetails(date) {
+            try {
+                const res = await fetch(`/api/fee-payments-history?start_date=${date}&end_date=${date}`);
+                const payments = await res.json();
+
+                if (!payments || payments.length === 0) {
+                    alert('هیچ پرداختی در این تاریخ ثبت نشده است');
+                    return;
+                }
+
+                let detailsHtml = `
+                    <div class="modal fade" id="dailyDetailsModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                                    <h5 class="modal-title"><i class="fa-solid fa-calendar-day"></i> جزئیات پرداخت‌های ${formatDate(date)}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>شماره رسید</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                ${payments.map(p => `
+                                                    <tr><td class="text-dark">${p.student_name || '-'}</div></div></div>
+                                                    <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                                                    <td class="text-success">${(p.amount || 0).toLocaleString()} AFN</div></div></div>
+                                                    <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                                                </tr>
+                                                `).join('')}
+                                            </tbody>
+                                            <tfoot class="table-light">
+                                                <tr><td colspan="2"><strong>مجموع</strong></div></div></div>
+                                                <td class="text-success fw-bold"><strong>${payments.reduce((a, b) => a + (b.amount || 0), 0).toLocaleString()} AFN</strong></div></div></div>
+                                                <td></div></div></div>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // حذف مودال قبلی در صورت وجود
+                const existingModal = document.getElementById('dailyDetailsModal');
+                if (existingModal) existingModal.remove();
+
+                document.body.insertAdjacentHTML('beforeend', detailsHtml);
+                const modal = new bootstrap.Modal(document.getElementById('dailyDetailsModal'));
+                modal.show();
+
+                // حذف مودال بعد از بسته شدن
+                document.getElementById('dailyDetailsModal').addEventListener('hidden.bs.modal', function () {
+                    this.remove();
+                });
+            } catch (err) {
+                alert('خطا در بارگیری جزئیات');
+            }
+        }
+
+        // مقداردهی اولیه تاریخ‌ها (ماه جاری)
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('startDate').value = firstDayOfMonth.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+
+        setupSidebar();
+        loadTodayFee();
+        loadDailyReport();
+
+        window.showDailyDetails = showDailyDetails;
+    </script>
+</body>
+
+</html>
