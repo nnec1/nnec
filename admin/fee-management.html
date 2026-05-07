@@ -525,6 +525,31 @@
         //         }
         //     } else { alert(data.error || 'خطا'); }
         // }
+        // async function openFullPayment(studentId, amount) {
+        //     if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+
+        //     const res = await fetch('/api/collect-fee', {
+        //         method: 'POST', headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+        //     });
+        //     const data = await res.json();
+        //     if (res.ok) {
+        //         alert('✅ پرداخت کامل ثبت شد');
+        //         // به‌روزرسانی هر دو لیست
+        //         await loadDebtors();
+        //         await loadExpired();
+        //         if (typeof printReceipt === 'function') {
+        //             printReceipt(
+        //                 data.student_name, data.student_father, data.student_card_id,
+        //                 data.total_fee, data.paid_fee, data.remaining_fee,
+        //                 data.payment_amount, data.payment_date, data.expiry_date,
+        //                 data.receipt_number, 'پرداخت کامل یکجا',
+        //                 '', 'paid', 0, false
+        //             );
+        //         }
+        //     } else { alert(data.error || 'خطا'); }
+        // }
+
         async function openFullPayment(studentId, amount) {
             if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
 
@@ -549,7 +574,8 @@
                 }
             } else { alert(data.error || 'خطا'); }
         }
-        // ========== باز کردن مودال ویرایش فیس ==========
+
+        // // ========== باز کردن مودال ویرایش فیس ==========
         function openEditFeeModal(studentId, totalFee, paidFee, dueDate) {
             document.getElementById('editStudentId').value = studentId;
             document.getElementById('editTotalFee').value = totalFee;
