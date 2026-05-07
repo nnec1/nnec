@@ -1695,6 +1695,52 @@ app.get("/api/daily-fee-details", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== API آمار روزمره فیس ======================
+app.get("/api/daily-fee-stats", authenticate, async (req, res) => {
+    const { date } = req.query;
+    const targetDate = date || new Date().toISOString().split("T")[0];
+    
+    try {
+        // دریافت تمام پرداخت‌های امروز
+        const [payments] = await db.execute(`
+            SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name 
+            FROM fee_payments fp 
+            JOIN students s ON fp.student_id = s.id 
+            JOIN classes c ON s.class_id = c.id 
+            WHERE fp.payment_date = ?
+            ORDER BY fp.payment_date DESC
+        `, [targetDate]);
+        
+        // محاسبه مجموع امروز
+        const totalToday = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        
+        // تعداد شاگردانی که امروز پرداخت داشته‌اند
+        const uniqueStudents = new Set(payments.map(p => p.student_id)).size;
+        
+        res.json({
+            success: true,
+            date: targetDate,
+            total_amount: totalToday,
+            student_count: uniqueStudents,
+            payments: payments.map(p => ({
+                id: p.id,
+                student_id: p.student_id,
+                student_name: p.student_name,
+                father_name: p.father_name,
+                student_card_id: p.student_card_id,
+                class_name: p.class_name,
+                amount: parseFloat(p.amount) || 0,
+                payment_date: p.payment_date,
+                receipt_number: p.receipt_number,
+                notes: p.notes
+            }))
+        });
+    } catch (err) {
+        console.error("Error in /api/daily-fee-stats:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "404.html"));
