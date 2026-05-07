@@ -874,6 +874,125 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
 });
 
 // POST /api/students - ثبت شاگرد جدید
+// app.post(
+//   "/api/students",
+//   authenticate,
+//   upload.single("photo"),
+//   async (req, res) => {
+//     const {
+//       name,
+//       father_name,
+//       phone,
+//       class_id,
+//       total_fee,
+//       paid_fee,
+//       due_date,
+//       address,
+//       status,
+//       registration_date,
+//       student_card_id,
+//     } = req.body;
+
+//     if (req.user.role === "teacher") {
+//       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+//     }
+
+//     // تولید اطلاعات خودکار
+//     const autoPass = Math.random().toString(36).substring(2, 8);
+//     const hashedPass = await bcrypt.hash(autoPass, 10);
+//     const qr_token = generateQrToken();
+//     const finalStudentCardId = student_card_id || generateStudentCardId();
+//     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+//     // محاسبات مالی
+//     const finalTotalFee = parseFloat(total_fee) || 0;
+//     const finalPaidFee = parseFloat(paid_fee) || 0;
+//     const finalRemainingFee = finalTotalFee - finalPaidFee;
+
+//     // تاریخ ثبت‌نام (تاریخ صدور)
+//     let finalRegDate = registration_date;
+//     if (!finalRegDate) {
+//       finalRegDate = new Date().toISOString().split("T")[0];
+//     }
+
+//     // تاریخ انقضا: یک ماه بعد از تاریخ ثبت‌نام
+//     let finalDueDate = due_date;
+//     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
+//       const nextMonth = new Date(finalRegDate);
+//       nextMonth.setMonth(nextMonth.getMonth() + 1);
+//       finalDueDate = nextMonth.toISOString().split("T")[0];
+//     }
+
+//     try {
+//       const [result] = await db.execute(
+//         `
+//             INSERT INTO students
+//             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+//              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
+//             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//         `,
+//         [
+//           finalStudentCardId,
+//           name,
+//           toNull(father_name),
+//           toNull(phone),
+//           hashedPass,
+//           class_id,
+//           finalRegDate,
+//           status || "active",
+//           qr_token,
+//           finalTotalFee,
+//           finalPaidFee,
+//           finalRemainingFee < 0 ? 0 : finalRemainingFee,
+//           finalDueDate,
+//           toNull(address),
+//           toNull(photoPath),
+//         ],
+//       );
+
+//       const studentId = result.insertId;
+
+//       // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
+//       if (finalPaidFee > 0) {
+//         const receipt_number = generateReceiptNumber();
+//         const paymentDate = finalRegDate; // تاریخ پرداخت = تاریخ ثبت‌نام
+//         const issueDate = finalRegDate; // تاریخ صدور = تاریخ ثبت‌نام
+//         const expiryDate = finalDueDate; // تاریخ انقضا = یک ماه بعد
+
+//         await db.execute(
+//           `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes)
+//                  VALUES (?, ?, ?, ?, ?, ?)`,
+//           [
+//             studentId,
+//             finalPaidFee,
+//             paymentDate,
+//             issueDate,
+//             receipt_number,
+//             "پرداخت اولیه هنگام ثبت‌نام",
+//           ],
+//         );
+//       }
+
+//       res.json({
+//         success: true,
+//         id: studentId,
+//         qr_token,
+//         student_card_id: finalStudentCardId,
+//         password: autoPass,
+//         total_fee: finalTotalFee,
+//         paid_fee: finalPaidFee,
+//         remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
+//         due_date: finalDueDate,
+//         registration_date: finalRegDate,
+//       });
+//     } catch (err) {
+//       console.error("Error in POST /api/students:", err);
+//       res.status(500).json({ error: err.message });
+//     }
+//   },
+// );
+
+// POST /api/students - ثبت شاگرد جدید
 app.post(
   "/api/students",
   authenticate,
@@ -909,19 +1028,22 @@ app.post(
     const finalPaidFee = parseFloat(paid_fee) || 0;
     const finalRemainingFee = finalTotalFee - finalPaidFee;
 
-    // تاریخ ثبت‌نام (تاریخ صدور)
+    // تاریخ ثبت (تاریخ مراجعه شاگرد) - توسط کاربر انتخاب می‌شود
     let finalRegDate = registration_date;
     if (!finalRegDate) {
       finalRegDate = new Date().toISOString().split("T")[0];
     }
 
-    // تاریخ انقضا: یک ماه بعد از تاریخ ثبت‌نام
+    // تاریخ انقضا: یک ماه بعد از تاریخ ثبت
     let finalDueDate = due_date;
     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
       const nextMonth = new Date(finalRegDate);
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       finalDueDate = nextMonth.toISOString().split("T")[0];
     }
+
+    // تاریخ صدور (امروز - تاریخ جاری سیستم)
+    const today = new Date().toISOString().split("T")[0];
 
     try {
       const [result] = await db.execute(
@@ -952,12 +1074,11 @@ app.post(
 
       const studentId = result.insertId;
 
-      // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
+      // ثبت پرداخت اولیه در fee_payments
+      // payment_date = تاریخ ثبت (تاریخ مراجعه شاگرد)
+      // issue_date = امروز (تاریخ صدور رسید)
       if (finalPaidFee > 0) {
         const receipt_number = generateReceiptNumber();
-        const paymentDate = finalRegDate; // تاریخ پرداخت = تاریخ ثبت‌نام
-        const issueDate = finalRegDate; // تاریخ صدور = تاریخ ثبت‌نام
-        const expiryDate = finalDueDate; // تاریخ انقضا = یک ماه بعد
 
         await db.execute(
           `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
@@ -965,8 +1086,8 @@ app.post(
           [
             studentId,
             finalPaidFee,
-            paymentDate,
-            issueDate,
+            finalRegDate,
+            today,
             receipt_number,
             "پرداخت اولیه هنگام ثبت‌نام",
           ],
@@ -984,6 +1105,7 @@ app.post(
         remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
         due_date: finalDueDate,
         registration_date: finalRegDate,
+        issue_date: today, // تاریخ صدور = امروز
       });
     } catch (err) {
       console.error("Error in POST /api/students:", err);

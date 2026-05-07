@@ -298,7 +298,7 @@
                                     شود</small>
                             </div>
 
-                            <!-- تاریخ ثبت و انقضا -->
+                            <!-- تاریخ ثبت و انقضا
                             <div class="col-md-6">
                                 <label class="form-label">تاریخ ثبت <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="stuRegDate" required>
@@ -307,6 +307,18 @@
                                 <label class="form-label">تاریخ انقضا</label>
                                 <input type="date" class="form-control" id="stuDueDate">
                                 <small class="text-muted">خالی = یک ماه بعد از تاریخ ثبت</small>
+                            </div> -->
+
+                            <!-- جایگزین کد قبلی در مودال شاگرد -->
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ ثبت (مراجعه) <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="stuRegDate" required>
+                                <small class="text-muted">تاریخی که شاگرد مراجعه کرده است</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ انقضا</label>
+                                <input type="date" class="form-control" id="stuDueDate">
+                                <small class="text-muted">به طور خودکار یک ماه بعد از تاریخ ثبت</small>
                             </div>
 
                             <!-- فیلدهای فیس (اختیاری) -->
@@ -387,6 +399,18 @@
         }
 
         // تنظیم تاریخ ثبت‌نام (امروز) و تاریخ انقضا (یک ماه بعد)
+        // function setDefaultDates() {
+        //     const today = new Date();
+        //     const todayStr = today.toISOString().split('T')[0];
+        //     document.getElementById('stuRegDate').value = todayStr;
+
+        //     const nextMonth = new Date(today);
+        //     nextMonth.setMonth(today.getMonth() + 1);
+        //     document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
+        // }
+
+
+        // تنظیم تاریخ ثبت (امروز پیش‌فرض) و تاریخ انقضا
         function setDefaultDates() {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
@@ -396,7 +420,6 @@
             nextMonth.setMonth(today.getMonth() + 1);
             document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
         }
-
         // محاسبه تاریخ انقضا بر اساس تاریخ ثبت
         // function updateExpiryByRegDate() {
         //     const regDate = document.getElementById('stuRegDate').value;
@@ -408,6 +431,17 @@
         //     }
         // }
         // به‌روزرسانی تاریخ انقضا بر اساس تاریخ ثبت‌نام
+        // function updateExpiryByRegDate() {
+        //     const regDate = document.getElementById('stuRegDate').value;
+        //     const expiryInput = document.getElementById('stuDueDate');
+        //     if (regDate) {
+        //         const date = new Date(regDate);
+        //         date.setMonth(date.getMonth() + 1);
+        //         expiryInput.value = date.toISOString().split('T')[0];
+        //     }
+        // }
+
+        // به‌روزرسانی تاریخ انقضا بر اساس تاریخ ثبت
         function updateExpiryByRegDate() {
             const regDate = document.getElementById('stuRegDate').value;
             const expiryInput = document.getElementById('stuDueDate');
@@ -568,16 +602,16 @@
             } catch (err) { alert('خطا در بارگیری اطلاعات'); }
         }
 
-        function resetStudentForm() {
-            currentEditId = null;
-            document.getElementById('studentForm').reset();
-            document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('stuRegDate').value = today;
-            updateBarcodePreview();
-            updateExpiryByRegDate();
-            document.getElementById('remainingCalcBox').style.display = 'none';
-        }
+        // function resetStudentForm() {
+        //     currentEditId = null;
+        //     document.getElementById('studentForm').reset();
+        //     document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
+        //     const today = new Date().toISOString().split('T')[0];
+        //     document.getElementById('stuRegDate').value = today;
+        //     updateBarcodePreview();
+        //     updateExpiryByRegDate();
+        //     document.getElementById('remainingCalcBox').style.display = 'none';
+        // }
         // در resetStudentForm و DOMContentLoaded
         // function resetStudentForm() {
         //     currentEditId = null;
@@ -587,6 +621,16 @@
         //     calculateRemaining();
         //     document.getElementById('remainingCalcBox').style.display = 'none';
         // }
+
+        // در resetStudentForm
+        function resetStudentForm() {
+            currentEditId = null;
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
+            setDefaultDates();  // تنظیم تاریخ ثبت و انقضا
+            calculateRemaining();
+            document.getElementById('remainingCalcBox').style.display = 'none';
+        }
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
