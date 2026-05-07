@@ -1059,142 +1059,142 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 //   }
 // });
 
-app.post("/api/new-payment", authenticate, async (req, res) => {
-  const { student_id, amount, payment_date, due_date, notes } = req.body;
-  const receipt_number = generateReceiptNumber();
-  const paymentAmount = parseFloat(amount);
+// app.post("/api/new-payment", authenticate, async (req, res) => {
+//   const { student_id, amount, payment_date, due_date, notes } = req.body;
+//   const receipt_number = generateReceiptNumber();
+//   const paymentAmount = parseFloat(amount);
 
-  if (isNaN(paymentAmount) || paymentAmount <= 0) {
-    return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
-  }
+//   if (isNaN(paymentAmount) || paymentAmount <= 0) {
+//     return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
+//   }
 
-  const paymentDate = payment_date || new Date().toISOString().split("T")[0];
-  const issueDate = new Date().toISOString().split("T")[0]; // تاریخ صدور = امروز
-  const finalDueDate = due_date || calculateExpiryDate(paymentDate);
+//   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
+//   const issueDate = new Date().toISOString().split("T")[0]; // تاریخ صدور = امروز
+//   const finalDueDate = due_date || calculateExpiryDate(paymentDate);
 
-  try {
-    const [student] = await db.execute(
-      `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
-      [student_id],
-    );
+//   try {
+//     const [student] = await db.execute(
+//       `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+//       [student_id],
+//     );
 
-    if (student.length === 0) {
-      return res.status(404).json({ error: "شاگرد یافت نشد" });
-    }
+//     if (student.length === 0) {
+//       return res.status(404).json({ error: "شاگرد یافت نشد" });
+//     }
 
-    // اضافه شدن issue_date
-    await db.execute(
-      `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        student_id,
-        paymentAmount,
-        paymentDate,
-        issueDate,
-        receipt_number,
-        notes || null,
-      ],
-    );
+//     // اضافه شدن issue_date
+//     await db.execute(
+//       `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes)
+//              VALUES (?, ?, ?, ?, ?, ?)`,
+//       [
+//         student_id,
+//         paymentAmount,
+//         paymentDate,
+//         issueDate,
+//         receipt_number,
+//         notes || null,
+//       ],
+//     );
 
-    res.json({
-      success: true,
-      receipt_number,
-      student_name: student[0].name || "",
-      student_father: student[0].father_name || "",
-      student_card_id: student[0].student_card_id || "",
-      student_phone: student[0].phone || "",
-      class_name: student[0].class_name || "",
-      amount: paymentAmount,
-      payment_date: paymentDate,
-      issue_date: issueDate,
-      due_date: finalDueDate,
-      notes: notes || "",
-    });
-  } catch (err) {
-    console.error("Error in /api/new-payment:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.json({
+//       success: true,
+//       receipt_number,
+//       student_name: student[0].name || "",
+//       student_father: student[0].father_name || "",
+//       student_card_id: student[0].student_card_id || "",
+//       student_phone: student[0].phone || "",
+//       class_name: student[0].class_name || "",
+//       amount: paymentAmount,
+//       payment_date: paymentDate,
+//       issue_date: issueDate,
+//       due_date: finalDueDate,
+//       notes: notes || "",
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/new-payment:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-function calculateExpiryDate(dateString) {
-  if (!dateString) return "";
-  let date = new Date(dateString);
-  date.setMonth(date.getMonth() + 1);
-  return date.toISOString().split("T")[0];
-}
+// function calculateExpiryDate(dateString) {
+//   if (!dateString) return "";
+//   let date = new Date(dateString);
+//   date.setMonth(date.getMonth() + 1);
+//   return date.toISOString().split("T")[0];
+// }
 
-app.get("/api/fee-payments-history", authenticate, async (req, res) => {
-  const { start_date, end_date } = req.query;
-  let query = `SELECT fp.*, s.name as student_name, s.student_card_id, c.class_name FROM fee_payments fp JOIN students s ON fp.student_id = s.id JOIN classes c ON s.class_id = c.id WHERE 1=1`;
-  let params = [];
-  if (start_date && end_date) {
-    query += ` AND fp.payment_date BETWEEN ? AND ?`;
-    params.push(start_date, end_date);
-  }
-  query += ` ORDER BY fp.payment_date DESC`;
-  try {
-    const [results] = await db.execute(query, params);
-    const formatted = results.map((p) => {
-      if (p.payment_date) {
-        const d = new Date(p.payment_date);
-        if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
-      }
-      return p;
-    });
-    res.json(formatted);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// app.get("/api/fee-payments-history", authenticate, async (req, res) => {
+//   const { start_date, end_date } = req.query;
+//   let query = `SELECT fp.*, s.name as student_name, s.student_card_id, c.class_name FROM fee_payments fp JOIN students s ON fp.student_id = s.id JOIN classes c ON s.class_id = c.id WHERE 1=1`;
+//   let params = [];
+//   if (start_date && end_date) {
+//     query += ` AND fp.payment_date BETWEEN ? AND ?`;
+//     params.push(start_date, end_date);
+//   }
+//   query += ` ORDER BY fp.payment_date DESC`;
+//   try {
+//     const [results] = await db.execute(query, params);
+//     const formatted = results.map((p) => {
+//       if (p.payment_date) {
+//         const d = new Date(p.payment_date);
+//         if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
+//       }
+//       return p;
+//     });
+//     res.json(formatted);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-app.get("/api/daily-fee-stats", authenticate, async (req, res) => {
-  const { date } = req.query;
-  const targetDate = date || new Date().toISOString().split("T")[0];
+// app.get("/api/daily-fee-stats", authenticate, async (req, res) => {
+//   const { date } = req.query;
+//   const targetDate = date || new Date().toISOString().split("T")[0];
 
-  try {
-    // دریافت تمام پرداخت‌های امروز بر اساس تاریخ صدور
-    const [payments] = await db.execute(
-      `
-            SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name 
-            FROM fee_payments fp 
-            JOIN students s ON fp.student_id = s.id 
-            JOIN classes c ON s.class_id = c.id 
-            WHERE fp.issue_date = ?
-            ORDER BY fp.payment_date DESC
-        `,
-      [targetDate],
-    );
+//   try {
+//     // دریافت تمام پرداخت‌های امروز بر اساس تاریخ صدور
+//     const [payments] = await db.execute(
+//       `
+//             SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name
+//             FROM fee_payments fp
+//             JOIN students s ON fp.student_id = s.id
+//             JOIN classes c ON s.class_id = c.id
+//             WHERE fp.issue_date = ?
+//             ORDER BY fp.payment_date DESC
+//         `,
+//       [targetDate],
+//     );
 
-    const totalToday = payments.reduce(
-      (sum, p) => sum + (parseFloat(p.amount) || 0),
-      0,
-    );
-    const uniqueStudents = new Set(payments.map((p) => p.student_id)).size;
+//     const totalToday = payments.reduce(
+//       (sum, p) => sum + (parseFloat(p.amount) || 0),
+//       0,
+//     );
+//     const uniqueStudents = new Set(payments.map((p) => p.student_id)).size;
 
-    res.json({
-      success: true,
-      date: targetDate,
-      total_amount: totalToday,
-      student_count: uniqueStudents,
-      payments: payments.map((p) => ({
-        id: p.id,
-        student_id: p.student_id,
-        student_name: p.student_name,
-        father_name: p.father_name,
-        student_card_id: p.student_card_id,
-        class_name: p.class_name,
-        amount: parseFloat(p.amount) || 0,
-        payment_date: p.payment_date,
-        issue_date: p.issue_date,
-        receipt_number: p.receipt_number,
-        notes: p.notes,
-      })),
-    });
-  } catch (err) {
-    console.error("Error in /api/daily-fee-stats:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.json({
+//       success: true,
+//       date: targetDate,
+//       total_amount: totalToday,
+//       student_count: uniqueStudents,
+//       payments: payments.map((p) => ({
+//         id: p.id,
+//         student_id: p.student_id,
+//         student_name: p.student_name,
+//         father_name: p.father_name,
+//         student_card_id: p.student_card_id,
+//         class_name: p.class_name,
+//         amount: parseFloat(p.amount) || 0,
+//         payment_date: p.payment_date,
+//         issue_date: p.issue_date,
+//         receipt_number: p.receipt_number,
+//         notes: p.notes,
+//       })),
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/daily-fee-stats:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 app.put("/api/fee-payment/:id", authenticate, async (req, res) => {
   const { payment_date, notes } = req.body;

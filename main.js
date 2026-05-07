@@ -118,47 +118,47 @@ document.addEventListener("DOMContentLoaded", () => {
   setCurrentDate();
 });
 
-function printReceipt(
-  studentName,
-  studentFather,
-  studentCardId,
-  totalFee,
-  paidFee,
-  remainingFee,
-  paymentAmount,
-  paymentDate,
-  issueDate,
-  expiryDate,
-  receiptNumber,
-  notes,
-  className = "",
-  studentStatus = "",
-  prevPaidFee = null,
-  isOverpaid = false,
-) {
-  const params = new URLSearchParams();
-  params.append("student_name", studentName || "");
-  params.append("student_father", studentFather || "");
-  params.append("student_card_id", studentCardId || "");
-  params.append("class_name", className || "");
-  params.append("total_fee", totalFee || 0);
-  params.append("paid_fee", paidFee || 0);
-  params.append("remaining_fee", remainingFee || 0);
-  params.append("payment_amount", paymentAmount || 0);
-  params.append("payment_date", paymentDate || "");
-  params.append("issue_date", issueDate || ""); // اضافه شد
-  params.append("expiry_date", expiryDate || "");
-  params.append("receipt_number", receiptNumber || "");
-  if (prevPaidFee !== null) params.append("prev_paid_fee", prevPaidFee);
-  if (notes) params.append("notes", notes);
-  if (studentStatus) params.append("student_status", studentStatus);
-  if (isOverpaid) params.append("overpaid", "true");
+// function printReceipt(
+//   studentName,
+//   studentFather,
+//   studentCardId,
+//   totalFee,
+//   paidFee,
+//   remainingFee,
+//   paymentAmount,
+//   paymentDate,
+//   issueDate,
+//   expiryDate,
+//   receiptNumber,
+//   notes,
+//   className = "",
+//   studentStatus = "",
+//   prevPaidFee = null,
+//   isOverpaid = false,
+// ) {
+//   const params = new URLSearchParams();
+//   params.append("student_name", studentName || "");
+//   params.append("student_father", studentFather || "");
+//   params.append("student_card_id", studentCardId || "");
+//   params.append("class_name", className || "");
+//   params.append("total_fee", totalFee || 0);
+//   params.append("paid_fee", paidFee || 0);
+//   params.append("remaining_fee", remainingFee || 0);
+//   params.append("payment_amount", paymentAmount || 0);
+//   params.append("payment_date", paymentDate || "");
+//   params.append("issue_date", issueDate || ""); // اضافه شد
+//   params.append("expiry_date", expiryDate || "");
+//   params.append("receipt_number", receiptNumber || "");
+//   if (prevPaidFee !== null) params.append("prev_paid_fee", prevPaidFee);
+//   if (notes) params.append("notes", notes);
+//   if (studentStatus) params.append("student_status", studentStatus);
+//   if (isOverpaid) params.append("overpaid", "true");
 
-  const receiptWindow = window.open(
-    `/receipt.html?${params.toString()}`,
-    "_blank",
-  );
-  if (!receiptWindow) {
-    alert("لطفاً pop-up را برای این سایت فعال کنید");
-  }
-}
+//   const receiptWindow = window.open(
+//     `/receipt.html?${params.toString()}`,
+//     "_blank",
+//   );
+//   if (!receiptWindow) {
+//     alert("لطفاً pop-up را برای این سایت فعال کنید");
+//   }
+// }
