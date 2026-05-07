@@ -332,6 +332,8 @@
                 resultDiv.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></tr>';
 
                 try {
+                    // const res = await fetch(`/api/daily-fee-stats-with-expiry?date=${today}`);
+                    // لینک API را به درستی تنظیم کنید
                     const res = await fetch(`/api/daily-fee-stats-with-expiry?date=${today}`);
                     const data = await res.json();
 
