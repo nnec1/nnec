@@ -260,14 +260,14 @@
         document.getElementById('expiryDate').innerText = urlParams.get('expiry_date') || '-';
         document.getElementById('receiptNumber').innerText = urlParams.get('receipt_number') || '-';
 
-        // // تاریخ صدور (امروز)
-        // const today = new Date();
-        // const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        // document.getElementById('issueDate').innerText = todayStr;
+        // تاریخ صدور (امروز)
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        document.getElementById('issueDate').innerText = todayStr;
 
-        // دریافت تاریخ صدور از پارامترها
-        const issueDate = urlParams.get('issue_date') || todayStr;
-        document.getElementById('issueDate').innerText = issueDate;
+        // // دریافت تاریخ صدور از پارامترها
+        // const issueDate = urlParams.get('issue_date') || todayStr;
+        // document.getElementById('issueDate').innerText = issueDate;
         // یادداشت
         const notes = urlParams.get('notes');
         if (notes && notes !== 'null' && notes !== '') {

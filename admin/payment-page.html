@@ -619,31 +619,31 @@
 
                 // چاپ رسید
                 if (typeof printReceipt === 'function') {
-                    // printReceipt(
-                    //     data.student_name, 
-                    //     data.student_father, 
-                    //     data.student_card_id,
-                    //     hasTotal ? finalTotal : 'نامشخص',     // مجموعه فیس جدید (اگر وارد شده)
-                    //     finalPayment,                         // پرداخت شده
-                    //     remaining,                            // باقی مانده
-                    //     finalPayment, 
-                    //     data.payment_date, 
-                    //     data.due_date,
-                    //     data.receipt_number, 
-                    //     hasTotal ? `مجموعه فیس: ${finalTotal.toLocaleString()} AFN - ${remaining > 0 ? `باقی مانده: ${remaining.toLocaleString()} AFN` : 'پرداخت کامل'}` : 'پرداخت جدید',
-                    //     currentStudent.class_name || '',
-                    //     remaining <= 0 && hasTotal ? 'paid' : 'debtor',
-                    //     0,
-                    //     false
-                    // );
                     printReceipt(
-                        data.student_name, data.student_father, data.student_card_id,
-                        data.total_fee, data.paid_fee, data.remaining_fee,
-                        data.payment_amount, data.payment_date, data.issue_date, // issue_date اضافه شد
-                        data.expiry_date, data.receipt_number, data.notes || '',
-                        student.class_name || '', studentStatus, prevPaidFee, isOverpaid
+                        data.student_name, 
+                        data.student_father, 
+                        data.student_card_id,
+                        hasTotal ? finalTotal : 'نامشخص',     // مجموعه فیس جدید (اگر وارد شده)
+                        finalPayment,                         // پرداخت شده
+                        remaining,                            // باقی مانده
+                        finalPayment, 
+                        data.payment_date, 
+                        data.due_date,
+                        data.receipt_number, 
+                        hasTotal ? `مجموعه فیس: ${finalTotal.toLocaleString()} AFN - ${remaining > 0 ? `باقی مانده: ${remaining.toLocaleString()} AFN` : 'پرداخت کامل'}` : 'پرداخت جدید',
+                        currentStudent.class_name || '',
+                        remaining <= 0 && hasTotal ? 'paid' : 'debtor',
+                        0,
+                        false
                     );
-                }
+                //     printReceipt(
+                //         data.student_name, data.student_father, data.student_card_id,
+                //         data.total_fee, data.paid_fee, data.remaining_fee,
+                //         data.payment_amount, data.payment_date, data.issue_date, // issue_date اضافه شد
+                //         data.expiry_date, data.receipt_number, data.notes || '',
+                //         student.class_name || '', studentStatus, prevPaidFee, isOverpaid
+                //     );
+                // }
 
                 // ریست فرم
                 document.getElementById('newTotalFee').value = '';
