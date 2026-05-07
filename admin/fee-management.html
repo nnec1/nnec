@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -19,11 +20,12 @@
             border-right: 4px solid #dc2626;
             transition: all 0.3s ease;
         }
+
         .expired-card:hover {
             transform: translateX(-5px);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
-        
+
         .badge-expired {
             background: #fee2e2;
             color: #dc2626;
@@ -31,6 +33,7 @@
             border-radius: 20px;
             font-size: 11px;
         }
+
         .badge-paid {
             background: #dcfce7;
             color: #15803d;
@@ -38,7 +41,7 @@
             border-radius: 20px;
             font-size: 11px;
         }
-        
+
         .nav-tabs .nav-link {
             color: #4a5568;
             border: none;
@@ -46,11 +49,12 @@
             border-radius: 12px;
             margin-right: 5px;
         }
+
         .nav-tabs .nav-link.active {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
-        
+
         .filter-box {
             background: white;
             border-radius: 16px;
@@ -58,7 +62,7 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         .btn-payment {
             background: linear-gradient(135deg, #10b981, #059669);
             border: none;
@@ -68,10 +72,12 @@
             font-weight: 500;
             transition: 0.3s;
         }
+
         .btn-payment:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
         }
+
         .btn-fullpay {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             border: none;
@@ -81,7 +87,11 @@
             font-weight: 500;
             transition: 0.3s;
         }
-        .btn-fullpay:hover { transform: translateY(-2px); }
+
+        .btn-fullpay:hover {
+            transform: translateY(-2px);
+        }
+
         .btn-edit-fee {
             background: #f59e0b;
             border: none;
@@ -91,7 +101,12 @@
             font-weight: 500;
             transition: 0.3s;
         }
-        .btn-edit-fee:hover { background: #d97706; transform: translateY(-2px); }
+
+        .btn-edit-fee:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
         .btn-delete-fee {
             background: #dc2626;
             border: none;
@@ -101,8 +116,12 @@
             font-weight: 500;
             transition: 0.3s;
         }
-        .btn-delete-fee:hover { background: #b91c1c; transform: translateY(-2px); }
-        
+
+        .btn-delete-fee:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -118,8 +137,12 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
+            .menu-toggle {
+                display: block;
+            }
+
             .sidebar {
                 position: fixed;
                 right: -280px;
@@ -129,8 +152,17 @@
                 height: 100%;
                 top: 0;
             }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
             .overlay {
                 position: fixed;
                 top: 0;
@@ -141,14 +173,22 @@
                 z-index: 1030;
                 display: none;
             }
-            .overlay.show { display: block; }
-            .btn-payment, .btn-fullpay, .btn-edit-fee, .btn-delete-fee {
+
+            .overlay.show {
+                display: block;
+            }
+
+            .btn-payment,
+            .btn-fullpay,
+            .btn-edit-fee,
+            .btn-delete-fee {
                 padding: 6px 8px;
                 font-size: 12px;
             }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -156,7 +196,8 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
@@ -167,27 +208,32 @@
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
-                    <a href="fee-management.html" class="nav-link active"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="fee-management.html" class="nav-link active"><i class="fa-solid fa-money-bill-wave"></i>
+                        مدیریت فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> مدیریت فیس</h3>
+                    <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> مدیریت فیس
+                    </h3>
                     <button class="btn-payment" onclick="window.location.href='payment-page.html'">
                         <i class="fa-solid fa-plus-circle"></i> پرداخت جدید
                     </button>
                 </div>
 
                 <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#debtors"><i class="fa-solid fa-triangle-exclamation"></i> ⚠️ بدهکاران</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i class="fa-solid fa-clock"></i> ⌛ منقضی شده</a></li>
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#debtors"><i
+                                class="fa-solid fa-triangle-exclamation"></i> ⚠️ بدهکاران</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i
+                                class="fa-solid fa-clock"></i> ⌛ منقضی شده</a></li>
                 </ul>
 
                 <div class="tab-content">
@@ -195,11 +241,17 @@
                     <div class="tab-pane fade show active" id="debtors">
                         <div class="filter-box">
                             <div class="row g-3">
-                                <div class="col-md-3"><select id="debtorClassFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
-                                <div class="col-md-3"><input type="text" id="debtorSearch" class="form-control" placeholder="جستجوی نام یا آیدی..."></div>
-                                <div class="col-md-2"><input type="date" id="debtorDateFrom" class="form-control" placeholder="از تاریخ"></div>
-                                <div class="col-md-2"><input type="date" id="debtorDateTo" class="form-control" placeholder="تا تاریخ"></div>
-                                <div class="col-md-2"><button class="btn btn-primary w-100" onclick="loadDebtors()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                                <div class="col-md-3"><select id="debtorClassFilter" class="form-select">
+                                        <option value="">همه صنف‌ها</option>
+                                    </select></div>
+                                <div class="col-md-3"><input type="text" id="debtorSearch" class="form-control"
+                                        placeholder="جستجوی نام یا آیدی..."></div>
+                                <div class="col-md-2"><input type="date" id="debtorDateFrom" class="form-control"
+                                        placeholder="از تاریخ"></div>
+                                <div class="col-md-2"><input type="date" id="debtorDateTo" class="form-control"
+                                        placeholder="تا تاریخ"></div>
+                                <div class="col-md-2"><button class="btn btn-primary w-100" onclick="loadDebtors()"><i
+                                            class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                             </div>
                         </div>
                         <div id="debtorsList" class="row"></div>
@@ -209,11 +261,17 @@
                     <div class="tab-pane fade" id="expired">
                         <div class="filter-box">
                             <div class="row g-3">
-                                <div class="col-md-3"><select id="expiredClassFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
-                                <div class="col-md-3"><input type="text" id="expiredSearch" class="form-control" placeholder="جستجوی نام یا آیدی..."></div>
-                                <div class="col-md-2"><input type="date" id="expiredDateFrom" class="form-control" placeholder="از تاریخ انقضا"></div>
-                                <div class="col-md-2"><input type="date" id="expiredDateTo" class="form-control" placeholder="تا تاریخ انقضا"></div>
-                                <div class="col-md-2"><button class="btn btn-primary w-100" onclick="loadExpired()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                                <div class="col-md-3"><select id="expiredClassFilter" class="form-select">
+                                        <option value="">همه صنف‌ها</option>
+                                    </select></div>
+                                <div class="col-md-3"><input type="text" id="expiredSearch" class="form-control"
+                                        placeholder="جستجوی نام یا آیدی..."></div>
+                                <div class="col-md-2"><input type="date" id="expiredDateFrom" class="form-control"
+                                        placeholder="از تاریخ انقضا"></div>
+                                <div class="col-md-2"><input type="date" id="expiredDateTo" class="form-control"
+                                        placeholder="تا تاریخ انقضا"></div>
+                                <div class="col-md-2"><button class="btn btn-primary w-100" onclick="loadExpired()"><i
+                                            class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                             </div>
                         </div>
                         <div id="expiredList" class="row"></div>
@@ -234,11 +292,16 @@
                 <div class="modal-body">
                     <form id="editFeeForm">
                         <input type="hidden" id="editStudentId">
-                        <div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number" id="editTotalFee" class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">فیس پرداخت شده (AFN)</label><input type="number" id="editPaidFee" class="form-control" required oninput="updateEditRemaining()"></div>
-                        <div class="mb-3"><label class="form-label">باقی مانده (AFN)</label><input type="number" id="editRemainingFee" class="form-control" readonly style="background:#f1f5f9"></div>
-                        <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date" id="editDueDate" class="form-control"></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات</button>
+                        <div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number"
+                                id="editTotalFee" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">فیس پرداخت شده (AFN)</label><input type="number"
+                                id="editPaidFee" class="form-control" required oninput="updateEditRemaining()"></div>
+                        <div class="mb-3"><label class="form-label">باقی مانده (AFN)</label><input type="number"
+                                id="editRemainingFee" class="form-control" readonly style="background:#f1f5f9"></div>
+                        <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date"
+                                id="editDueDate" class="form-control"></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
+                            تغییرات</button>
                     </form>
                 </div>
             </div>
@@ -382,7 +445,7 @@
                 for (const d of expiredStudents) {
                     const remainingFee = parseFloat(d.remaining_fee) || 0;
                     const hasDebt = remainingFee > 0;
-                    
+
                     html += `
                         <div class="col-md-6 col-lg-4">
                             <div class="expired-card">
@@ -439,6 +502,29 @@
         }
 
         // ========== پرداخت کامل یکجا ==========
+        // async function openFullPayment(studentId, amount) {
+        //     if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+
+        //     const res = await fetch('/api/collect-fee', {
+        //         method: 'POST', headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+        //     });
+        //     const data = await res.json();
+        //     if (res.ok) {
+        //         alert('✅ پرداخت کامل ثبت شد');
+        //         loadDebtors();
+        //         loadExpired();
+        //         if (typeof printReceipt === 'function') {
+        //             printReceipt(
+        //                 data.student_name, data.student_father, data.student_card_id,
+        //                 data.total_fee, data.paid_fee, data.remaining_fee,
+        //                 data.payment_amount, data.payment_date, data.expiry_date,
+        //                 data.receipt_number, 'پرداخت کامل یکجا',
+        //                 '', 'paid', 0, false
+        //             );
+        //         }
+        //     } else { alert(data.error || 'خطا'); }
+        // }
         async function openFullPayment(studentId, amount) {
             if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
 
@@ -449,8 +535,9 @@
             const data = await res.json();
             if (res.ok) {
                 alert('✅ پرداخت کامل ثبت شد');
-                loadDebtors();
-                loadExpired();
+                // به‌روزرسانی هر دو لیست
+                await loadDebtors();
+                await loadExpired();
                 if (typeof printReceipt === 'function') {
                     printReceipt(
                         data.student_name, data.student_father, data.student_card_id,
@@ -462,7 +549,6 @@
                 }
             } else { alert(data.error || 'خطا'); }
         }
-
         // ========== باز کردن مودال ویرایش فیس ==========
         function openEditFeeModal(studentId, totalFee, paidFee, dueDate) {
             document.getElementById('editStudentId').value = studentId;
@@ -539,4 +625,5 @@
         loadExpired();
     </script>
 </body>
+
 </html>
