@@ -386,11 +386,32 @@
             }
         }
 
+        // تنظیم تاریخ ثبت‌نام (امروز) و تاریخ انقضا (یک ماه بعد)
+        function setDefaultDates() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            document.getElementById('stuRegDate').value = todayStr;
+
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(today.getMonth() + 1);
+            document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
+        }
+
         // محاسبه تاریخ انقضا بر اساس تاریخ ثبت
+        // function updateExpiryByRegDate() {
+        //     const regDate = document.getElementById('stuRegDate').value;
+        //     const expiryInput = document.getElementById('stuDueDate');
+        //     if (regDate && !expiryInput.value) {
+        //         const date = new Date(regDate);
+        //         date.setMonth(date.getMonth() + 1);
+        //         expiryInput.value = date.toISOString().split('T')[0];
+        //     }
+        // }
+        // به‌روزرسانی تاریخ انقضا بر اساس تاریخ ثبت‌نام
         function updateExpiryByRegDate() {
             const regDate = document.getElementById('stuRegDate').value;
             const expiryInput = document.getElementById('stuDueDate');
-            if (regDate && !expiryInput.value) {
+            if (regDate) {
                 const date = new Date(regDate);
                 date.setMonth(date.getMonth() + 1);
                 expiryInput.value = date.toISOString().split('T')[0];
@@ -547,17 +568,25 @@
             } catch (err) { alert('خطا در بارگیری اطلاعات'); }
         }
 
+        // function resetStudentForm() {
+        //     currentEditId = null;
+        //     document.getElementById('studentForm').reset();
+        //     document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
+        //     const today = new Date().toISOString().split('T')[0];
+        //     document.getElementById('stuRegDate').value = today;
+        //     updateBarcodePreview();
+        //     updateExpiryByRegDate();
+        //     document.getElementById('remainingCalcBox').style.display = 'none';
+        // }
+        // در resetStudentForm و DOMContentLoaded
         function resetStudentForm() {
             currentEditId = null;
             document.getElementById('studentForm').reset();
             document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('stuRegDate').value = today;
-            updateBarcodePreview();
-            updateExpiryByRegDate();
+            setDefaultDates();  // جایگزین setDefaultDueDate
+            calculateRemaining();
             document.getElementById('remainingCalcBox').style.display = 'none';
         }
-
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -637,9 +666,14 @@
         });
 
         // رویدادها
+        // document.getElementById('stuTotalFee').addEventListener('input', calculateRemainingOptional);
+        // document.getElementById('stuPaidFee').addEventListener('input', calculateRemainingOptional);
+        // document.getElementById('stuRegDate').addEventListener('change', updateExpiryByRegDate);
+
+        // رویدادها
+        document.getElementById('stuRegDate').addEventListener('change', updateExpiryByRegDate);
         document.getElementById('stuTotalFee').addEventListener('input', calculateRemainingOptional);
         document.getElementById('stuPaidFee').addEventListener('input', calculateRemainingOptional);
-        document.getElementById('stuRegDate').addEventListener('change', updateExpiryByRegDate);
 
         resetStudentForm();
         setupSidebar();
