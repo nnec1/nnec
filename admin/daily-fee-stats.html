@@ -44,12 +44,17 @@
             overflow-x: auto;
         }
 
-        .filter-box {
-            background: white;
-            border-radius: 16px;
-            padding: 15px;
+        .info-box {
+            background: #f0fdf4;
+            border-right: 4px solid #10b981;
+            border-radius: 12px;
+            padding: 12px 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .menu-toggle {
@@ -71,6 +76,20 @@
         .btn-primary {
             background: linear-gradient(135deg, #10b981, #059669);
             border: none;
+        }
+
+        .refresh-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            padding: 8px 20px;
+            transition: 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
         }
 
         @media (max-width: 768px) {
@@ -112,6 +131,11 @@
             .overlay.show {
                 display: block;
             }
+
+            .info-box {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -150,39 +174,34 @@
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="fa-solid fa-chart-line text-success me-2"></i> آمار روزمره فیس</h3>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                    <h3 class="section-title"><i class="fa-solid fa-chart-line text-success me-2"></i> آمار روزمره فیس
+                    </h3>
+                    <button class="refresh-btn" onclick="loadDailyStats()">
+                        <i class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی
+                    </button>
+                </div>
 
-                <div class="filter-box">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-4">
-                            <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ مورد نظر</label>
-                            <input type="date" id="statsDate" class="form-control">
-                            <small class="text-muted">تاریخ صدور = تاریخ جاری از سرور</small>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">&nbsp;</label>
-                            <button class="btn btn-primary w-100" onclick="loadDailyStats()">
-                                <i class="fa-solid fa-magnifying-glass"></i> نمایش آمار
-                            </button>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">&nbsp;</label>
-                            <button class="btn btn-secondary w-100" onclick="printReport()">
-                                <i class="fa-solid fa-print"></i> چاپ گزارش
-                            </button>
-                        </div>
+                <!-- اطلاعات تاریخ (فقط نمایش، غیرقابل انتخاب) -->
+                <div class="info-box">
+                    <div>
+                        <i class="fa-solid fa-calendar-check text-success"></i>
+                        <strong>تاریخ صدور:</strong>
+                        <span id="statsDateDisplay" class="fw-bold">-</span>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-clock text-success"></i>
+                        <strong>زمان بروزرسانی:</strong>
+                        <span id="updateTime" class="fw-bold">-</span>
+                    </div>
+                    <div>
+                        <small class="text-muted"><i class="fa-solid fa-info-circle"></i> آمار فقط مربوط به تاریخ جاری
+                            است</small>
                     </div>
                 </div>
 
                 <!-- کارت‌های آمار -->
                 <div class="row g-4 mb-4">
-                    <div class="col-md-4">
-                        <div class="stats-card">
-                            <i class="fa-solid fa-calendar-check text-primary"></i>
-                            <h2 id="statsDateDisplay">-</h2>
-                            <small>تاریخ گزارش</small>
-                        </div>
-                    </div>
                     <div class="col-md-4">
                         <div class="stats-card">
                             <i class="fa-solid fa-users text-info"></i>
@@ -194,14 +213,21 @@
                         <div class="stats-card">
                             <i class="fa-solid fa-money-bill-wave text-success"></i>
                             <h2 id="totalAmount">0</h2>
-                            <small>مجموع پرداختی (AFN)</small>
+                            <small>مجموع پرداختی امروز (AFN)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <i class="fa-solid fa-receipt text-primary"></i>
+                            <h2 id="transactionCount">0</h2>
+                            <small>تعداد تراکنش‌ها</small>
                         </div>
                     </div>
                 </div>
 
                 <!-- جدول جزئیات پرداخت‌ها -->
                 <div class="table-container">
-                    <h5 class="mb-3"><i class="fa-solid fa-list"></i> جزئیات پرداخت‌ها</h5>
+                    <h5 class="mb-3"><i class="fa-solid fa-list"></i> جزئیات پرداخت‌های امروز</h5>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="table-light">
@@ -219,136 +245,149 @@
                             </thead>
                             <tbody id="paymentsTable">
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-4">
-                                        لطفاً تاریخی را انتخاب کنید
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot id="tableFooter" style="display: none;">
-                                <tr>
-                                    <td colspan="6" class="text-end fw-bold">مجموع:</td>
-                                    <td class="text-success fw-bold" id="footerTotal">0 AFN</td>
-                                    <td colspan="2"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                    <td colspan="9" class="text-center py-4">
+                                        <div class="spinner-border text-success"></div>
+                                        <p class="text-muted mt-2">در حال بارگیری آمار امروز...</p>
                     </div>
                 </div>
             </div>
+
+            </tbody>
+            <tfoot id="tableFooter" style="display: none;">
+                <tr>
+                    <td colspan="6" class="text-end fw-bold">مجموع:
         </div>
     </div>
+    </div>
+    <td class="text-success fw-bold" id="footerTotal">0 AFN</div>
+        </div>
+        </div>
+    <td colspan="2">
+        </div>
+        </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/main.js"></script>
-    <script>
-        function setupSidebar() {
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (!toggleBtn) return;
-            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
-            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
-        }
+        </tfoot>
+        </table>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
 
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            try {
-                let d = new Date(dateString);
-                if (isNaN(d.getTime())) return dateString;
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            } catch (e) { return dateString; }
-        }
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="/main.js"></script>
+        <script>
+            let autoRefreshInterval = null;
 
-        function formatNumber(num) {
-            if (num === undefined || num === null || isNaN(num)) return '0';
-            return Number(num).toLocaleString();
-        }
-
-        async function loadDailyStats() {
-            const date = document.getElementById('statsDate').value;
-            if (!date) {
-                alert('❌ لطفاً تاریخ را انتخاب کنید');
-                return;
+            function setupSidebar() {
+                const toggleBtn = document.getElementById('sidebarToggle');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('overlay');
+                if (!toggleBtn) return;
+                toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
+                if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
+                window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
             }
 
-            const resultDiv = document.getElementById('paymentsTable');
-            resultDiv.innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</td></tr>';
+            function formatDate(dateString) {
+                if (!dateString) return '-';
+                try {
+                    let d = new Date(dateString);
+                    if (isNaN(d.getTime())) return dateString;
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                } catch (e) { return dateString; }
+            }
 
-            try {
-                const res = await fetch(`/api/daily-fee-stats?date=${date}`);
-                const data = await res.json();
+            function formatTime() {
+                const now = new Date();
+                return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            }
 
-                if (!data.success) {
-                    throw new Error(data.error || 'خطا در بارگیری');
-                }
+            function formatNumber(num) {
+                if (num === undefined || num === null || isNaN(num)) return '0';
+                return Number(num).toLocaleString();
+            }
 
-                // نمایش تاریخ در کارت
-                document.getElementById('statsDateDisplay').innerHTML = formatDate(data.date);
-                document.getElementById('studentCount').innerHTML = data.student_count || 0;
-                document.getElementById('totalAmount').innerHTML = formatNumber(data.total_amount) + ' AFN';
+            async function loadDailyStats() {
+                const today = new Date().toISOString().split('T')[0];
 
-                if (!data.payments || data.payments.length === 0) {
-                    resultDiv.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">✅ هیچ پرداختی در این تاریخ ثبت نشده است</td></tr>';
-                    document.getElementById('tableFooter').style.display = 'none';
-                    return;
-                }
+                const resultDiv = document.getElementById('paymentsTable');
+                resultDiv.innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div><tr>';
 
-                // ساخت جدول
-                let html = '';
-                data.payments.forEach((p, index) => {
-                    html += `
+                try {
+                    const res = await fetch(`/api/daily-fee-stats?date=${today}`);
+                    const data = await res.json();
+
+                    if (!data.success) {
+                        throw new Error(data.error || 'خطا در بارگیری');
+                    }
+
+                    // نمایش تاریخ و زمان
+                    document.getElementById('statsDateDisplay').innerHTML = formatDate(data.date);
+                    document.getElementById('updateTime').innerHTML = formatTime();
+                    document.getElementById('studentCount').innerHTML = data.student_count || 0;
+                    document.getElementById('totalAmount').innerHTML = formatNumber(data.total_amount) + ' AFN';
+                    document.getElementById('transactionCount').innerHTML = (data.payments?.length || 0);
+
+                    if (!data.payments || data.payments.length === 0) {
+                        resultDiv.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">✅ هیچ پرداختی در امروز ثبت نشده است</div></div></div></tr>';
+                        document.getElementById('tableFooter').style.display = 'none';
+                        return;
+                    }
+
+                    // ساخت جدول
+                    let html = '';
+                    data.payments.forEach((p, index) => {
+                        html += `
                         <tr>
-                            <td class="text-dark">${index + 1}</td>
-                            <td class="text-dark"><strong>${p.student_name || '-'}</strong></td>
-                            <td class="text-dark">${p.father_name || '-'}</td>
-                            <td class="text-dark">${p.student_card_id || '-'}</td>
-                            <td class="text-dark">${p.class_name || '-'}</td>
-                            <td class="text-dark">${formatDate(p.payment_date)}</td>
-                            <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</td>
-                            <td class="text-dark">${p.receipt_number || '-'}</td>
-                            <td class="text-dark">${p.notes || '-'}</td>
-                        </tr>
+                            <td class="text-dark">${index + 1}</div></div></div>
+                            <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
+                            <td class="text-dark">${p.father_name || '-'}</div></div></div>
+                            <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
+                            <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                            <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+                            <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</div></div></div>
+                            <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                            <td class="text-dark">${p.notes || '-'}</div></div></div>
+                        </div></div></div>
                     `;
-                });
+                    });
 
-                resultDiv.innerHTML = html;
-                document.getElementById('tableFooter').style.display = 'table-row-group';
-                document.getElementById('footerTotal').innerHTML = formatNumber(data.total_amount) + ' AFN';
+                    resultDiv.innerHTML = html;
+                    document.getElementById('tableFooter').style.display = 'table-row-group';
+                    document.getElementById('footerTotal').innerHTML = formatNumber(data.total_amount) + ' AFN';
 
-            } catch (err) {
-                console.error(err);
-                resultDiv.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات: ${err.message}</td></tr>`;
-                document.getElementById('tableFooter').style.display = 'none';
-            }
-        }
-
-        function printReport() {
-            const date = document.getElementById('statsDate').value;
-            if (!date) {
-                alert('❌ لطفاً تاریخ را انتخاب کنید');
-                return;
+                } catch (err) {
+                    console.error(err);
+                    resultDiv.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات: ${err.message}</div></div></div></tr>`;
+                    document.getElementById('tableFooter').style.display = 'none';
+                }
             }
 
-            const content = document.querySelector('.main-content').cloneNode(true);
-            // حذف دکمه‌های غیرضروری در نسخه چاپی
-            const btns = content.querySelectorAll('.btn, .menu-toggle, .sidebar, .overlay');
-            btns.forEach(btn => btn.remove());
+            function printReport() {
+                const content = document.querySelector('.main-content').cloneNode(true);
+                // حذف دکمه‌های غیرضروری در نسخه چاپی
+                const btns = content.querySelectorAll('.btn, .menu-toggle, .sidebar, .overlay, .refresh-btn');
+                btns.forEach(btn => btn.remove());
 
-            const win = window.open('', '_blank');
-            win.document.write(`
+                const today = new Date().toISOString().split('T')[0];
+                const formattedDate = formatDate(today);
+
+                const win = window.open('', '_blank');
+                win.document.write(`
                 <html dir="rtl">
                 <head>
-                    <title>گزارش آمار فیس - ${formatDate(date)}</title>
+                    <title>گزارش آمار روزمره فیس - ${formattedDate}</title>
                     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
                     <style>
                         body { padding: 20px; background: white; }
                         .no-print { display: none; }
-                        .sidebar, .menu-toggle, .overlay { display: none; }
+                        .sidebar, .menu-toggle, .overlay, .refresh-btn, .btn { display: none; }
                         .main-content { padding: 0; margin: 0; width: 100%; }
                         @media print {
-                            .btn, .no-print { display: none; }
+                            .btn, .no-print, .refresh-btn { display: none; }
                         }
                     </style>
                 </head>
@@ -357,7 +396,8 @@
                         <div class="text-center mb-4">
                             <h3>آموزشگاه نوی نور</h3>
                             <h4>گزارش آمار روزمره فیس</h4>
-                            <p>تاریخ: ${formatDate(date)}</p>
+                            <p>تاریخ صدور: ${formattedDate}</p>
+                            <p>تاریخ چاپ: ${formatTime()}</p>
                         </div>
                         ${content.innerHTML}
                     </div>
@@ -365,16 +405,22 @@
                 </body>
                 </html>
             `);
-            win.document.close();
-        }
+                win.document.close();
+            }
 
-        // مقداردهی اولیه
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('statsDate').value = today;
+            // توقف آپدیت خودکار
+            function startAutoRefresh() {
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                autoRefreshInterval = setInterval(() => {
+                    loadDailyStats();
+                }, 30000); // هر 30 ثانیه آپدیت می‌شود
+            }
 
-        setupSidebar();
-        loadDailyStats();
-    </script>
+            // مقداردهی اولیه
+            setupSidebar();
+            loadDailyStats();
+            startAutoRefresh();
+        </script>
 </body>
 
 </html>
