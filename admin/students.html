@@ -268,7 +268,7 @@
                     <form id="studentForm" enctype="multipart/form-data">
                         <input type="hidden" id="stuId">
                         <div class="row g-3">
-                            <!-- اطلاعات پایه (اجباری) -->
+                            <!-- اطلاعات پایه -->
                             <div class="col-md-6">
                                 <label class="form-label">نام کامل <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="stuName" required>
@@ -288,28 +288,7 @@
                                 </select>
                             </div>
 
-                            <!-- بارکد / آیدی کارت (خودکار تولید می‌شود) -->
-                            <div class="col-md-12">
-                                <label class="form-label"><i class="fa-solid fa-barcode"></i> آیدی کارت / بارکد</label>
-                                <div class="barcode-preview" id="barcodePreview">
-                                    در حال تولید...
-                                </div>
-                                <small class="text-muted">به طور خودکار تولید می‌شود و شاگرد می‌تواند با آن وارد
-                                    شود</small>
-                            </div>
-
-                            <!-- تاریخ ثبت و انقضا
-                            <div class="col-md-6">
-                                <label class="form-label">تاریخ ثبت <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="stuRegDate" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">تاریخ انقضا</label>
-                                <input type="date" class="form-control" id="stuDueDate">
-                                <small class="text-muted">خالی = یک ماه بعد از تاریخ ثبت</small>
-                            </div> -->
-
-                            <!-- جایگزین کد قبلی در مودال شاگرد -->
+                            <!-- تاریخ ثبت و انقضا -->
                             <div class="col-md-6">
                                 <label class="form-label">تاریخ ثبت (مراجعه) <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="stuRegDate" required>
@@ -341,6 +320,15 @@
                                     <span class="text-dark">💰 باقی مانده:</span>
                                     <strong id="remainingAmountDisplay" class="text-danger">0 AFN</strong>
                                 </div>
+                            </div>
+
+                            <!-- بارکد پیش‌نمایش -->
+                            <div class="col-md-12">
+                                <label class="form-label"><i class="fa-solid fa-barcode"></i> آیدی کارت / بارکد</label>
+                                <div class="barcode-preview" id="barcodePreview">
+                                    در حال تولید...
+                                </div>
+                                <small class="text-muted">به طور خودکار تولید می‌شود</small>
                             </div>
 
                             <div class="col-md-6">
@@ -398,54 +386,24 @@
             }
         }
 
-        // تنظیم تاریخ ثبت‌نام (امروز) و تاریخ انقضا (یک ماه بعد)
-        // function setDefaultDates() {
-        //     const today = new Date();
-        //     const todayStr = today.toISOString().split('T')[0];
-        //     document.getElementById('stuRegDate').value = todayStr;
-
-        //     const nextMonth = new Date(today);
-        //     nextMonth.setMonth(today.getMonth() + 1);
-        //     document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
-        // }
-
-
-        // تنظیم تاریخ ثبت (امروز پیش‌فرض) و تاریخ انقضا
+        // تنظیم تاریخ ثبت (امروز) و تاریخ انقضا
         function setDefaultDates() {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
-            document.getElementById('stuRegDate').value = todayStr;
+            const regDateInput = document.getElementById('stuRegDate');
+            if (regDateInput) regDateInput.value = todayStr;
 
             const nextMonth = new Date(today);
             nextMonth.setMonth(today.getMonth() + 1);
-            document.getElementById('stuDueDate').value = nextMonth.toISOString().split('T')[0];
+            const dueDateInput = document.getElementById('stuDueDate');
+            if (dueDateInput) dueDateInput.value = nextMonth.toISOString().split('T')[0];
         }
-        // محاسبه تاریخ انقضا بر اساس تاریخ ثبت
-        // function updateExpiryByRegDate() {
-        //     const regDate = document.getElementById('stuRegDate').value;
-        //     const expiryInput = document.getElementById('stuDueDate');
-        //     if (regDate && !expiryInput.value) {
-        //         const date = new Date(regDate);
-        //         date.setMonth(date.getMonth() + 1);
-        //         expiryInput.value = date.toISOString().split('T')[0];
-        //     }
-        // }
-        // به‌روزرسانی تاریخ انقضا بر اساس تاریخ ثبت‌نام
-        // function updateExpiryByRegDate() {
-        //     const regDate = document.getElementById('stuRegDate').value;
-        //     const expiryInput = document.getElementById('stuDueDate');
-        //     if (regDate) {
-        //         const date = new Date(regDate);
-        //         date.setMonth(date.getMonth() + 1);
-        //         expiryInput.value = date.toISOString().split('T')[0];
-        //     }
-        // }
 
-        // به‌روزرسانی تاریخ انقضا بر اساس تاریخ ثبت
+        // به روزرسانی تاریخ انقضا بر اساس تاریخ ثبت
         function updateExpiryByRegDate() {
             const regDate = document.getElementById('stuRegDate').value;
             const expiryInput = document.getElementById('stuDueDate');
-            if (regDate) {
+            if (regDate && expiryInput) {
                 const date = new Date(regDate);
                 date.setMonth(date.getMonth() + 1);
                 expiryInput.value = date.toISOString().split('T')[0];
@@ -453,7 +411,7 @@
         }
 
         // محاسبه باقی مانده (اختیاری)
-        function calculateRemainingOptional() {
+        function calculateRemaining() {
             const totalFee = document.getElementById('stuTotalFee').value;
             const paidFee = document.getElementById('stuPaidFee').value;
 
@@ -574,11 +532,16 @@
                 }).join('');
             } catch (err) {
                 console.error('Error loading students:', err);
-                document.getElementById('studentsList').innerHTML = '<tr><td colspan="13" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></table>';
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="13" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
             }
         }
 
-        async function deleteStudent(id) { if (confirm('حذف شود؟')) { await fetch(`/api/students/${id}`, { method: 'DELETE' }); loadStudents(); } }
+        async function deleteStudent(id) {
+            if (confirm('حذف شود؟')) {
+                await fetch(`/api/students/${id}`, { method: 'DELETE' });
+                loadStudents();
+            }
+        }
 
         async function editStudent(id) {
             try {
@@ -597,40 +560,23 @@
                 document.getElementById('stuAddress').value = s.address || '';
                 document.getElementById('barcodePreview').innerHTML = `<i class="fa-solid fa-barcode"></i> ${s.student_card_id || generateStudentCardId()}`;
                 document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش شاگرد';
-                calculateRemainingOptional();
+                calculateRemaining();
                 if (studentModal) studentModal.show();
-            } catch (err) { alert('خطا در بارگیری اطلاعات'); }
+            } catch (err) {
+                alert('خطا در بارگیری اطلاعات');
+            }
         }
 
-        // function resetStudentForm() {
-        //     currentEditId = null;
-        //     document.getElementById('studentForm').reset();
-        //     document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-        //     const today = new Date().toISOString().split('T')[0];
-        //     document.getElementById('stuRegDate').value = today;
-        //     updateBarcodePreview();
-        //     updateExpiryByRegDate();
-        //     document.getElementById('remainingCalcBox').style.display = 'none';
-        // }
-        // در resetStudentForm و DOMContentLoaded
         function resetStudentForm() {
             currentEditId = null;
             document.getElementById('studentForm').reset();
             document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-            setDefaultDates();  // جایگزین setDefaultDueDate
+            setDefaultDates();
+            updateBarcodePreview();
             calculateRemaining();
             document.getElementById('remainingCalcBox').style.display = 'none';
         }
 
-        // در resetStudentForm
-        // function resetStudentForm() {
-        //     currentEditId = null;
-        //     document.getElementById('studentForm').reset();
-        //     document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-        //     setDefaultDates();  // تنظیم تاریخ ثبت و انقضا
-        //     calculateRemaining();
-        //     document.getElementById('remainingCalcBox').style.display = 'none';
-        // }
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -706,18 +652,15 @@
                 } else {
                     alert(data.error || 'خطا در ثبت شاگرد');
                 }
-            } catch (err) { alert('خطا در ارتباط با سرور'); }
+            } catch (err) {
+                alert('خطا در ارتباط با سرور');
+            }
         });
 
         // رویدادها
-        // document.getElementById('stuTotalFee').addEventListener('input', calculateRemainingOptional);
-        // document.getElementById('stuPaidFee').addEventListener('input', calculateRemainingOptional);
-        // document.getElementById('stuRegDate').addEventListener('change', updateExpiryByRegDate);
-
-        // رویدادها
+        document.getElementById('stuTotalFee').addEventListener('input', calculateRemaining);
+        document.getElementById('stuPaidFee').addEventListener('input', calculateRemaining);
         document.getElementById('stuRegDate').addEventListener('change', updateExpiryByRegDate);
-        document.getElementById('stuTotalFee').addEventListener('input', calculateRemainingOptional);
-        document.getElementById('stuPaidFee').addEventListener('input', calculateRemainingOptional);
 
         resetStudentForm();
         setupSidebar();
