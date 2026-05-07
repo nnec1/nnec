@@ -568,25 +568,25 @@
             } catch (err) { alert('خطا در بارگیری اطلاعات'); }
         }
 
-        // function resetStudentForm() {
-        //     currentEditId = null;
-        //     document.getElementById('studentForm').reset();
-        //     document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-        //     const today = new Date().toISOString().split('T')[0];
-        //     document.getElementById('stuRegDate').value = today;
-        //     updateBarcodePreview();
-        //     updateExpiryByRegDate();
-        //     document.getElementById('remainingCalcBox').style.display = 'none';
-        // }
-        // در resetStudentForm و DOMContentLoaded
         function resetStudentForm() {
             currentEditId = null;
             document.getElementById('studentForm').reset();
             document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
-            setDefaultDates();  // جایگزین setDefaultDueDate
-            calculateRemaining();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('stuRegDate').value = today;
+            updateBarcodePreview();
+            updateExpiryByRegDate();
             document.getElementById('remainingCalcBox').style.display = 'none';
         }
+        // در resetStudentForm و DOMContentLoaded
+        // function resetStudentForm() {
+        //     currentEditId = null;
+        //     document.getElementById('studentForm').reset();
+        //     document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> شاگرد جدید';
+        //     setDefaultDates();  // جایگزین setDefaultDueDate
+        //     calculateRemaining();
+        //     document.getElementById('remainingCalcBox').style.display = 'none';
+        // }
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
