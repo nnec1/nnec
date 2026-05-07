@@ -295,11 +295,27 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 // ====================== API شاگردان ======================
 
 // POST /api/students - ثبت شاگرد جدید
-app.post("/api/students", authenticate, upload.single("photo"), async (req, res) => {
-    const { name, father_name, phone, class_id, total_fee, paid_fee, due_date, address, status, registration_date, student_card_id } = req.body;
+app.post(
+  "/api/students",
+  authenticate,
+  upload.single("photo"),
+  async (req, res) => {
+    const {
+      name,
+      father_name,
+      phone,
+      class_id,
+      total_fee,
+      paid_fee,
+      due_date,
+      address,
+      status,
+      registration_date,
+      student_card_id,
+    } = req.body;
 
     if (req.user.role === "teacher") {
-        return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+      return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
     }
 
     const autoPass = Math.random().toString(36).substring(2, 8);
@@ -315,90 +331,115 @@ app.post("/api/students", authenticate, upload.single("photo"), async (req, res)
     // تاریخ ثبت‌نام (تاریخ صدور)
     let finalRegDate = registration_date;
     if (!finalRegDate) {
-        finalRegDate = new Date().toISOString().split("T")[0];
+      finalRegDate = new Date().toISOString().split("T")[0];
     }
-    
+
     // تاریخ انقضا: یک ماه بعد از تاریخ ثبت‌نام
     let finalDueDate = due_date;
     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
-        const nextMonth = new Date(finalRegDate);
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-        finalDueDate = nextMonth.toISOString().split("T")[0];
+      const nextMonth = new Date(finalRegDate);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      finalDueDate = nextMonth.toISOString().split("T")[0];
     }
 
     try {
-        const [result] = await db.execute(`
+      const [result] = await db.execute(
+        `
             INSERT INTO students 
             (student_card_id, name, father_name, phone, password, class_id, registration_date, 
              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [finalStudentCardId, name, toNull(father_name), toNull(phone), hashedPass, class_id,
-            finalRegDate, status || "active", qr_token, finalTotalFee, finalPaidFee, finalRemainingFee < 0 ? 0 : finalRemainingFee,
-            finalDueDate, toNull(address), toNull(photoPath)]);
-
-        const studentId = result.insertId;
-
-        // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
-        if (finalPaidFee > 0) {
-            const receipt_number = generateReceiptNumber();
-            const paymentDate = finalRegDate;      // تاریخ پرداخت = تاریخ ثبت‌نام
-            const issueDate = finalRegDate;        // تاریخ صدور = تاریخ ثبت‌نام (همان امروز)
-            const expiryDate = finalDueDate;       // تاریخ انقضا = یک ماه بعد
-            
-            await db.execute(
-                `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [studentId, finalPaidFee, paymentDate, issueDate, receipt_number, "پرداخت اولیه هنگام ثبت‌نام"]
-            );
-        }
-
-        res.json({
-            id: studentId,
-            qr_token,
-            student_card_id: finalStudentCardId,
-            password: autoPass,
-            total_fee: finalTotalFee,
-            paid_fee: finalPaidFee,
-            remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
-            due_date: finalDueDate,
-            registration_date: finalRegDate,
-        });
-    } catch (err) {
-        console.error("Error in POST /api/students:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get("/api/students/:id", authenticate, async (req, res) => {
-  try {
-    const [results] = await db.execute(
-      `
-            SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, s.address, s.photo, s.qr_token,
-                   c.class_name 
-            FROM students s 
-            LEFT JOIN classes c ON s.class_id = c.id 
-            WHERE s.id = ?
         `,
-      [req.params.id],
-    );
+        [
+          finalStudentCardId,
+          name,
+          toNull(father_name),
+          toNull(phone),
+          hashedPass,
+          class_id,
+          finalRegDate,
+          status || "active",
+          qr_token,
+          finalTotalFee,
+          finalPaidFee,
+          finalRemainingFee < 0 ? 0 : finalRemainingFee,
+          finalDueDate,
+          toNull(address),
+          toNull(photoPath),
+        ],
+      );
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: "شاگرد یافت نشد" });
+      const studentId = result.insertId;
+
+      // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
+      if (finalPaidFee > 0) {
+        const receipt_number = generateReceiptNumber();
+        const paymentDate = finalRegDate; // تاریخ پرداخت = تاریخ ثبت‌نام
+        const issueDate = finalRegDate; // تاریخ صدور = تاریخ ثبت‌نام (همان امروز)
+        const expiryDate = finalDueDate; // تاریخ انقضا = یک ماه بعد
+
+        await db.execute(
+          `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            studentId,
+            finalPaidFee,
+            paymentDate,
+            issueDate,
+            receipt_number,
+            "پرداخت اولیه هنگام ثبت‌نام",
+          ],
+        );
+      }
+
+      res.json({
+        id: studentId,
+        qr_token,
+        student_card_id: finalStudentCardId,
+        password: autoPass,
+        total_fee: finalTotalFee,
+        paid_fee: finalPaidFee,
+        remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
+        due_date: finalDueDate,
+        registration_date: finalRegDate,
+      });
+    } catch (err) {
+      console.error("Error in POST /api/students:", err);
+      res.status(500).json({ error: err.message });
     }
+  },
+);
 
-    const student = results[0];
-    if (student.due_date) {
-      const d = new Date(student.due_date);
-      if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
-    }
+// app.get("/api/students/:id", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(
+//       `
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, s.address, s.photo, s.qr_token,
+//                    c.class_name
+//             FROM students s
+//             LEFT JOIN classes c ON s.class_id = c.id
+//             WHERE s.id = ?
+//         `,
+//       [req.params.id],
+//     );
 
-    res.json(student);
-  } catch (err) {
-    console.error("Error in /api/students/:id:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+//     if (results.length === 0) {
+//       return res.status(404).json({ error: "شاگرد یافت نشد" });
+//     }
+
+//     const student = results[0];
+//     if (student.due_date) {
+//       const d = new Date(student.due_date);
+//       if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
+//     }
+
+//     res.json(student);
+//   } catch (err) {
+//     console.error("Error in /api/students/:id:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 // app.post(
 //   "/api/students",
