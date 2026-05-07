@@ -3110,6 +3110,28 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
   }
 });
 
+// GET /api/issue-dates - دریافت لیست تاریخ‌های صدور موجود
+app.get("/api/issue-dates", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+            SELECT DISTINCT DATE(issue_date) as issue_date 
+            FROM fee_payments 
+            WHERE issue_date IS NOT NULL 
+            ORDER BY issue_date DESC
+        `);
+
+    const dates = results.map((r) => r.issue_date).filter((d) => d);
+
+    res.json({
+      success: true,
+      dates: dates,
+    });
+  } catch (err) {
+    console.error("Error in GET /api/issue-dates:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "404.html"));
