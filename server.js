@@ -294,7 +294,229 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 
 // ====================== API شاگردان ======================
 
-// POST /api/students - ثبت شاگرد جدید
+// // POST /api/students - ثبت شاگرد جدید
+// // app.post(
+// //   "/api/students",
+// //   authenticate,
+// //   upload.single("photo"),
+// //   async (req, res) => {
+// //     const {
+// //       name,
+// //       father_name,
+// //       phone,
+// //       class_id,
+// //       total_fee,
+// //       paid_fee,
+// //       due_date,
+// //       address,
+// //       status,
+// //       registration_date,
+// //       student_card_id,
+// //     } = req.body;
+
+// //     if (req.user.role === "teacher") {
+// //       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+// //     }
+
+// //     const autoPass = Math.random().toString(36).substring(2, 8);
+// //     const hashedPass = await bcrypt.hash(autoPass, 10);
+// //     const qr_token = generateQrToken();
+// //     const finalStudentCardId = student_card_id || generateStudentCardId();
+// //     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+// //     const finalTotalFee = parseFloat(total_fee) || 0;
+// //     const finalPaidFee = parseFloat(paid_fee) || 0;
+// //     const finalRemainingFee = finalTotalFee - finalPaidFee;
+
+// //     // تاریخ ثبت‌نام (تاریخ صدور)
+// //     let finalRegDate = registration_date;
+// //     if (!finalRegDate) {
+// //       finalRegDate = new Date().toISOString().split("T")[0];
+// //     }
+
+// //     // تاریخ انقضا: یک ماه بعد از تاریخ ثبت‌نام
+// //     let finalDueDate = due_date;
+// //     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
+// //       const nextMonth = new Date(finalRegDate);
+// //       nextMonth.setMonth(nextMonth.getMonth() + 1);
+// //       finalDueDate = nextMonth.toISOString().split("T")[0];
+// //     }
+
+// //     try {
+// //       const [result] = await db.execute(
+// //         `
+// //             INSERT INTO students
+// //             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+// //              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
+// //             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+// //         `,
+// //         [
+// //           finalStudentCardId,
+// //           name,
+// //           toNull(father_name),
+// //           toNull(phone),
+// //           hashedPass,
+// //           class_id,
+// //           finalRegDate,
+// //           status || "active",
+// //           qr_token,
+// //           finalTotalFee,
+// //           finalPaidFee,
+// //           finalRemainingFee < 0 ? 0 : finalRemainingFee,
+// //           finalDueDate,
+// //           toNull(address),
+// //           toNull(photoPath),
+// //         ],
+// //       );
+
+// //       const studentId = result.insertId;
+
+// //       // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
+// //       if (finalPaidFee > 0) {
+// //         const receipt_number = generateReceiptNumber();
+// //         const paymentDate = finalRegDate; // تاریخ پرداخت = تاریخ ثبت‌نام
+// //         const issueDate = finalRegDate; // تاریخ صدور = تاریخ ثبت‌نام (همان امروز)
+// //         const expiryDate = finalDueDate; // تاریخ انقضا = یک ماه بعد
+
+// //         await db.execute(
+// //           `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes)
+// //                  VALUES (?, ?, ?, ?, ?, ?)`,
+// //           [
+// //             studentId,
+// //             finalPaidFee,
+// //             paymentDate,
+// //             issueDate,
+// //             receipt_number,
+// //             "پرداخت اولیه هنگام ثبت‌نام",
+// //           ],
+// //         );
+// //       }
+
+// //       res.json({
+// //         id: studentId,
+// //         qr_token,
+// //         student_card_id: finalStudentCardId,
+// //         password: autoPass,
+// //         total_fee: finalTotalFee,
+// //         paid_fee: finalPaidFee,
+// //         remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
+// //         due_date: finalDueDate,
+// //         registration_date: finalRegDate,
+// //       });
+// //     } catch (err) {
+// //       console.error("Error in POST /api/students:", err);
+// //       res.status(500).json({ error: err.message });
+// //     }
+// //   },
+// // );
+
+// app.get("/api/students/:id", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(
+//       `
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, s.address, s.photo, s.qr_token,
+//                    c.class_name
+//             FROM students s
+//             LEFT JOIN classes c ON s.class_id = c.id
+//             WHERE s.id = ?
+//         `,
+//       [req.params.id],
+//     );
+
+//     if (results.length === 0) {
+//       return res.status(404).json({ error: "شاگرد یافت نشد" });
+//     }
+
+//     const student = results[0];
+//     if (student.due_date) {
+//       const d = new Date(student.due_date);
+//       if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
+//     }
+
+//     res.json(student);
+//   } catch (err) {
+//     console.error("Error in /api/students/:id:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// // app.post(
+// //   "/api/students",
+// //   authenticate,
+// //   upload.single("photo"),
+// //   async (req, res) => {
+// //     const {
+// //       name,
+// //       father_name,
+// //       phone,
+// //       class_id,
+// //       total_fee,
+// //       paid_fee,
+// //       due_date,
+// //       address,
+// //       status,
+// //     } = req.body;
+// //     if (req.user.role === "teacher")
+// //       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+// //     const autoPass = Math.random().toString(36).substring(2, 8);
+// //     const hashedPass = await bcrypt.hash(autoPass, 10);
+// //     const qr_token = generateQrToken();
+// //     const student_card_id = generateStudentCardId();
+// //     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+// //     const finalTotalFee = parseFloat(total_fee) || 0;
+// //     const finalPaidFee = parseFloat(paid_fee) || 0;
+// //     const finalRemainingFee = finalTotalFee - finalPaidFee;
+// //     let finalDueDate = due_date;
+// //     if (!finalDueDate) {
+// //       const nextMonth = new Date();
+// //       nextMonth.setMonth(nextMonth.getMonth() + 1);
+// //       finalDueDate = nextMonth.toISOString().split("T")[0];
+// //     }
+// //     try {
+// //       const [result] = await db.execute(
+// //         `
+// //             INSERT INTO students
+// //             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+// //              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
+// //             VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
+// //         `,
+// //         [
+// //           student_card_id,
+// //           name,
+// //           toNull(father_name),
+// //           toNull(phone),
+// //           hashedPass,
+// //           class_id,
+// //           status || "active",
+// //           qr_token,
+// //           finalTotalFee,
+// //           finalPaidFee,
+// //           finalRemainingFee,
+// //           finalDueDate,
+// //           toNull(address),
+// //           toNull(photoPath),
+// //         ],
+// //       );
+
+// //       res.json({
+// //         id: result.insertId,
+// //         qr_token,
+// //         student_card_id,
+// //         password: autoPass,
+// //         total_fee: finalTotalFee,
+// //         paid_fee: finalPaidFee,
+// //         remaining_fee: finalRemainingFee,
+// //         due_date: finalDueDate,
+// //       });
+// //     } catch (err) {
+// //       console.error("Error in POST /api/students:", err);
+// //       res.status(500).json({ error: err.message });
+// //     }
+// //   },
+// // );
+
+// // POST /api/students - ثبت شاگرد جدید
 // app.post(
 //   "/api/students",
 //   authenticate,
@@ -328,26 +550,24 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 //     const finalPaidFee = parseFloat(paid_fee) || 0;
 //     const finalRemainingFee = finalTotalFee - finalPaidFee;
 
-//     // تاریخ ثبت‌نام (تاریخ صدور)
+//     let finalDueDate = due_date;
+//     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
+//       const nextMonth = new Date();
+//       nextMonth.setMonth(nextMonth.getMonth() + 1);
+//       finalDueDate = nextMonth.toISOString().split("T")[0];
+//     }
+
 //     let finalRegDate = registration_date;
 //     if (!finalRegDate) {
 //       finalRegDate = new Date().toISOString().split("T")[0];
 //     }
 
-//     // تاریخ انقضا: یک ماه بعد از تاریخ ثبت‌نام
-//     let finalDueDate = due_date;
-//     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
-//       const nextMonth = new Date(finalRegDate);
-//       nextMonth.setMonth(nextMonth.getMonth() + 1);
-//       finalDueDate = nextMonth.toISOString().split("T")[0];
-//     }
-
 //     try {
 //       const [result] = await db.execute(
 //         `
-//             INSERT INTO students 
-//             (student_card_id, name, father_name, phone, password, class_id, registration_date, 
-//              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo) 
+//             INSERT INTO students
+//             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+//              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
 //             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 //         `,
 //         [
@@ -371,26 +591,23 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 
 //       const studentId = result.insertId;
 
-//       // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
+//       // ========== کد جدید: ثبت پرداخت اولیه در fee_payments ==========
 //       if (finalPaidFee > 0) {
 //         const receipt_number = generateReceiptNumber();
-//         const paymentDate = finalRegDate; // تاریخ پرداخت = تاریخ ثبت‌نام
-//         const issueDate = finalRegDate; // تاریخ صدور = تاریخ ثبت‌نام (همان امروز)
-//         const expiryDate = finalDueDate; // تاریخ انقضا = یک ماه بعد
-
+//         const paymentDate = finalRegDate; // تاریخ ثبت به عنوان تاریخ پرداخت
 //         await db.execute(
-//           `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
-//                  VALUES (?, ?, ?, ?, ?, ?)`,
+//           `INSERT INTO fee_payments (student_id, amount, payment_date, receipt_number, notes)
+//                  VALUES (?, ?, ?, ?, ?)`,
 //           [
 //             studentId,
 //             finalPaidFee,
 //             paymentDate,
-//             issueDate,
 //             receipt_number,
 //             "پرداخت اولیه هنگام ثبت‌نام",
 //           ],
 //         );
 //       }
+//       // ========== پایان کد جدید ==========
 
 //       res.json({
 //         id: studentId,
@@ -401,7 +618,6 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 //         paid_fee: finalPaidFee,
 //         remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
 //         due_date: finalDueDate,
-//         registration_date: finalRegDate,
 //       });
 //     } catch (err) {
 //       console.error("Error in POST /api/students:", err);
@@ -410,15 +626,224 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 //   },
 // );
 
+// // ====================== PUT /api/students/:id - ویرایش شاگرد (نسخه اصلاح شده) ======================
+// app.put(
+//   "/api/students/:id",
+//   authenticate,
+//   upload.single("photo"),
+//   async (req, res) => {
+//     try {
+//       const studentId = req.params.id;
+//       const updates = req.body;
+
+//       console.log("Updating student ID:", studentId);
+//       console.log("Request body:", updates);
+
+//       // بررسی وجود شاگرد
+//       const [existing] = await db.execute(
+//         `SELECT * FROM students WHERE id = ?`,
+//         [studentId],
+//       );
+//       if (existing.length === 0) {
+//         return res.status(404).json({ error: "شاگرد یافت نشد" });
+//       }
+
+//       // ساخت کوئری داینامیک
+//       const updateFields = [];
+//       const updateValues = [];
+
+//       // فیلدهای پایه
+//       if (updates.name !== undefined) {
+//         updateFields.push("name = ?");
+//         updateValues.push(updates.name || null);
+//       }
+//       if (updates.father_name !== undefined) {
+//         updateFields.push("father_name = ?");
+//         updateValues.push(toNull(updates.father_name));
+//       }
+//       if (updates.phone !== undefined) {
+//         updateFields.push("phone = ?");
+//         updateValues.push(toNull(updates.phone));
+//       }
+//       if (updates.class_id !== undefined) {
+//         updateFields.push("class_id = ?");
+//         updateValues.push(updates.class_id || null);
+//       }
+//       if (updates.status !== undefined) {
+//         updateFields.push("status = ?");
+//         updateValues.push(updates.status || "active");
+//       }
+//       if (updates.address !== undefined) {
+//         updateFields.push("address = ?");
+//         updateValues.push(toNull(updates.address));
+//       }
+
+//       // فیلدهای مالی (برای ویرایش فیس)
+//       let totalFeeChanged = false;
+//       let paidFeeChanged = false;
+//       let newTotalFee = null;
+//       let newPaidFee = null;
+
+//       if (updates.total_fee !== undefined) {
+//         newTotalFee = parseFloat(updates.total_fee) || 0;
+//         updateFields.push("total_fee = ?");
+//         updateValues.push(newTotalFee);
+//         totalFeeChanged = true;
+//       }
+//       if (updates.paid_fee !== undefined) {
+//         newPaidFee = parseFloat(updates.paid_fee) || 0;
+//         updateFields.push("paid_fee = ?");
+//         updateValues.push(newPaidFee);
+//         paidFeeChanged = true;
+//       }
+
+//       // محاسبه remaining_fee
+//       if (totalFeeChanged || paidFeeChanged) {
+//         const currentTotal =
+//           newTotalFee !== null
+//             ? newTotalFee
+//             : parseFloat(existing[0].total_fee) || 0;
+//         const currentPaid =
+//           newPaidFee !== null
+//             ? newPaidFee
+//             : parseFloat(existing[0].paid_fee) || 0;
+//         const newRemaining = currentTotal - currentPaid;
+//         updateFields.push("remaining_fee = ?");
+//         updateValues.push(newRemaining < 0 ? 0 : newRemaining);
+//       }
+
+//       // تاریخ انقضا
+//       if (updates.due_date !== undefined) {
+//         updateFields.push("due_date = ?");
+//         updateValues.push(updates.due_date || null);
+//       }
+
+//       // عکس
+//       if (req.file) {
+//         const photoPath = `/uploads/${req.file.filename}`;
+//         updateFields.push("photo = ?");
+//         updateValues.push(photoPath);
+//       }
+
+//       // رمز عبور
+//       if (updates.password && updates.password.trim()) {
+//         const hashed = await bcrypt.hash(updates.password, 10);
+//         updateFields.push("password = ?");
+//         updateValues.push(hashed);
+//       }
+
+//       // اگر هیچ فیلدی برای به روزرسانی وجود ندارد
+//       if (updateFields.length === 0) {
+//         return res.json({ success: true, message: "تغییری اعمال نشد" });
+//       }
+
+//       // ساخت و اجرای کوئری
+//       updateValues.push(studentId);
+//       const query = `UPDATE students SET ${updateFields.join(", ")} WHERE id = ?`;
+
+//       console.log("Query:", query);
+//       console.log("Values:", updateValues);
+
+//       await db.execute(query, updateValues);
+
+//       // دریافت اطلاعات به روز شده
+//       const [updated] = await db.execute(
+//         `SELECT * FROM students WHERE id = ?`,
+//         [studentId],
+//       );
+
+//       res.json({
+//         success: true,
+//         message: "اطلاعات با موفقیت به‌روز شد",
+//         student: updated[0],
+//       });
+//     } catch (err) {
+//       console.error("Error in PUT /api/students/:id:", err);
+//       res.status(500).json({
+//         error: err.message,
+//         code: err.code,
+//         sqlMessage: err.sqlMessage,
+//       });
+//     }
+//   },
+// );
+
+// app.delete("/api/students/:id", authenticate, async (req, res) => {
+//   if (req.user.role === "teacher")
+//     return res.status(403).json({ error: "استاد نمی‌تواند شاگرد حذف کند" });
+//   try {
+//     // بررسی وجود شاگرد
+//     const [existing] = await db.execute(
+//       `SELECT id FROM students WHERE id = ?`,
+//       [req.params.id],
+//     );
+//     if (existing.length === 0) {
+//       return res.status(404).json({ error: "شاگرد یافت نشد" });
+//     }
+
+//     // حذف پرداخت‌های مرتبط
+//     await db.execute(`DELETE FROM fee_payments WHERE student_id = ?`, [
+//       req.params.id,
+//     ]);
+
+//     // حذف شاگرد
+//     await db.execute(`DELETE FROM students WHERE id = ?`, [req.params.id]);
+
+//     res.json({ success: true, message: "شاگرد با موفقیت حذف شد" });
+//   } catch (err) {
+//     console.error("Error in DELETE /api/students/:id:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ====================== API شاگردان ======================
+
+// GET /api/students - دریافت لیست همه شاگردان
+app.get("/api/students", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+            SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
+                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, 
+                   s.address, s.photo, s.qr_token, s.registration_date,
+                   c.class_name 
+            FROM students s 
+            LEFT JOIN classes c ON s.class_id = c.id 
+            ORDER BY s.id DESC
+        `);
+
+    // فرمت تاریخ‌ها
+    const formattedResults = results.map((student) => {
+      if (student.due_date) {
+        const d = new Date(student.due_date);
+        if (!isNaN(d.getTime()))
+          student.due_date = d.toISOString().split("T")[0];
+      }
+      if (student.registration_date) {
+        const d = new Date(student.registration_date);
+        if (!isNaN(d.getTime()))
+          student.registration_date = d.toISOString().split("T")[0];
+      }
+      return student;
+    });
+
+    res.json(formattedResults);
+  } catch (err) {
+    console.error("Error in GET /api/students:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/students/:id - دریافت اطلاعات یک شاگرد
 app.get("/api/students/:id", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
       `
-            SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
-                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, s.address, s.photo, s.qr_token,
-                   c.class_name
-            FROM students s
-            LEFT JOIN classes c ON s.class_id = c.id
+            SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
+                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, 
+                   s.address, s.photo, s.qr_token, s.registration_date,
+                   c.class_name 
+            FROM students s 
+            LEFT JOIN classes c ON s.class_id = c.id 
             WHERE s.id = ?
         `,
       [req.params.id],
@@ -429,92 +854,24 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
     }
 
     const student = results[0];
+
+    // فرمت تاریخ‌ها
     if (student.due_date) {
       const d = new Date(student.due_date);
       if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
     }
+    if (student.registration_date) {
+      const d = new Date(student.registration_date);
+      if (!isNaN(d.getTime()))
+        student.registration_date = d.toISOString().split("T")[0];
+    }
 
     res.json(student);
   } catch (err) {
-    console.error("Error in /api/students/:id:", err);
+    console.error("Error in GET /api/students/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
-// app.post(
-//   "/api/students",
-//   authenticate,
-//   upload.single("photo"),
-//   async (req, res) => {
-//     const {
-//       name,
-//       father_name,
-//       phone,
-//       class_id,
-//       total_fee,
-//       paid_fee,
-//       due_date,
-//       address,
-//       status,
-//     } = req.body;
-//     if (req.user.role === "teacher")
-//       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
-//     const autoPass = Math.random().toString(36).substring(2, 8);
-//     const hashedPass = await bcrypt.hash(autoPass, 10);
-//     const qr_token = generateQrToken();
-//     const student_card_id = generateStudentCardId();
-//     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
-//     const finalTotalFee = parseFloat(total_fee) || 0;
-//     const finalPaidFee = parseFloat(paid_fee) || 0;
-//     const finalRemainingFee = finalTotalFee - finalPaidFee;
-//     let finalDueDate = due_date;
-//     if (!finalDueDate) {
-//       const nextMonth = new Date();
-//       nextMonth.setMonth(nextMonth.getMonth() + 1);
-//       finalDueDate = nextMonth.toISOString().split("T")[0];
-//     }
-//     try {
-//       const [result] = await db.execute(
-//         `
-//             INSERT INTO students
-//             (student_card_id, name, father_name, phone, password, class_id, registration_date,
-//              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
-//             VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
-//         `,
-//         [
-//           student_card_id,
-//           name,
-//           toNull(father_name),
-//           toNull(phone),
-//           hashedPass,
-//           class_id,
-//           status || "active",
-//           qr_token,
-//           finalTotalFee,
-//           finalPaidFee,
-//           finalRemainingFee,
-//           finalDueDate,
-//           toNull(address),
-//           toNull(photoPath),
-//         ],
-//       );
-
-//       res.json({
-//         id: result.insertId,
-//         qr_token,
-//         student_card_id,
-//         password: autoPass,
-//         total_fee: finalTotalFee,
-//         paid_fee: finalPaidFee,
-//         remaining_fee: finalRemainingFee,
-//         due_date: finalDueDate,
-//       });
-//     } catch (err) {
-//       console.error("Error in POST /api/students:", err);
-//       res.status(500).json({ error: err.message });
-//     }
-//   },
-// );
 
 // POST /api/students - ثبت شاگرد جدید
 app.post(
@@ -540,26 +897,30 @@ app.post(
       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
     }
 
+    // تولید اطلاعات خودکار
     const autoPass = Math.random().toString(36).substring(2, 8);
     const hashedPass = await bcrypt.hash(autoPass, 10);
     const qr_token = generateQrToken();
     const finalStudentCardId = student_card_id || generateStudentCardId();
     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
+    // محاسبات مالی
     const finalTotalFee = parseFloat(total_fee) || 0;
     const finalPaidFee = parseFloat(paid_fee) || 0;
     const finalRemainingFee = finalTotalFee - finalPaidFee;
 
-    let finalDueDate = due_date;
-    if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
-      const nextMonth = new Date();
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      finalDueDate = nextMonth.toISOString().split("T")[0];
-    }
-
+    // تاریخ ثبت‌نام (تاریخ صدور)
     let finalRegDate = registration_date;
     if (!finalRegDate) {
       finalRegDate = new Date().toISOString().split("T")[0];
+    }
+
+    // تاریخ انقضا: یک ماه بعد از تاریخ ثبت‌نام
+    let finalDueDate = due_date;
+    if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
+      const nextMonth = new Date(finalRegDate);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      finalDueDate = nextMonth.toISOString().split("T")[0];
     }
 
     try {
@@ -591,25 +952,29 @@ app.post(
 
       const studentId = result.insertId;
 
-      // ========== کد جدید: ثبت پرداخت اولیه در fee_payments ==========
+      // ثبت پرداخت اولیه در fee_payments با issue_date و payment_date
       if (finalPaidFee > 0) {
         const receipt_number = generateReceiptNumber();
-        const paymentDate = finalRegDate; // تاریخ ثبت به عنوان تاریخ پرداخت
+        const paymentDate = finalRegDate; // تاریخ پرداخت = تاریخ ثبت‌نام
+        const issueDate = finalRegDate; // تاریخ صدور = تاریخ ثبت‌نام
+        const expiryDate = finalDueDate; // تاریخ انقضا = یک ماه بعد
+
         await db.execute(
-          `INSERT INTO fee_payments (student_id, amount, payment_date, receipt_number, notes) 
-                 VALUES (?, ?, ?, ?, ?)`,
+          `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
           [
             studentId,
             finalPaidFee,
             paymentDate,
+            issueDate,
             receipt_number,
             "پرداخت اولیه هنگام ثبت‌نام",
           ],
         );
       }
-      // ========== پایان کد جدید ==========
 
       res.json({
+        success: true,
         id: studentId,
         qr_token,
         student_card_id: finalStudentCardId,
@@ -618,6 +983,7 @@ app.post(
         paid_fee: finalPaidFee,
         remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
         due_date: finalDueDate,
+        registration_date: finalRegDate,
       });
     } catch (err) {
       console.error("Error in POST /api/students:", err);
@@ -626,7 +992,7 @@ app.post(
   },
 );
 
-// ====================== PUT /api/students/:id - ویرایش شاگرد (نسخه اصلاح شده) ======================
+// PUT /api/students/:id - ویرایش کامل شاگرد
 app.put(
   "/api/students/:id",
   authenticate,
@@ -677,8 +1043,12 @@ app.put(
         updateFields.push("address = ?");
         updateValues.push(toNull(updates.address));
       }
+      if (updates.registration_date !== undefined) {
+        updateFields.push("registration_date = ?");
+        updateValues.push(updates.registration_date || null);
+      }
 
-      // فیلدهای مالی (برای ویرایش فیس)
+      // فیلدهای مالی
       let totalFeeChanged = false;
       let paidFeeChanged = false;
       let newTotalFee = null;
@@ -752,6 +1122,18 @@ app.put(
         [studentId],
       );
 
+      // فرمت تاریخ‌ها
+      if (updated[0].due_date) {
+        const d = new Date(updated[0].due_date);
+        if (!isNaN(d.getTime()))
+          updated[0].due_date = d.toISOString().split("T")[0];
+      }
+      if (updated[0].registration_date) {
+        const d = new Date(updated[0].registration_date);
+        if (!isNaN(d.getTime()))
+          updated[0].registration_date = d.toISOString().split("T")[0];
+      }
+
       res.json({
         success: true,
         message: "اطلاعات با موفقیت به‌روز شد",
@@ -768,9 +1150,12 @@ app.put(
   },
 );
 
+// DELETE /api/students/:id - حذف شاگرد
 app.delete("/api/students/:id", authenticate, async (req, res) => {
-  if (req.user.role === "teacher")
+  if (req.user.role === "teacher") {
     return res.status(403).json({ error: "استاد نمی‌تواند شاگرد حذف کند" });
+  }
+
   try {
     // بررسی وجود شاگرد
     const [existing] = await db.execute(
@@ -781,7 +1166,7 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
 
-    // حذف پرداخت‌های مرتبط
+    // حذف پرداخت‌های مرتبط (به دلیل کلید خارجی)
     await db.execute(`DELETE FROM fee_payments WHERE student_id = ?`, [
       req.params.id,
     ]);
@@ -795,6 +1180,269 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== API کمکی برای شاگردان ======================
+
+// GET /api/student-fee-search - جستجوی شاگردان برای پرداخت فیس
+app.get("/api/student-fee-search", authenticate, async (req, res) => {
+  const { class_id, search } = req.query;
+  let query = `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE 1=1`;
+  let params = [];
+
+  if (class_id) {
+    query += ` AND s.class_id = ?`;
+    params.push(class_id);
+  }
+  if (search) {
+    query += ` AND s.name LIKE ?`;
+    params.push(`%${search}%`);
+  }
+
+  try {
+    const [results] = await db.execute(query, params);
+    const formatted = results.map((s) => {
+      if (s.due_date) {
+        const d = new Date(s.due_date);
+        if (!isNaN(d.getTime())) s.due_date = d.toISOString().split("T")[0];
+      }
+      return s;
+    });
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in GET /api/student-fee-search:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/student/payments/:studentId - دریافت تاریخچه پرداخت‌های شاگرد
+app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `SELECT * FROM fee_payments WHERE student_id = ? ORDER BY payment_date DESC`,
+      [req.params.studentId],
+    );
+    const formatted = results.map((p) => {
+      if (p.payment_date) {
+        const d = new Date(p.payment_date);
+        if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
+      }
+      if (p.issue_date) {
+        const d = new Date(p.issue_date);
+        if (!isNaN(d.getTime())) p.issue_date = d.toISOString().split("T")[0];
+      }
+      return p;
+    });
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in GET /api/student/payments/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/student/fees/:studentId - دریافت وضعیت فیس شاگرد
+app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `SELECT total_fee, paid_fee, remaining_fee, due_date FROM students WHERE id = ?`,
+      [req.params.studentId],
+    );
+    const student = results[0] || {
+      total_fee: 0,
+      paid_fee: 0,
+      remaining_fee: 0,
+    };
+    if (student.due_date) {
+      const d = new Date(student.due_date);
+      if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
+    }
+    res.json(student);
+  } catch (err) {
+    console.error("Error in GET /api/student/fees/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/student/info/:studentId - دریافت اطلاعات کامل شاگرد برای پنل شاگرد
+app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `
+            SELECT s.*, c.class_name 
+            FROM students s 
+            LEFT JOIN classes c ON s.class_id = c.id 
+            WHERE s.id = ?
+        `,
+      [req.params.studentId],
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+
+    const student = results[0];
+    if (student.due_date) {
+      const d = new Date(student.due_date);
+      if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
+    }
+    if (student.registration_date) {
+      const d = new Date(student.registration_date);
+      if (!isNaN(d.getTime()))
+        student.registration_date = d.toISOString().split("T")[0];
+    }
+
+    res.json(student);
+  } catch (err) {
+    console.error("Error in GET /api/student/info/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/student/stats/:studentId - آمار شاگرد (حاضری و نمرات)
+app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
+  try {
+    const [presentCount] = await db.execute(
+      `SELECT COUNT(*) as count FROM attendance_details ad 
+             JOIN daily_attendance da ON ad.attendance_id = da.id 
+             WHERE ad.student_id = ? AND ad.status = 'present' 
+             AND YEAR(da.attendance_date) = YEAR(CURDATE())`,
+      [req.params.studentId],
+    );
+
+    const [absentCount] = await db.execute(
+      `SELECT COUNT(*) as count FROM attendance_details ad 
+             JOIN daily_attendance da ON ad.attendance_id = da.id 
+             WHERE ad.student_id = ? AND ad.status = 'absent' 
+             AND YEAR(da.attendance_date) = YEAR(CURDATE())`,
+      [req.params.studentId],
+    );
+
+    const [lateCount] = await db.execute(
+      `SELECT COUNT(*) as count FROM attendance_details ad 
+             JOIN daily_attendance da ON ad.attendance_id = da.id 
+             WHERE ad.student_id = ? AND ad.status = 'late' 
+             AND YEAR(da.attendance_date) = YEAR(CURDATE())`,
+      [req.params.studentId],
+    );
+
+    const [grades] = await db.execute(
+      `SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?`,
+      [req.params.studentId],
+    );
+
+    res.json({
+      present_count: presentCount[0]?.count || 0,
+      absent_count: absentCount[0]?.count || 0,
+      late_count: lateCount[0]?.count || 0,
+      avg_grade: Math.round(grades[0]?.avg_grade || 0),
+    });
+  } catch (err) {
+    console.error("Error in GET /api/student/stats/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/student/attendance/:studentId - گزارش حاضری شاگرد
+app.get(
+  "/api/student/attendance/:studentId",
+  authenticate,
+  async (req, res) => {
+    const { month, year } = req.query;
+    try {
+      const [details] = await db.execute(
+        `
+            SELECT ad.status, ad.notes, da.attendance_date as date
+            FROM attendance_details ad
+            JOIN daily_attendance da ON ad.attendance_id = da.id
+            WHERE ad.student_id = ? AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?
+        `,
+        [req.params.studentId, month, year],
+      );
+
+      const present = details.filter((d) => d.status === "present").length;
+      const absent = details.filter((d) => d.status === "absent").length;
+      const late = details.filter((d) => d.status === "late").length;
+
+      res.json({
+        present,
+        absent,
+        late,
+        details: details.map((d) => ({
+          date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
+          status: d.status,
+          notes: d.notes,
+        })),
+      });
+    } catch (err) {
+      console.error("Error in GET /api/student/attendance/:studentId:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// GET /api/student/grades/:studentId - دریافت نمرات شاگرد
+app.get("/api/student/grades/:studentId", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `
+            SELECT g.*, sub.subject_name 
+            FROM grades g 
+            JOIN subjects sub ON g.subject_id = sub.id 
+            WHERE g.student_id = ? 
+            ORDER BY g.exam_date DESC
+        `,
+      [req.params.studentId],
+    );
+
+    const formatted = results.map((g) => {
+      if (g.exam_date) {
+        const d = new Date(g.exam_date);
+        if (!isNaN(d.getTime())) g.exam_date = d.toISOString().split("T")[0];
+      }
+      return g;
+    });
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in GET /api/student/grades/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/student/update-profile/:studentId - ویرایش پروفایل شاگرد
+app.put(
+  "/api/student/update-profile/:studentId",
+  authenticate,
+  upload.single("photo"),
+  async (req, res) => {
+    const { name, father_name, phone, address, password } = req.body;
+    let photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    let setClause = `name=?, father_name=?, phone=?, address=?`;
+    let values = [name, toNull(father_name), toNull(phone), toNull(address)];
+
+    if (photoPath) {
+      setClause += `, photo=?`;
+      values.push(photoPath);
+    }
+    if (password && password.trim()) {
+      const hashed = await bcrypt.hash(password, 10);
+      setClause += `, password=?`;
+      values.push(hashed);
+    }
+    values.push(req.params.studentId);
+
+    try {
+      await db.execute(`UPDATE students SET ${setClause} WHERE id=?`, values);
+      res.json({ message: "پروفایل با موفقیت به‌روز شد" });
+    } catch (err) {
+      console.error(
+        "Error in PUT /api/student/update-profile/:studentId:",
+        err,
+      );
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ====================== API کارمندان ======================
 
