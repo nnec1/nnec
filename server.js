@@ -1956,6 +1956,13 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
     const finalRemainingFee = newRemainingFee < 0 ? 0 : newRemainingFee;
 
     // محاسبه تاریخ انقضای جدید: یک ماه بعد از تاریخ پرداخت
+    // let finalDueDate = new_due_date;
+    // if (!finalDueDate || finalDueDate === "") {
+    //   const nextMonth = new Date(paymentDate);
+    //   nextMonth.setMonth(nextMonth.getMonth() + 1);
+    //   finalDueDate = nextMonth.toISOString().split("T")[0];
+    // }
+    // محاسبه تاریخ انقضای جدید: یک ماه بعد از تاریخ پرداخت
     let finalDueDate = new_due_date;
     if (!finalDueDate || finalDueDate === "") {
       const nextMonth = new Date(paymentDate);
@@ -2397,10 +2404,42 @@ app.get("/api/fee-defaulters", authenticate, async (req, res) => {
 //   }
 // });
 
+// app.get("/api/fee-expired", authenticate, async (req, res) => {
+//     try {
+//         // نمایش همه شاگردانی که تاریخ انقضای آنها از امروز گذشته است (صرف نظر از بدهی)
+//         const [results] = await db.execute(`
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
+//                    c.class_name
+//             FROM students s
+//             JOIN classes c ON s.class_id = c.id
+//             WHERE s.due_date IS NOT NULL
+//               AND s.due_date < CURDATE()
+//               AND s.status = 'active'
+//             ORDER BY s.due_date ASC
+//         `);
+
+//         const formatted = results.map((s) => {
+//             if (s.due_date) {
+//                 const d = new Date(s.due_date);
+//                 if (!isNaN(d.getTime())) {
+//                     s.due_date = d.toISOString().split("T")[0];
+//                 }
+//             }
+//             return s;
+//         });
+
+//         console.log("Expired students (all):", formatted.length);
+//         res.json(formatted);
+//     } catch (err) {
+//         console.error("Error in /api/fee-expired:", err);
+//         res.status(500).json({ error: err.message });
+//     }
+// });
 app.get("/api/fee-expired", authenticate, async (req, res) => {
-    try {
-        // نمایش همه شاگردانی که تاریخ انقضای آنها از امروز گذشته است (صرف نظر از بدهی)
-        const [results] = await db.execute(`
+  try {
+    // فقط بررسی تاریخ انقضا (بدون توجه به بدهی)
+    const [results] = await db.execute(`
             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
                    c.class_name 
@@ -2412,22 +2451,22 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
             ORDER BY s.due_date ASC
         `);
 
-        const formatted = results.map((s) => {
-            if (s.due_date) {
-                const d = new Date(s.due_date);
-                if (!isNaN(d.getTime())) {
-                    s.due_date = d.toISOString().split("T")[0];
-                }
-            }
-            return s;
-        });
-        
-        console.log("Expired students (all):", formatted.length);
-        res.json(formatted);
-    } catch (err) {
-        console.error("Error in /api/fee-expired:", err);
-        res.status(500).json({ error: err.message });
-    }
+    const formatted = results.map((s) => {
+      if (s.due_date) {
+        const d = new Date(s.due_date);
+        if (!isNaN(d.getTime())) {
+          s.due_date = d.toISOString().split("T")[0];
+        }
+      }
+      return s;
+    });
+
+    console.log("Expired students (by date only):", formatted.length);
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in /api/fee-expired:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 // ====================== API تخصیص استاد ======================
 

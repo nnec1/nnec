@@ -517,13 +517,94 @@
 
         // ========== بارگذاری منقضی شده (فقط شاگردانی که تاریخ انقضا گذشته و بدهی دارند) ==========
         // ========== بارگذاری منقضی شده (همه شاگردانی که تاریخ انقضا گذشته) ==========
+        // async function loadExpired() {
+        //     try {
+        //         // دریافت همه شاگردانی که تاریخ انقضای آنها گذشته است
+        //         const res = await fetch('/api/fee-expired');
+        //         let expiredStudents = await res.json();
+
+        //         console.log("All expired students from API:", expiredStudents.length);
+
+        //         // اعمال فیلترهای جستجو
+        //         const classId = document.getElementById('expiredClassFilter').value;
+        //         const search = document.getElementById('expiredSearch').value.toLowerCase();
+        //         const dateFrom = document.getElementById('expiredDateFrom').value;
+        //         const dateTo = document.getElementById('expiredDateTo').value;
+
+        //         if (classId) expiredStudents = expiredStudents.filter(d => d.class_id == classId);
+        //         if (search) expiredStudents = expiredStudents.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
+        //         if (dateFrom) expiredStudents = expiredStudents.filter(d => d.due_date >= dateFrom);
+        //         if (dateTo) expiredStudents = expiredStudents.filter(d => d.due_date <= dateTo);
+
+        //         if (expiredStudents.length === 0) {
+        //             document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div>';
+        //             return;
+        //         }
+
+        //         let html = '';
+        //         for (const d of expiredStudents) {
+        //             const remainingFee = parseFloat(d.remaining_fee) || 0;
+        //             const hasDebt = remainingFee > 0;
+
+        //             html += `
+        //         <div class="col-md-6 col-lg-4">
+        //             <div class="expired-card">
+        //                 <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap">
+        //                     <h6 class="mb-1"><i class="fa-solid fa-user-circle"></i> ${d.name}</h6>
+        //                     <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
+        //                     ${!hasDebt ? '<span class="badge-paid" style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:20px;font-size:10px;">پرداخت کامل</span>' : ''}
+        //                 </div>
+        //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+        //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name}</p>
+        //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+        //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-phone"></i> تماس: ${d.phone || '-'}</p>
+        //                 <hr>
+        //                 <div class="d-flex justify-content-between mb-2">
+        //                     <span><strong>فیس کل:</strong></span>
+        //                     <span>${(parseFloat(d.total_fee) || 0).toLocaleString()} AFN</span>
+        //                 </div>
+        //                 <div class="d-flex justify-content-between mb-2">
+        //                     <span><strong>پرداخت شده:</strong></span>
+        //                     <span class="text-success">${(parseFloat(d.paid_fee) || 0).toLocaleString()} AFN</span>
+        //                 </div>
+        //                 <div class="d-flex justify-content-between mb-2">
+        //                     <span><strong>باقی مانده:</strong></span>
+        //                     <span class="${hasDebt ? 'text-danger fw-bold' : 'text-success'}">${remainingFee.toLocaleString()} AFN</span>
+        //                 </div>
+        //                 <div class="d-flex justify-content-between mb-3">
+        //                     <span><strong>تاریخ انقضا:</strong></span>
+        //                     <span class="text-danger fw-bold">${formatDate(d.due_date)}</span>
+        //                 </div>
+        //                 <div class="d-flex gap-2 flex-wrap">
+        //                     ${hasDebt ? `
+        //                         <button class="btn btn-sm btn-payment" onclick="openPaymentPage(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
+        //                         <button class="btn btn-sm btn-fullpay" onclick="openFullPayment(${d.id}, ${remainingFee})"><i class="fa-solid fa-check-circle"></i> تسویه کامل</button>
+        //                     ` : `
+        //                         <button class="btn btn-sm btn-secondary" disabled><i class="fa-solid fa-check-circle"></i> پرداخت کامل شده</button>
+        //                     `}
+        //                     <button class="btn btn-sm btn-edit-fee" onclick="openEditFeeModal(${d.id}, ${d.total_fee || 0}, ${d.paid_fee || 0}, '${d.due_date || ''}')"><i class="fa-solid fa-pen"></i> ویرایش</button>
+        //                     <button class="btn btn-sm btn-delete-fee" onclick="deleteStudentFee(${d.id})"><i class="fa-solid fa-trash-can"></i> حذف فیس</button>
+        //                 </div>
+        //             </div>
+        //         </div>
+        //     `;
+        //         }
+        //         document.getElementById('expiredList').innerHTML = html;
+        //     } catch (err) {
+        //         console.error('Error loading expired:', err);
+        //         document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا در بارگیری اطلاعات</div></div>';
+        //     }
+        // }
+
+
+        // ========== بارگذاری منقضی شده (فقط بر اساس تاریخ، بدون توجه به بدهی) ==========
         async function loadExpired() {
             try {
                 // دریافت همه شاگردانی که تاریخ انقضای آنها گذشته است
                 const res = await fetch('/api/fee-expired');
                 let expiredStudents = await res.json();
 
-                console.log("All expired students from API:", expiredStudents.length);
+                console.log("Expired students (date only):", expiredStudents.length);
 
                 // اعمال فیلترهای جستجو
                 const classId = document.getElementById('expiredClassFilter').value;
@@ -576,12 +657,10 @@
                             <span class="text-danger fw-bold">${formatDate(d.due_date)}</span>
                         </div>
                         <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-payment" onclick="openPaymentPage(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
                             ${hasDebt ? `
-                                <button class="btn btn-sm btn-payment" onclick="openPaymentPage(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
                                 <button class="btn btn-sm btn-fullpay" onclick="openFullPayment(${d.id}, ${remainingFee})"><i class="fa-solid fa-check-circle"></i> تسویه کامل</button>
-                            ` : `
-                                <button class="btn btn-sm btn-secondary" disabled><i class="fa-solid fa-check-circle"></i> پرداخت کامل شده</button>
-                            `}
+                            ` : ''}
                             <button class="btn btn-sm btn-edit-fee" onclick="openEditFeeModal(${d.id}, ${d.total_fee || 0}, ${d.paid_fee || 0}, '${d.due_date || ''}')"><i class="fa-solid fa-pen"></i> ویرایش</button>
                             <button class="btn btn-sm btn-delete-fee" onclick="deleteStudentFee(${d.id})"><i class="fa-solid fa-trash-can"></i> حذف فیس</button>
                         </div>
@@ -595,7 +674,7 @@
                 document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا در بارگیری اطلاعات</div></div>';
             }
         }
-        // ========== باز کردن صفحه پرداخت ==========
+        // // ========== باز کردن صفحه پرداخت ==========
         function openPaymentPage(studentId) {
             window.location.href = `payment-page.html?id=${studentId}`;
         }
