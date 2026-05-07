@@ -1948,73 +1948,162 @@ app.get("/api/daily-fee-stats", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// // ====================== API آمار روزمره فیس با نمایش تاریخ انقضا ======================
+// app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
+//   const { date } = req.query;
+//   // تاریخ صدور = تاریخ جاری (امروز) اگر کاربر تاریخی نفرستاده باشد
+//   const targetDate = date || new Date().toISOString().split("T")[0];
+
+//   try {
+//     // دریافت تمام پرداخت‌های امروز (تاریخ صدور)
+//     const [payments] = await db.execute(
+//       `
+//             SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, 
+//                    c.class_name, s.due_date as old_expiry_date
+//             FROM fee_payments fp 
+//             JOIN students s ON fp.student_id = s.id 
+//             JOIN classes c ON s.class_id = c.id 
+//             WHERE fp.payment_date = ?
+//             ORDER BY fp.payment_date DESC
+//         `,
+//       [targetDate],
+//     );
+
+//     // برای هر پرداخت، تاریخ انقضای قبلی شاگرد را نمایش بده
+//     const formattedPayments = payments.map((p) => {
+//       // تاریخ انقضای قبلی (قدیمی) - همان تاریخی که فیس منقضی شده بود
+//       let oldExpiryDate = p.old_expiry_date;
+//       if (oldExpiryDate) {
+//         const d = new Date(oldExpiryDate);
+//         if (!isNaN(d.getTime())) {
+//           oldExpiryDate = d.toISOString().split("T")[0];
+//         }
+//       }
+
+//       return {
+//         id: p.id,
+//         student_id: p.student_id,
+//         student_name: p.student_name,
+//         father_name: p.father_name,
+//         student_card_id: p.student_card_id,
+//         class_name: p.class_name,
+//         amount: parseFloat(p.amount) || 0,
+//         payment_date: p.payment_date, // تاریخ صدور (امروز)
+//         old_expiry_date: oldExpiryDate, // تاریخ انقضای قبلی (تاریخی که فیس منقضی شده بود)
+//         receipt_number: p.receipt_number,
+//         notes: p.notes,
+//       };
+//     });
+
+//     // محاسبه مجموع امروز
+//     const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
+
+//     // تعداد شاگردانی که امروز پرداخت داشته‌اند
+//     const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id))
+//       .size;
+
+//     res.json({
+//       success: true,
+//       date: targetDate, // تاریخ صدور (امروز)
+//       total_amount: totalToday,
+//       student_count: uniqueStudents,
+//       transaction_count: formattedPayments.length,
+//       payments: formattedPayments,
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 // ====================== API آمار روزمره فیس با نمایش تاریخ انقضا ======================
 app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
-  const { date } = req.query;
-  // تاریخ صدور = تاریخ جاری (امروز) اگر کاربر تاریخی نفرستاده باشد
-  const targetDate = date || new Date().toISOString().split("T")[0];
-
-  try {
-    // دریافت تمام پرداخت‌های امروز (تاریخ صدور)
-    const [payments] = await db.execute(
-      `
-            SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, 
-                   c.class_name, s.due_date as old_expiry_date
+    const { date } = req.query;
+    // تاریخ صدور = تاریخ جاری (امروز) اگر کاربر تاریخی نفرستاده باشد
+    const targetDate = date || new Date().toISOString().split("T")[0];
+    
+    console.log("Fetching daily stats for date:", targetDate);
+    
+    try {
+        // دریافت تمام پرداخت‌های امروز (تاریخ صدور)
+        // توجه: در دیتابیس payment_date ممکن است با فرمت DATE ذخیره شده باشد
+        const [payments] = await db.execute(`
+            SELECT 
+                fp.id, 
+                fp.student_id, 
+                fp.amount, 
+                fp.payment_date, 
+                fp.receipt_number, 
+                fp.notes,
+                s.name as student_name, 
+                s.father_name, 
+                s.student_card_id, 
+                s.due_date as old_expiry_date,
+                c.class_name
             FROM fee_payments fp 
             JOIN students s ON fp.student_id = s.id 
             JOIN classes c ON s.class_id = c.id 
-            WHERE fp.payment_date = ?
+            WHERE DATE(fp.payment_date) = ?
             ORDER BY fp.payment_date DESC
-        `,
-      [targetDate],
-    );
-
-    // برای هر پرداخت، تاریخ انقضای قبلی شاگرد را نمایش بده
-    const formattedPayments = payments.map((p) => {
-      // تاریخ انقضای قبلی (قدیمی) - همان تاریخی که فیس منقضی شده بود
-      let oldExpiryDate = p.old_expiry_date;
-      if (oldExpiryDate) {
-        const d = new Date(oldExpiryDate);
-        if (!isNaN(d.getTime())) {
-          oldExpiryDate = d.toISOString().split("T")[0];
-        }
-      }
-
-      return {
-        id: p.id,
-        student_id: p.student_id,
-        student_name: p.student_name,
-        father_name: p.father_name,
-        student_card_id: p.student_card_id,
-        class_name: p.class_name,
-        amount: parseFloat(p.amount) || 0,
-        payment_date: p.payment_date, // تاریخ صدور (امروز)
-        old_expiry_date: oldExpiryDate, // تاریخ انقضای قبلی (تاریخی که فیس منقضی شده بود)
-        receipt_number: p.receipt_number,
-        notes: p.notes,
-      };
-    });
-
-    // محاسبه مجموع امروز
-    const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
-
-    // تعداد شاگردانی که امروز پرداخت داشته‌اند
-    const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id))
-      .size;
-
-    res.json({
-      success: true,
-      date: targetDate, // تاریخ صدور (امروز)
-      total_amount: totalToday,
-      student_count: uniqueStudents,
-      transaction_count: formattedPayments.length,
-      payments: formattedPayments,
-    });
-  } catch (err) {
-    console.error("Error in /api/daily-fee-stats-with-expiry:", err);
-    res.status(500).json({ error: err.message });
-  }
+        `, [targetDate]);
+        
+        console.log("Payments found:", payments.length);
+        
+        // برای هر پرداخت، تاریخ انقضای قبلی شاگرد را نمایش بده
+        const formattedPayments = payments.map(p => {
+            // تاریخ انقضای قبلی (قدیمی) - همان تاریخی که فیس منقضی شده بود
+            let oldExpiryDate = p.old_expiry_date;
+            if (oldExpiryDate) {
+                const d = new Date(oldExpiryDate);
+                if (!isNaN(d.getTime())) {
+                    oldExpiryDate = d.toISOString().split('T')[0];
+                }
+            }
+            
+            // تاریخ پرداخت (تاریخ صدور)
+            let paymentDate = p.payment_date;
+            if (paymentDate) {
+                const d = new Date(paymentDate);
+                if (!isNaN(d.getTime())) {
+                    paymentDate = d.toISOString().split('T')[0];
+                }
+            }
+            
+            return {
+                id: p.id,
+                student_id: p.student_id,
+                student_name: p.student_name,
+                father_name: p.father_name,
+                student_card_id: p.student_card_id,
+                class_name: p.class_name,
+                amount: parseFloat(p.amount) || 0,
+                payment_date: paymentDate,  // تاریخ صدور (امروز)
+                old_expiry_date: oldExpiryDate, // تاریخ انقضای قبلی
+                receipt_number: p.receipt_number,
+                notes: p.notes
+            };
+        });
+        
+        // محاسبه مجموع امروز
+        const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
+        
+        // تعداد شاگردانی که امروز پرداخت داشته‌اند
+        const uniqueStudents = new Set(formattedPayments.map(p => p.student_id)).size;
+        
+        res.json({
+            success: true,
+            date: targetDate,
+            total_amount: totalToday,
+            student_count: uniqueStudents,
+            transaction_count: formattedPayments.length,
+            payments: formattedPayments
+        });
+    } catch (err) {
+        console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
+
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "404.html"));
