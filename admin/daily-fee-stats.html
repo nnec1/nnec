@@ -57,6 +57,15 @@
             gap: 10px;
         }
 
+        .expiry-badge {
+            background: #fef3c7;
+            color: #b45309;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            display: inline-block;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -186,7 +195,7 @@
                 <div class="info-box">
                     <div>
                         <i class="fa-solid fa-calendar-check text-success"></i>
-                        <strong>تاریخ صدور:</strong>
+                        <strong>تاریخ صدور (امروز):</strong>
                         <span id="statsDateDisplay" class="fw-bold">-</span>
                     </div>
                     <div>
@@ -195,8 +204,8 @@
                         <span id="updateTime" class="fw-bold">-</span>
                     </div>
                     <div>
-                        <small class="text-muted"><i class="fa-solid fa-info-circle"></i> آمار فقط مربوط به تاریخ جاری
-                            است</small>
+                        <small class="text-muted"><i class="fa-solid fa-info-circle"></i> تاریخ انقضا = تاریخی که فیس
+                            منقضی شده بود</small>
                     </div>
                 </div>
 
@@ -237,7 +246,8 @@
                                     <th>نام پدر</th>
                                     <th>آیدی کارت</th>
                                     <th>صنف</th>
-                                    <th>تاریخ پرداخت</th>
+                                    <th>تاریخ انقضای قبلی</th>
+                                    <th>تاریخ صدور (پرداخت)</th>
                                     <th>مبلغ پرداخت (AFN)</th>
                                     <th>شماره رسید</th>
                                     <th>یادداشت</th>
@@ -245,7 +255,7 @@
                             </thead>
                             <tbody id="paymentsTable">
                                 <tr>
-                                    <td colspan="9" class="text-center py-4">
+                                    <td colspan="10" class="text-center py-4">
                                         <div class="spinner-border text-success"></div>
                                         <p class="text-muted mt-2">در حال بارگیری آمار امروز...</p>
                     </div>
@@ -255,7 +265,7 @@
             </tbody>
             <tfoot id="tableFooter" style="display: none;">
                 <tr>
-                    <td colspan="6" class="text-end fw-bold">مجموع:
+                    <td colspan="7" class="text-end fw-bold">مجموع:
         </div>
     </div>
     </div>
@@ -270,6 +280,12 @@
         </tfoot>
         </table>
         </div>
+        </div>
+
+        <div class="alert alert-info mt-3">
+            <i class="fa-solid fa-lightbulb"></i>
+            <strong>توضیح:</strong> در این گزارش، "تاریخ انقضای قبلی" نشان‌دهنده تاریخی است که فیس شاگرد منقضی شده بود و
+            "تاریخ صدور" نشان‌دهنده روزی است که پرداخت در دفتر ثبت شده است.
         </div>
         </div>
         </div>
@@ -313,10 +329,10 @@
                 const today = new Date().toISOString().split('T')[0];
 
                 const resultDiv = document.getElementById('paymentsTable');
-                resultDiv.innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div><tr>';
+                resultDiv.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></tr>';
 
                 try {
-                    const res = await fetch(`/api/daily-fee-stats?date=${today}`);
+                    const res = await fetch(`/api/daily-fee-stats-with-expiry?date=${today}`);
                     const data = await res.json();
 
                     if (!data.success) {
@@ -331,7 +347,7 @@
                     document.getElementById('transactionCount').innerHTML = (data.payments?.length || 0);
 
                     if (!data.payments || data.payments.length === 0) {
-                        resultDiv.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">✅ هیچ پرداختی در امروز ثبت نشده است</div></div></div></tr>';
+                        resultDiv.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">✅ هیچ پرداختی در امروز ثبت نشده است</div></div></div></tr>';
                         document.getElementById('tableFooter').style.display = 'none';
                         return;
                     }
@@ -339,6 +355,12 @@
                     // ساخت جدول
                     let html = '';
                     data.payments.forEach((p, index) => {
+                        // اگر تاریخ انقضا گذشته باشد، با برچسب قرمز نمایش بده
+                        const expiryDate = p.old_expiry_date;
+                        const todayDate = new Date();
+                        todayDate.setHours(0, 0, 0, 0);
+                        const isExpired = expiryDate && new Date(expiryDate) < todayDate;
+
                         html += `
                         <tr>
                             <td class="text-dark">${index + 1}</div></div></div>
@@ -346,6 +368,10 @@
                             <td class="text-dark">${p.father_name || '-'}</div></div></div>
                             <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
                             <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                            <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">
+                                ${expiryDate ? formatDate(expiryDate) : '-'}
+                                ${isExpired ? '<span class="expiry-badge ms-2">منقضی شده بود</span>' : ''}
+                            </div></div></div>
                             <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
                             <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</div></div></div>
                             <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
@@ -360,7 +386,7 @@
 
                 } catch (err) {
                     console.error(err);
-                    resultDiv.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات: ${err.message}</div></div></div></tr>`;
+                    resultDiv.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات: ${err.message}</div></div></div></tr>`;
                     document.getElementById('tableFooter').style.display = 'none';
                 }
             }
@@ -398,6 +424,8 @@
                             <h4>گزارش آمار روزمره فیس</h4>
                             <p>تاریخ صدور: ${formattedDate}</p>
                             <p>تاریخ چاپ: ${formatTime()}</p>
+                            <hr>
+                            <p class="small text-muted">تاریخ انقضا = تاریخی که فیس شاگرد منقضی شده بود</p>
                         </div>
                         ${content.innerHTML}
                     </div>
