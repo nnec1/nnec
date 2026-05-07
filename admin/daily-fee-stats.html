@@ -244,13 +244,13 @@
                                     <th>#</th>
                                     <th>نام شاگرد</th>
                                     <th>نام پدر</th>
-                                    <th>آیدی کارت</th>
+                                    <!-- <th>آیدی کارت</th> -->
                                     <th>صنف</th>
-                                    <th>تاریخ انقضای قبلی</th>
+                                    <!-- <th>تاریخ انقضای قبلی</th> -->
                                     <th>تاریخ صدور (پرداخت)</th>
                                     <th>مبلغ پرداخت (AFN)</th>
-                                    <th>شماره رسید</th>
-                                    <th>یادداشت</th>
+                                    <!-- <th>شماره رسید</th> -->
+                                    <!-- <th>یادداشت</th> -->
                                 </tr>
                             </thead>
                             <tbody id="paymentsTable">
@@ -368,16 +368,16 @@
                             <td class="text-dark">${index + 1}</div></div></div>
                             <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
                             <td class="text-dark">${p.father_name || '-'}</div></div></div>
-                            <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
+                            // <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
                             <td class="text-dark">${p.class_name || '-'}</div></div></div>
-                            <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">
-                                ${expiryDate ? formatDate(expiryDate) : '-'}
-                                ${isExpired ? '<span class="expiry-badge ms-2">منقضی شده بود</span>' : ''}
+                            // <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">
+                            //     ${expiryDate ? formatDate(expiryDate) : '-'}
+                            //     ${isExpired ? '<span class="expiry-badge ms-2">منقضی شده بود</span>' : ''}
                             </div></div></div>
                             <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
                             <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</div></div></div>
-                            <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
-                            <td class="text-dark">${p.notes || '-'}</div></div></div>
+                            // <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                            // <td class="text-dark">${p.notes || '-'}</div></div></div>
                         </div></div></div>
                     `;
                     });
