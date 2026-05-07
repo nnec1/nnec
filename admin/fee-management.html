@@ -516,13 +516,14 @@
         // }
 
         // ========== بارگذاری منقضی شده (فقط شاگردانی که تاریخ انقضا گذشته و بدهی دارند) ==========
+        // ========== بارگذاری منقضی شده (همه شاگردانی که تاریخ انقضا گذشته) ==========
         async function loadExpired() {
             try {
-                // استفاده از API اختصاصی منقضی شده
+                // دریافت همه شاگردانی که تاریخ انقضای آنها گذشته است
                 const res = await fetch('/api/fee-expired');
                 let expiredStudents = await res.json();
 
-                console.log("Expired students found:", expiredStudents.length);
+                console.log("All expired students from API:", expiredStudents.length);
 
                 // اعمال فیلترهای جستجو
                 const classId = document.getElementById('expiredClassFilter').value;
@@ -543,12 +544,15 @@
                 let html = '';
                 for (const d of expiredStudents) {
                     const remainingFee = parseFloat(d.remaining_fee) || 0;
+                    const hasDebt = remainingFee > 0;
+
                     html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="expired-card">
                         <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap">
                             <h6 class="mb-1"><i class="fa-solid fa-user-circle"></i> ${d.name}</h6>
                             <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
+                            ${!hasDebt ? '<span class="badge-paid" style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:20px;font-size:10px;">پرداخت کامل</span>' : ''}
                         </div>
                         <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
                         <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name}</p>
@@ -565,15 +569,19 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span><strong>باقی مانده:</strong></span>
-                            <span class="text-danger fw-bold">${remainingFee.toLocaleString()} AFN</span>
+                            <span class="${hasDebt ? 'text-danger fw-bold' : 'text-success'}">${remainingFee.toLocaleString()} AFN</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3">
                             <span><strong>تاریخ انقضا:</strong></span>
                             <span class="text-danger fw-bold">${formatDate(d.due_date)}</span>
                         </div>
                         <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-payment" onclick="openPaymentPage(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
-                            <button class="btn btn-sm btn-fullpay" onclick="openFullPayment(${d.id}, ${remainingFee})"><i class="fa-solid fa-check-circle"></i> تسویه کامل</button>
+                            ${hasDebt ? `
+                                <button class="btn btn-sm btn-payment" onclick="openPaymentPage(${d.id})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
+                                <button class="btn btn-sm btn-fullpay" onclick="openFullPayment(${d.id}, ${remainingFee})"><i class="fa-solid fa-check-circle"></i> تسویه کامل</button>
+                            ` : `
+                                <button class="btn btn-sm btn-secondary" disabled><i class="fa-solid fa-check-circle"></i> پرداخت کامل شده</button>
+                            `}
                             <button class="btn btn-sm btn-edit-fee" onclick="openEditFeeModal(${d.id}, ${d.total_fee || 0}, ${d.paid_fee || 0}, '${d.due_date || ''}')"><i class="fa-solid fa-pen"></i> ویرایش</button>
                             <button class="btn btn-sm btn-delete-fee" onclick="deleteStudentFee(${d.id})"><i class="fa-solid fa-trash-can"></i> حذف فیس</button>
                         </div>
@@ -587,7 +595,6 @@
                 document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا در بارگیری اطلاعات</div></div>';
             }
         }
-
         // ========== باز کردن صفحه پرداخت ==========
         function openPaymentPage(studentId) {
             window.location.href = `payment-page.html?id=${studentId}`;
