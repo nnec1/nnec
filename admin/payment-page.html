@@ -597,6 +597,19 @@
                 })
             });
 
+            // ثبت پرداخت جدید
+            // const res = await fetch('/api/new-payment', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({
+            //         student_id: currentStudent.id,
+            //         amount: finalPayment,
+            //         payment_date: paymentDate,  // این باید تاریخ امروز باشد
+            //         due_date: expiryDate,
+            //         notes: notesText
+            //     })
+            // });
+
             const data = await res.json();
             if (res.ok) {
                 let successMsg = '✅ پرداخت با موفقیت ثبت شد';
