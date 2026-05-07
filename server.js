@@ -2398,8 +2398,9 @@ app.get("/api/fee-defaulters", authenticate, async (req, res) => {
 // });
 
 app.get("/api/fee-expired", authenticate, async (req, res) => {
-  try {
-    const [results] = await db.execute(`
+    try {
+        // نمایش همه شاگردانی که تاریخ انقضای آنها از امروز گذشته است (صرف نظر از بدهی)
+        const [results] = await db.execute(`
             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
                    c.class_name 
@@ -2407,25 +2408,26 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
             JOIN classes c ON s.class_id = c.id 
             WHERE s.due_date IS NOT NULL 
               AND s.due_date < CURDATE() 
-              AND s.remaining_fee > 0 
               AND s.status = 'active' 
             ORDER BY s.due_date ASC
         `);
 
-    const formatted = results.map((s) => {
-      if (s.due_date) {
-        const d = new Date(s.due_date);
-        if (!isNaN(d.getTime())) {
-          s.due_date = d.toISOString().split("T")[0];
-        }
-      }
-      return s;
-    });
-    res.json(formatted);
-  } catch (err) {
-    console.error("Error in /api/fee-expired:", err);
-    res.status(500).json({ error: err.message });
-  }
+        const formatted = results.map((s) => {
+            if (s.due_date) {
+                const d = new Date(s.due_date);
+                if (!isNaN(d.getTime())) {
+                    s.due_date = d.toISOString().split("T")[0];
+                }
+            }
+            return s;
+        });
+        
+        console.log("Expired students (all):", formatted.length);
+        res.json(formatted);
+    } catch (err) {
+        console.error("Error in /api/fee-expired:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 // ====================== API تخصیص استاد ======================
 
