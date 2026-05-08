@@ -450,23 +450,52 @@
             try {
                 const res = await fetch('/api/fee-expired');
                 let data = await res.json();
+
+                if (!Array.isArray(data)) {
+                    console.error('Expected array but got:', data);
+                    document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">خطا: ' + (data.error || 'unknown') + '</div></div>';
+                    return;
+                }
+
                 if (classId) data = data.filter(d => d.class_id == classId);
-                if (search) data = data.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
-                if (!data || data.length === 0) { document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد منقضی شده وجود ندارد</div></div>'; return; }
+                if (search) data = data.filter(d => (d.name && d.name.toLowerCase().includes(search)) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
+
+                if (!data || data.length === 0) {
+                    document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد منقضی شده وجود ندارد</div></div>';
+                    return;
+                }
+
                 let html = '';
                 for (const d of data) {
-                    html += `<div class="col-md-6 col-lg-4"><div class="expired-card"><div class="d-flex justify-content-between align-items-start mb-2"><h6><i class="fa-solid fa-user-circle"></i> ${d.name}</h6><span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span></div>
-                        <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p><p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name}</p>
-                        <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p><p class="mb-1 small text-muted"><i class="fa-solid fa-phone"></i> تماس: ${d.phone || '-'}</p><hr>
-                        <div class="d-flex justify-content-between mb-2"><span><strong>باقی مانده:</strong></span><span class="text-danger fw-bold">${(d.remaining_fee || 0).toLocaleString()} AFN</span></div>
-                        <div class="d-flex justify-content-between mb-3"><span><strong>تاریخ انقضا:</strong></span><span class="text-danger fw-bold">${formatDate(d.due_date)}</span></div>
-                        <div class="d-flex gap-2 flex-wrap"><button class="btn btn-sm btn-payment" onclick="openPartialPayment(${d.id}, ${d.remaining_fee})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت</button></div>
-                    </div></div>`;
+                    html += `<div class="col-md-6 col-lg-4"><div class="expired-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
+                    <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
+                </div>
+                <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+                <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
+                <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+                <p class="mb-1 small text-muted"><i class="fa-solid fa-phone"></i> تماس: ${d.phone || '-'}</p>
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>باقی مانده:</strong></span>
+                    <span class="text-danger fw-bold">${(d.remaining_fee || 0).toLocaleString()} AFN</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span><strong>تاریخ انقضا:</strong></span>
+                    <span class="text-danger fw-bold">${formatDate(d.due_date)}</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-payment" onclick="openPartialPayment(${d.id}, ${d.remaining_fee || 0})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت</button>
+                </div>
+            </div></div>`;
                 }
                 document.getElementById('expiredList').innerHTML = html;
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا: ' + err.message + '</div></div>';
+            }
         }
-
         // ========== تب 3: تاریخچه فیس با سرچ بازه تاریخ ==========
         async function loadPaymentHistory() {
             const startDate = document.getElementById('historyStartDate').value;
