@@ -538,6 +538,7 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 
 // 1. دریافت بدهکاران (بر اساس fee_payments)
 // ====================== API بدهکاران (بر اساس fee_payments) ======================
+// ====================== API بدهکاران (بر اساس fee_payments) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -552,20 +553,14 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
         COALESCE(SUM(fp.amount), 0) as total_paid,
         MAX(fp.payment_date) as last_payment_date,
         DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
-        (
-          SELECT fp2.total_fee 
-          FROM fee_payments fp2 
-          WHERE fp2.student_id = s.id 
-          ORDER BY fp2.id DESC 
-          LIMIT 1
-        ) as total_fee
+        MAX(fp.total_fee) as total_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
       LEFT JOIN fee_payments fp ON s.id = fp.student_id
       WHERE s.status = 'active'
-      GROUP BY s.id
-      HAVING (total_fee - total_paid) > 0
-      ORDER BY (total_fee - total_paid) DESC
+      GROUP BY s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, c.class_name
+      HAVING (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
+      ORDER BY (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) DESC
     `);
 
     const formatted = results.map((s) => {
@@ -574,7 +569,13 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
       const remainingFee = finalTotalFee - totalPaid;
 
       return {
-        ...s,
+        id: s.id,
+        student_card_id: s.student_card_id,
+        name: s.name,
+        father_name: s.father_name,
+        phone: s.phone,
+        class_id: s.class_id,
+        class_name: s.class_name,
         total_fee: finalTotalFee,
         total_paid: totalPaid,
         remaining_fee: remainingFee,
@@ -595,6 +596,7 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 });
 // 2. دریافت منقضی شده‌ها
 // ====================== API منقضی شده (fee-expired) ======================
+// ====================== API منقضی شده (fee-expired) ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -609,19 +611,14 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         COALESCE(SUM(fp.amount), 0) as total_paid,
         MAX(fp.payment_date) as last_payment_date,
         DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
-        (
-          SELECT fp2.total_fee 
-          FROM fee_payments fp2 
-          WHERE fp2.student_id = s.id 
-          ORDER BY fp2.id DESC 
-          LIMIT 1
-        ) as total_fee
+        MAX(fp.total_fee) as total_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
       LEFT JOIN fee_payments fp ON s.id = fp.student_id
       WHERE s.status = 'active'
-      GROUP BY s.id
-      HAVING (due_date < CURDATE() OR due_date IS NULL) AND (total_fee - total_paid) > 0
+      GROUP BY s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, c.class_name
+      HAVING (DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) < CURDATE() OR MAX(fp.payment_date) IS NULL) 
+        AND (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
       ORDER BY due_date ASC
     `);
 
@@ -638,7 +635,13 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
       }
 
       return {
-        ...s,
+        id: s.id,
+        student_card_id: s.student_card_id,
+        name: s.name,
+        father_name: s.father_name,
+        phone: s.phone,
+        class_id: s.class_id,
+        class_name: s.class_name,
         total_fee: finalTotalFee,
         total_paid: totalPaid,
         remaining_fee: remainingFee,
@@ -1019,40 +1022,44 @@ app.get("/api/attendance/class/:classId", authenticate, async (req, res) => {
 
 // ====================== API داشبورد ======================
 
+// ====================== API داشبورد ======================
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
   try {
-    const [students] = await db.execute(
-      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
-    );
-    const [teachers] = await db.execute(
-      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
-    );
-    // بدهکاران: شاگردانی که مجموع پرداختشان کمتر از 5000 است
+    const [students] = await db.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'active'`);
+    const [teachers] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`);
+    
+    // بدهکاران: شاگردانی که باقی مانده فیس آنها > 0 است
     const [debtors] = await db.execute(`
       SELECT COUNT(*) as total FROM (
-        SELECT s.id, COALESCE(SUM(fp.amount), 0) as total_paid
+        SELECT 
+          s.id, 
+          COALESCE(SUM(fp.amount), 0) as total_paid,
+          MAX(fp.total_fee) as total_fee
         FROM students s
         LEFT JOIN fee_payments fp ON s.id = fp.student_id
         WHERE s.status = 'active'
         GROUP BY s.id
-        HAVING total_paid < 5000
+        HAVING (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
       ) as debtors_list
     `);
-    const [revenue] = await db.execute(
-      `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
-    );
-    res.json({
-      total_students: students[0]?.total || 0,
-      total_teachers: teachers[0]?.total || 0,
-      total_debtors: debtors[0]?.total || 0,
-      monthly_revenue: revenue[0]?.total || 0,
+    
+    const [revenue] = await db.execute(`
+      SELECT COALESCE(SUM(amount), 0) as total 
+      FROM fee_payments 
+      WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())
+    `);
+    
+    res.json({ 
+      total_students: students[0]?.total || 0, 
+      total_teachers: teachers[0]?.total || 0, 
+      total_debtors: debtors[0]?.total || 0, 
+      monthly_revenue: revenue[0]?.total || 0 
     });
   } catch (err) {
     console.error("Error in /api/dashboard-stats:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 app.get("/api/recent-transactions", authenticate, async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   try {
