@@ -1,19 +1,25 @@
-const express = require("express");
-const mysql = require("mysql2/promise");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const crypto = require("crypto");
-require("dotenv").config();
+import express from "express";
+import mysql from "mysql2/promise";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import crypto from "crypto";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+
+// تعریف __dirname در ES Module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config();
 
 const app = express();
 const JWT_SECRET = "lms-secret-key-2025";
 const PORT = process.env.PORT || 3000;
-
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
