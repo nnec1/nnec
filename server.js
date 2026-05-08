@@ -1025,9 +1025,13 @@ app.get("/api/attendance/class/:classId", authenticate, async (req, res) => {
 // ====================== API داشبورد ======================
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
   try {
-    const [students] = await db.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'active'`);
-    const [teachers] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`);
-    
+    const [students] = await db.execute(
+      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+    );
+    const [teachers] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+
     // بدهکاران: شاگردانی که باقی مانده فیس آنها > 0 است
     const [debtors] = await db.execute(`
       SELECT COUNT(*) as total FROM (
@@ -1042,18 +1046,18 @@ app.get("/api/dashboard-stats", authenticate, async (req, res) => {
         HAVING (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
       ) as debtors_list
     `);
-    
+
     const [revenue] = await db.execute(`
       SELECT COALESCE(SUM(amount), 0) as total 
       FROM fee_payments 
       WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())
     `);
-    
-    res.json({ 
-      total_students: students[0]?.total || 0, 
-      total_teachers: teachers[0]?.total || 0, 
-      total_debtors: debtors[0]?.total || 0, 
-      monthly_revenue: revenue[0]?.total || 0 
+
+    res.json({
+      total_students: students[0]?.total || 0,
+      total_teachers: teachers[0]?.total || 0,
+      total_debtors: debtors[0]?.total || 0,
+      monthly_revenue: revenue[0]?.total || 0,
     });
   } catch (err) {
     console.error("Error in /api/dashboard-stats:", err);
