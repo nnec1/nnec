@@ -245,7 +245,7 @@ app.get("/api/announcements/public", async (req, res) => {
   }
 });
 
-// ====================== API کلاس‌ها (صنف‌ها) ======================
+// ====================== API کلاس‌ها ======================
 
 app.get("/api/classes", authenticate, async (req, res) => {
   try {
@@ -526,9 +526,6 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
     await db.execute(`DELETE FROM fee_payments WHERE student_id = ?`, [
       req.params.id,
     ]);
-    await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [
-      req.params.id,
-    ]);
     await db.execute(`DELETE FROM students WHERE id = ?`, [req.params.id]);
     res.json({ success: true, message: "شاگرد با موفقیت حذف شد" });
   } catch (err) {
@@ -539,51 +536,120 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 
 // ====================== API فیس ======================
 
+// 1. دریافت بدهکاران (بر اساس fee_payments)
+// ====================== API بدهکاران (بر اساس fee_payments) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
-      SELECT fd.*, s.name, s.father_name, s.student_card_id, s.phone, c.class_name
-      FROM fee_debtors fd
-      JOIN students s ON fd.student_id = s.id
+      SELECT 
+        s.id,
+        s.student_card_id,
+        s.name,
+        s.father_name,
+        s.phone,
+        s.class_id,
+        c.class_name,
+        COALESCE(SUM(fp.amount), 0) as total_paid,
+        MAX(fp.payment_date) as last_payment_date,
+        DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
+        (
+          SELECT fp2.total_fee 
+          FROM fee_payments fp2 
+          WHERE fp2.student_id = s.id 
+          ORDER BY fp2.id DESC 
+          LIMIT 1
+        ) as total_fee
+      FROM students s
       JOIN classes c ON s.class_id = c.id
-      WHERE fd.remaining_fee > 0
-      ORDER BY fd.created_at DESC
+      LEFT JOIN fee_payments fp ON s.id = fp.student_id
+      WHERE s.status = 'active'
+      GROUP BY s.id
+      HAVING (total_fee - total_paid) > 0
+      ORDER BY (total_fee - total_paid) DESC
     `);
-    res.json(results);
+
+    const formatted = results.map((s) => {
+      const finalTotalFee = parseFloat(s.total_fee) || 0;
+      const totalPaid = parseFloat(s.total_paid) || 0;
+      const remainingFee = finalTotalFee - totalPaid;
+
+      return {
+        ...s,
+        total_fee: finalTotalFee,
+        total_paid: totalPaid,
+        remaining_fee: remainingFee,
+        due_date: s.due_date
+          ? new Date(s.due_date).toISOString().split("T")[0]
+          : null,
+        last_payment_date: s.last_payment_date
+          ? new Date(s.last_payment_date).toISOString().split("T")[0]
+          : null,
+      };
+    });
+
+    res.json(formatted);
   } catch (err) {
     console.error("Error in /api/fee-debtors:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
+// 2. دریافت منقضی شده‌ها
 // ====================== API منقضی شده (fee-expired) ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
       SELECT 
-        s.id, 
-        s.student_card_id, 
-        s.name, 
-        s.father_name, 
-        s.phone, 
-        s.class_id, 
-        s.status,
+        s.id,
+        s.student_card_id,
+        s.name,
+        s.father_name,
+        s.phone,
+        s.class_id,
         c.class_name,
-        fd.due_date,
-        fd.remaining_fee
+        COALESCE(SUM(fp.amount), 0) as total_paid,
+        MAX(fp.payment_date) as last_payment_date,
+        DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
+        (
+          SELECT fp2.total_fee 
+          FROM fee_payments fp2 
+          WHERE fp2.student_id = s.id 
+          ORDER BY fp2.id DESC 
+          LIMIT 1
+        ) as total_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      JOIN fee_debtors fd ON s.id = fd.student_id
-      WHERE fd.due_date < CURDATE() AND fd.remaining_fee > 0 AND s.status = 'active'
-      ORDER BY fd.due_date ASC
+      LEFT JOIN fee_payments fp ON s.id = fp.student_id
+      WHERE s.status = 'active'
+      GROUP BY s.id
+      HAVING (due_date < CURDATE() OR due_date IS NULL) AND (total_fee - total_paid) > 0
+      ORDER BY due_date ASC
     `);
 
-    const formatted = results.map((s) => ({
-      ...s,
-      due_date: s.due_date
-        ? new Date(s.due_date).toISOString().split("T")[0]
-        : null,
-    }));
+    const formatted = results.map((s) => {
+      const finalTotalFee = parseFloat(s.total_fee) || 0;
+      const totalPaid = parseFloat(s.total_paid) || 0;
+      const remainingFee = finalTotalFee - totalPaid;
+
+      let finalDueDate = s.due_date;
+      if (!finalDueDate && s.last_payment_date) {
+        const nextMonth = new Date(s.last_payment_date);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        finalDueDate = nextMonth.toISOString().split("T")[0];
+      }
+
+      return {
+        ...s,
+        total_fee: finalTotalFee,
+        total_paid: totalPaid,
+        remaining_fee: remainingFee,
+        due_date: finalDueDate
+          ? new Date(finalDueDate).toISOString().split("T")[0]
+          : null,
+        last_payment_date: s.last_payment_date
+          ? new Date(s.last_payment_date).toISOString().split("T")[0]
+          : null,
+      };
+    });
 
     res.json(formatted);
   } catch (err) {
@@ -591,7 +657,7 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+// 3. دریافت تاریخچه پرداخت‌ها
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
   let query = `
@@ -615,9 +681,15 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   }
 });
 
+// 4. جمع‌آوری فیس
+// ====================== جمع‌آوری فیس ======================
 app.post("/api/collect-fee", authenticate, async (req, res) => {
   const { student_id, amount, total_fee, payment_date, due_date, notes } =
     req.body;
+
+  if (!student_id) {
+    return res.status(400).json({ error: "شناسه شاگرد الزامی است" });
+  }
 
   const paymentAmount = parseFloat(amount);
   if (isNaN(paymentAmount) || paymentAmount <= 0) {
@@ -649,8 +721,21 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 
     const previousTotalPaid = parseFloat(totalPaidResult[0]?.total_paid) || 0;
     const newPaidFee = previousTotalPaid + paymentAmount;
+
+    // دریافت آخرین total_fee ثبت شده برای این شاگرد
+    const [lastFeeResult] = await db.execute(
+      `
+      SELECT total_fee 
+      FROM fee_payments 
+      WHERE student_id = ? AND total_fee IS NOT NULL
+      ORDER BY id DESC 
+      LIMIT 1
+    `,
+      [student_id],
+    );
+
     const finalTotalFee =
-      parseFloat(total_fee) || previousTotalPaid + paymentAmount;
+      parseFloat(total_fee) || lastFeeResult[0]?.total_fee || 0;
     const newRemaining = finalTotalFee - newPaidFee;
 
     // ثبت پرداخت
@@ -664,7 +749,7 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       [
         student_id,
         paymentAmount,
-        finalTotalFee,
+        finalTotalFee > 0 ? finalTotalFee : null,
         newPaidFee,
         newRemaining > 0 ? newRemaining : 0,
         paymentDate,
@@ -707,6 +792,34 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// 5. ویرایش فیس و بدهکار (فقط ریس)
+app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
+  const { amount, total_fee, paid_fee, remaining_after, due_date, notes } =
+    req.body;
+  try {
+    await db.execute(
+      `
+      UPDATE fee_payments 
+      SET amount = ?, total_fee = ?, paid_fee = ?, remaining_after = ?, due_date = ?, notes = ?
+      WHERE id = ?
+    `,
+      [
+        amount,
+        total_fee,
+        paid_fee,
+        remaining_after,
+        due_date,
+        notes || null,
+        req.params.id,
+      ],
+    );
+    res.json({ success: true, message: "اطلاعات فیس با موفقیت به‌روز شد" });
+  } catch (err) {
+    console.error("Error in PUT /api/fee-payments/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ====================== API پیام‌ها ======================
 
 app.post("/api/messages", authenticate, async (req, res) => {
@@ -838,7 +951,7 @@ app.get("/api/teacher/students/:teacherId", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
       `
-      SELECT s.*, c.class_name, s.due_date
+      SELECT s.*, c.class_name
       FROM students s 
       JOIN classes c ON s.class_id = c.id 
       WHERE c.teacher_id = ? AND s.status = 'active'
@@ -914,9 +1027,17 @@ app.get("/api/dashboard-stats", authenticate, async (req, res) => {
     const [teachers] = await db.execute(
       `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
     );
-    const [debtors] = await db.execute(
-      `SELECT COUNT(*) as total FROM fee_debtors WHERE remaining_fee > 0`,
-    );
+    // بدهکاران: شاگردانی که مجموع پرداختشان کمتر از 5000 است
+    const [debtors] = await db.execute(`
+      SELECT COUNT(*) as total FROM (
+        SELECT s.id, COALESCE(SUM(fp.amount), 0) as total_paid
+        FROM students s
+        LEFT JOIN fee_payments fp ON s.id = fp.student_id
+        WHERE s.status = 'active'
+        GROUP BY s.id
+        HAVING total_paid < 5000
+      ) as debtors_list
+    `);
     const [revenue] = await db.execute(
       `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
     );
