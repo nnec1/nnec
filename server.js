@@ -745,91 +745,131 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   }
 });
 
-
+// ====================== جمع‌آوری فیس (collect-fee) ======================
 // ====================== جمع‌آوری فیس (collect-fee) ======================
 app.post("/api/collect-fee", authenticate, async (req, res) => {
   const { student_id, amount, payment_date, notes } = req.body;
-  
+
   // اعتبارسنجی
   if (!student_id) {
     return res.status(400).json({ error: "شناسه شاگرد الزامی است" });
   }
-  
+
   const paymentAmount = parseFloat(amount);
   if (isNaN(paymentAmount) || paymentAmount <= 0) {
     return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
   }
-  
+
   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
   const issueDate = new Date().toISOString().split("T")[0];
-  const receipt_number = "RCP-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
-  
+  const receipt_number =
+    "RCP-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+
   try {
     // 1. دریافت اطلاعات شاگرد
-    const [student] = await db.execute(`
-      SELECT s.*, c.class_name 
+    const [student] = await db.execute(
+      `
+      SELECT s.id, s.name, s.father_name, s.student_card_id, s.class_id, c.class_name 
       FROM students s 
       JOIN classes c ON s.class_id = c.id 
       WHERE s.id = ?
-    `, [student_id]);
-    
+    `,
+      [student_id],
+    );
+
     if (student.length === 0) {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
-    
-    // 2. دریافت مبلغ باقی مانده از جدول بدهکاران (fee_debtors)
-    const [debtor] = await db.execute(`
-      SELECT remaining_fee FROM fee_debtors WHERE student_id = ?
-    `, [student_id]);
-    
+
+    // 2. دریافت مبلغ باقی مانده فعلی از جدول fee_debtors
     let currentRemaining = 0;
-    if (debtor.length > 0) {
-      currentRemaining = parseFloat(debtor[0].remaining_fee) || 0;
+    try {
+      const [debtor] = await db.execute(
+        `
+        SELECT remaining_fee FROM fee_debtors WHERE student_id = ?
+      `,
+        [student_id],
+      );
+
+      if (debtor.length > 0 && debtor[0].remaining_fee) {
+        currentRemaining = parseFloat(debtor[0].remaining_fee) || 0;
+      }
+    } catch (err) {
+      console.log("No fee_debtors record found for student:", student_id);
     }
-    
+
+    console.log(
+      `Student ${student_id} current remaining: ${currentRemaining}, payment: ${paymentAmount}`,
+    );
+
     // 3. محاسبه مبلغ جدید باقی مانده
     let newRemaining = currentRemaining - paymentAmount;
     if (newRemaining < 0) newRemaining = 0;
-    
+
     // 4. ثبت پرداخت جدید در fee_payments
-    await db.execute(`
+    await db.execute(
+      `
       INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
       VALUES (?, ?, ?, ?, ?, ?)
-    `, [student_id, paymentAmount, paymentDate, issueDate, receipt_number, notes || null]);
-    
+    `,
+      [
+        student_id,
+        paymentAmount,
+        paymentDate,
+        issueDate,
+        receipt_number,
+        notes || null,
+      ],
+    );
+
     // 5. محاسبه تاریخ انقضا (یک ماه بعد از تاریخ پرداخت)
     const newDueDate = new Date(paymentDate);
     newDueDate.setMonth(newDueDate.getMonth() + 1);
     const finalDueDate = newDueDate.toISOString().split("T")[0];
-    
+
     // 6. به روز رسانی due_date در جدول students
-    await db.execute(`UPDATE students SET due_date = ? WHERE id = ?`, [finalDueDate, student_id]);
-    
+    await db.execute(`UPDATE students SET due_date = ? WHERE id = ?`, [
+      finalDueDate,
+      student_id,
+    ]);
+
     // 7. بروزرسانی یا حذف از جدول fee_debtors
     if (newRemaining > 0) {
-      // اگر هنوز بدهکار است، رکورد را به روز کن
-      await db.execute(`
-        INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee, notes) 
-        VALUES (?, ?, ?, ?, ?) 
+      // اگر هنوز بدهکار است، رکورد را درج یا به روز کن
+      await db.execute(
+        `
+        INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee, notes, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW()) 
         ON DUPLICATE KEY UPDATE 
         remaining_fee = VALUES(remaining_fee), 
         notes = VALUES(notes), 
         updated_at = NOW()
-      `, [student_id, 0, 0, newRemaining, notes || null]);
+      `,
+        [student_id, 0, 0, newRemaining, notes || null],
+      );
+      console.log(
+        `Updated fee_debtors: student ${student_id}, remaining: ${newRemaining}`,
+      );
     } else {
       // اگر بدهی تسویه شده، از جدول بدهکاران حذف کن
-      await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [student_id]);
+      await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [
+        student_id,
+      ]);
+      console.log(`Removed from fee_debtors: student ${student_id}`);
     }
-    
+
     // 8. دریافت مجموع پرداختی شاگرد
-    const [totalPaidResult] = await db.execute(`
+    const [totalPaidResult] = await db.execute(
+      `
       SELECT COALESCE(SUM(amount), 0) as total_paid 
       FROM fee_payments 
       WHERE student_id = ?
-    `, [student_id]);
-    
+    `,
+      [student_id],
+    );
+
     const totalPaid = parseFloat(totalPaidResult[0]?.total_paid) || 0;
-    
+
     // 9. پاسخ به کلاینت
     res.json({
       success: true,
@@ -843,12 +883,11 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       issue_date: issueDate,
       expiry_date: finalDueDate,
       notes: notes || "",
-      remaining_fee: newRemaining
+      remaining_fee: newRemaining,
     });
-    
   } catch (err) {
     console.error("❌ Error in /api/collect-fee:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 // بروزرسانی یا حذف از fee_debtors
@@ -874,7 +913,6 @@ if (newRemaining > 0) {
     student_id,
   ]);
 }
-
 
 // ویرایش فیس و بدهکار (فقط ریس)
 app.put("/api/fee-debtors/:id", authenticate, isCEO, async (req, res) => {
