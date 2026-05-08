@@ -88,7 +88,7 @@ function printReceipt(
   params.append("student_card_id", studentCardId || "");
   params.append("class_name", className || "");
   params.append("total_fee", totalFee || 0);
-  params.append("paid_fee", paidFee || 0);
+  params.append("paid_fee", paidFee || 0); // اضافه شد
   params.append("remaining_fee", remainingFee || 0);
   params.append("payment_amount", paymentAmount || 0);
   params.append("payment_date", paymentDate || "");
@@ -107,7 +107,6 @@ function printReceipt(
     alert("لطفاً pop-up را برای این سایت فعال کنید");
   }
 }
-
 // تابع نمایش کارت شناسایی
 function showStudentCard(studentId) {
   window.open(`/student-card.html?id=${studentId}`, "_blank");
