@@ -116,23 +116,15 @@
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> فارغ
-                        التحصیلان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link active"><i class="fa-solid fa-table-cells-large"></i>
                         صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="fa-solid fa-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
+                        فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارشات مالی</a>
-                    <a href="announcements.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-building-circle-xmark"></i> مدیریت
-                        شکایات</a>
-                    <a href="subjects.html" class="nav-link"><i class="fa-solid fa-book"></i> مدیریت دروس</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
                     <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
@@ -152,7 +144,7 @@
                             <div class="col-md-4"><label class="form-label">نام صنف <span
                                         class="text-danger">*</span></label><input type="text" id="className"
                                     class="form-control" placeholder="مثال: صنف 10" required></div>
-                            <div class="col-md-4"><label class="form-label">انتخاب استاد <span
+                            <div class="col-md-4"><label class="form-label">استاد صنف <span
                                         class="text-danger">*</span></label><select id="teacherId" class="form-select"
                                     required>
                                     <option value="">انتخاب استاد...</option>
@@ -230,21 +222,10 @@
             try {
                 const res = await fetch('/api/classes/all');
                 const classes = await res.json();
-                const teacherClassesRes = await fetch('/api/teacher-classes');
-                const teacherClasses = await teacherClassesRes.json();
-                const teachersRes = await fetch('/api/teachers');
-                const teachers = await teachersRes.json();
-                const teacherMap = {};
-                teachers.forEach(t => { teacherMap[t.id] = t.name; });
-                const teachersByClass = {};
-                teacherClasses.forEach(tc => {
-                    if (!teachersByClass[tc.class_id]) teachersByClass[tc.class_id] = [];
-                    teachersByClass[tc.class_id].push({ teacher_id: tc.teacher_id, teacher_name: teacherMap[tc.teacher_id] || 'نامشخص' });
-                });
                 if (classes.length === 0) { document.getElementById('classesList').innerHTML = '<div class="alert alert-info">هیچ صنفی ثبت نشده است. لطفاً ابتدا صنف ایجاد کنید.</div>'; return; }
                 document.getElementById('classesList').innerHTML = classes.map(c => `
                     <div class="col-md-4 mb-3"><div class="card p-3 shadow-sm class-card"><div class="d-flex justify-content-between"><h5><i class="fa-solid fa-table-cells-large text-success"></i> ${c.class_name}</h5><span class="badge ${c.is_active == 1 ? 'bg-success' : 'bg-danger'}">${c.is_active == 1 ? 'فعال' : 'غیرفعال'}</span></div>
-                    <p class="mb-1"><i class="fa-solid fa-chalkboard-user"></i> استاد:</p><div class="mb-2">${teachersByClass[c.id] ? teachersByClass[c.id].map(t => `<span class="teacher-badge"><i class="fa-solid fa-user"></i> ${t.teacher_name}</span>`).join(' ') : '<span class="text-muted">هیچ استادی تخصیص داده نشده</span>'}</div>
+                    <p class="mb-1"><i class="fa-solid fa-chalkboard-user"></i> استاد: <span class="teacher-badge"><i class="fa-solid fa-user"></i> ${c.teacher_name || 'تعیین نشده'}</span></p>
                     <p class="mb-1"><i class="fa-regular fa-clock"></i> زمان شروع: <span class="time-badge">${c.start_time || '08:00'}</span></p>
                     <div class="mt-2"><button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${c.id})"><i class="fa-solid fa-pencil"></i> ویرایش</button><button class="btn btn-sm btn-danger" onclick="deleteClass(${c.id})"><i class="fa-solid fa-trash"></i> حذف</button></div></div></div>
                 `).join('');
@@ -257,13 +238,10 @@
             try {
                 const res = await fetch(`/api/classes/${id}`);
                 const c = await res.json();
-                const teacherClassesRes = await fetch('/api/teacher-classes');
-                const teacherClasses = await teacherClassesRes.json();
-                const assignedTeacher = teacherClasses.find(tc => tc.class_id == id);
                 document.getElementById('editClassId').value = c.id;
                 document.getElementById('editClassName').value = c.class_name;
                 document.getElementById('editStartTime').value = c.start_time || '08:00';
-                if (assignedTeacher) document.getElementById('editTeacherId').value = assignedTeacher.teacher_id;
+                document.getElementById('editTeacherId').value = c.teacher_id || '';
                 if (editModal) editModal.show();
             } catch (err) { alert('خطا در بارگیری اطلاعات صنف'); }
         }
@@ -276,12 +254,9 @@
             if (!className) { alert('لطفاً نام صنف را وارد کنید'); return; }
             if (!teacherId) { alert('لطفاً استاد را انتخاب کنید'); return; }
             try {
-                const classRes = await fetch('/api/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, class_code: className.replace(' ', '_'), monthly_fee: 0, academic_year: '1404', description: '', is_active: 1, start_time: startTime }) });
-                if (!classRes.ok) throw new Error('خطا در ایجاد صنف');
-                const classData = await classRes.json();
-                const assignRes = await fetch('/api/assign-teacher-to-class', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teacher_id: teacherId, class_id: classData.id, subject_id: null, is_main_teacher: true, academic_year: '1404' }) });
-                if (assignRes.ok) { alert('✅ صنف با موفقیت ایجاد و استاد تخصیص داده شد'); resetClassForm(); loadClasses(); }
-                else alert('صنف ایجاد شد اما خطا در تخصیص استاد');
+                const res = await fetch('/api/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, teacher_id: teacherId, start_time: startTime, is_active: 1 }) });
+                if (res.ok) { alert('✅ صنف با موفقیت ایجاد شد'); resetClassForm(); loadClasses(); }
+                else { const err = await res.json(); alert(err.error || 'خطا'); }
             } catch (err) { alert('خطا: ' + err.message); }
         });
 
@@ -292,11 +267,9 @@
             const teacherId = document.getElementById('editTeacherId').value;
             const startTime = document.getElementById('editStartTime').value;
             try {
-                await fetch(`/api/classes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, class_code: className.replace(' ', '_'), monthly_fee: 0, academic_year: '1404', description: '', is_active: 1, start_time: startTime }) });
-                if (teacherId) {
-                    await fetch('/api/assign-teacher-to-class', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teacher_id: teacherId, class_id: id, subject_id: null, is_main_teacher: true, academic_year: '1404' }) });
-                }
-                alert('صنف با موفقیت ویرایش شد'); if (editModal) editModal.hide(); loadClasses();
+                const res = await fetch(`/api/classes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, teacher_id: teacherId, start_time: startTime, is_active: 1 }) });
+                if (res.ok) { alert('صنف با موفقیت ویرایش شد'); if (editModal) editModal.hide(); loadClasses(); }
+                else alert('خطا');
             } catch (err) { alert('خطا: ' + err.message); }
         });
 
