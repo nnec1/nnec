@@ -540,9 +540,12 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 // ====================== API بدهکاران (بر اساس fee_payments) ======================
 // ====================== API بدهکاران (بر اساس fee_payments) ======================
 // ====================== API بدهکاران ======================
+// ====================== بدهکاران (بر اساس آخرین پرداخت هر شاگرد) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
+  const { class_id, search, start_date, end_date } = req.query;
+
   try {
-    const [results] = await db.execute(`
+    let query = `
       SELECT 
         s.id,
         s.student_card_id,
@@ -551,47 +554,135 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
         s.phone,
         s.class_id,
         c.class_name,
-        COALESCE(SUM(fp.amount), 0) as total_paid,
-        MAX(fp.payment_date) as last_payment_date,
-        MAX(fp.due_date) as due_date,
-        MAX(fp.total_fee) as total_fee
+        fp.total_fee,
+        COALESCE(SUM(fp2.amount), 0) as total_paid,
+        MAX(fp2.payment_date) as last_payment_date,
+        DATE_ADD(MAX(fp2.payment_date), INTERVAL 1 MONTH) as due_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      LEFT JOIN fee_payments fp ON s.id = fp.student_id
+      JOIN fee_payments fp ON s.id = fp.student_id
+      LEFT JOIN fee_payments fp2 ON s.id = fp2.student_id AND fp2.id <= fp.id
       WHERE s.status = 'active'
-      GROUP BY s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, c.class_name
-      HAVING (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
-      ORDER BY (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) DESC
-    `);
+    `;
 
-    const formatted = results.map((s) => {
-      const finalTotalFee = parseFloat(s.total_fee) || 0;
-      const totalPaid = parseFloat(s.total_paid) || 0;
-      const remainingFee = finalTotalFee - totalPaid;
+    let params = [];
 
-      return {
-        id: s.id,
-        student_card_id: s.student_card_id,
-        name: s.name,
-        father_name: s.father_name,
-        phone: s.phone,
-        class_id: s.class_id,
-        class_name: s.class_name,
-        total_fee: finalTotalFee,
-        total_paid: totalPaid,
-        remaining_fee: remainingFee,
-        due_date: s.due_date
-          ? new Date(s.due_date).toISOString().split("T")[0]
-          : null,
-        last_payment_date: s.last_payment_date
-          ? new Date(s.last_payment_date).toISOString().split("T")[0]
-          : null,
-      };
-    });
+    if (class_id && class_id !== "") {
+      query += ` AND s.class_id = ?`;
+      params.push(class_id);
+    }
+
+    if (search && search !== "") {
+      query += ` AND (s.name LIKE ? OR s.student_card_id LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (start_date && start_date !== "") {
+      query += ` AND fp2.payment_date >= ?`;
+      params.push(start_date);
+    }
+
+    if (end_date && end_date !== "") {
+      query += ` AND fp2.payment_date <= ?`;
+      params.push(end_date);
+    }
+
+    query += ` GROUP BY s.id, fp.total_fee HAVING (fp.total_fee - COALESCE(SUM(fp2.amount), 0)) > 0 ORDER BY (fp.total_fee - COALESCE(SUM(fp2.amount), 0)) DESC`;
+
+    const [results] = await db.execute(query, params);
+
+    const formatted = results.map((s) => ({
+      ...s,
+      total_fee: parseFloat(s.total_fee) || 0,
+      total_paid: parseFloat(s.total_paid) || 0,
+      remaining_fee:
+        (parseFloat(s.total_fee) || 0) - (parseFloat(s.total_paid) || 0),
+      due_date: s.due_date
+        ? new Date(s.due_date).toISOString().split("T")[0]
+        : null,
+      last_payment_date: s.last_payment_date
+        ? new Date(s.last_payment_date).toISOString().split("T")[0]
+        : null,
+    }));
 
     res.json(formatted);
   } catch (err) {
     console.error("Error in /api/fee-debtors:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== منقضی شده ======================
+app.get("/api/fee-expired", authenticate, async (req, res) => {
+  const { class_id, search, start_date, end_date } = req.query;
+
+  try {
+    let query = `
+      SELECT 
+        s.id,
+        s.student_card_id,
+        s.name,
+        s.father_name,
+        s.phone,
+        s.class_id,
+        c.class_name,
+        fp.total_fee,
+        COALESCE(SUM(fp2.amount), 0) as total_paid,
+        MAX(fp2.payment_date) as last_payment_date,
+        DATE_ADD(MAX(fp2.payment_date), INTERVAL 1 MONTH) as due_date
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      JOIN fee_payments fp ON s.id = fp.student_id
+      LEFT JOIN fee_payments fp2 ON s.id = fp2.student_id AND fp2.id <= fp.id
+      WHERE s.status = 'active'
+    `;
+
+    let params = [];
+
+    if (class_id && class_id !== "") {
+      query += ` AND s.class_id = ?`;
+      params.push(class_id);
+    }
+
+    if (search && search !== "") {
+      query += ` AND (s.name LIKE ? OR s.student_card_id LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (start_date && start_date !== "") {
+      query += ` AND fp2.payment_date >= ?`;
+      params.push(start_date);
+    }
+
+    if (end_date && end_date !== "") {
+      query += ` AND fp2.payment_date <= ?`;
+      params.push(end_date);
+    }
+
+    query += ` GROUP BY s.id, fp.total_fee 
+               HAVING (DATE_ADD(MAX(fp2.payment_date), INTERVAL 1 MONTH) < CURDATE() OR MAX(fp2.payment_date) IS NULL) 
+                 AND (fp.total_fee - COALESCE(SUM(fp2.amount), 0)) > 0 
+               ORDER BY due_date ASC`;
+
+    const [results] = await db.execute(query, params);
+
+    const formatted = results.map((s) => ({
+      ...s,
+      total_fee: parseFloat(s.total_fee) || 0,
+      total_paid: parseFloat(s.total_paid) || 0,
+      remaining_fee:
+        (parseFloat(s.total_fee) || 0) - (parseFloat(s.total_paid) || 0),
+      due_date: s.due_date
+        ? new Date(s.due_date).toISOString().split("T")[0]
+        : null,
+      last_payment_date: s.last_payment_date
+        ? new Date(s.last_payment_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
 });
