@@ -581,19 +581,13 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
       HAVING due_date < CURDATE() OR due_date IS NULL
       ORDER BY due_date ASC
     `);
-
-    // فرمت تاریخ برای خروجی
-    const formatted = results.map((s) => ({
+    
+    const formatted = results.map(s => ({
       ...s,
-      due_date: s.due_date
-        ? new Date(s.due_date).toISOString().split("T")[0]
-        : null,
-      last_payment_date: s.last_payment_date
-        ? new Date(s.last_payment_date).toISOString().split("T")[0]
-        : null,
+      due_date: s.due_date ? new Date(s.due_date).toISOString().split('T')[0] : null,
+      last_payment_date: s.last_payment_date ? new Date(s.last_payment_date).toISOString().split('T')[0] : null
     }));
-
-    console.log("✅ /api/fee-expired fetched:", formatted.length);
+    
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/fee-expired:", err);
@@ -671,14 +665,10 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       ],
     );
 
+    // تاریخ انقضا فقط برای پاسخ محاسبه می‌شود، در دیتابیس ذخیره نمی‌شود
     const newDueDate = new Date(paymentDate);
     newDueDate.setMonth(newDueDate.getMonth() + 1);
     const finalDueDate = newDueDate.toISOString().split("T")[0];
-
-    await db.execute(`UPDATE students SET due_date = ? WHERE id = ?`, [
-      finalDueDate,
-      student_id,
-    ]);
 
     const [totalPaidResult] = await db.execute(
       `
