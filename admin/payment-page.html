@@ -475,6 +475,84 @@
             document.getElementById('studentList').innerHTML = html;
         }
 
+        // async function selectStudent(studentId) {
+        //     try {
+        //         const res = await fetch(`/api/students/${studentId}`);
+        //         currentStudent = await res.json();
+
+        //         // نمایش اطلاعات شاگرد
+        //         document.getElementById('studentName').innerHTML = currentStudent.name || '-';
+        //         document.getElementById('studentFather').innerHTML = currentStudent.father_name || '-';
+        //         document.getElementById('studentClass').innerHTML = currentStudent.class_name || '-';
+        //         document.getElementById('studentPhoneDisplay').innerHTML = currentStudent.phone || '-';
+        //         document.getElementById('studentPhoneInput').value = currentStudent.phone || '';
+
+        //         // محاسبه باقی مانده قبلی
+        //         const totalFee = parseFloat(currentStudent.total_fee) || 0;
+        //         const paidFee = parseFloat(currentStudent.paid_fee) || 0;
+        //         const previousRemaining = totalFee - paidFee;
+
+        //         // دریافت آخرین پرداخت برای یادآوری
+        //         const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
+        //         const payments = await paymentsRes.json();
+        //         const lastPayment = payments.length > 0 ? payments[0] : null;
+
+        //         let lastPaymentText = 'اولین پرداخت';
+        //         let lastExpiryText = currentStudent.due_date ? formatDate(currentStudent.due_date) : 'ثبت نشده';
+
+        //         if (lastPayment) {
+        //             lastPaymentText = `${formatDate(lastPayment.payment_date)} - مبلغ: ${(lastPayment.amount || 0).toLocaleString()} AFN`;
+        //         }
+
+        //         document.getElementById('lastPaymentInfo').innerHTML = lastPaymentText;
+        //         document.getElementById('lastExpiryInfo').innerHTML = lastExpiryText;
+        //         document.getElementById('previousRemaining').innerHTML = previousRemaining.toLocaleString() + ' AFN';
+
+        //         // بررسی انقضای فیس قبلی
+        //         const isExpired = isDateExpired(currentStudent.due_date);
+        //         const expiredBadge = document.getElementById('expiredBadge');
+        //         const reminderBox = document.getElementById('reminderBox');
+
+        //         if (isExpired && currentStudent.due_date) {
+        //             expiredBadge.style.display = 'inline-block';
+        //             reminderBox.style.borderRightColor = '#dc2626';
+        //             reminderBox.style.background = '#fef2f2';
+        //         } else {
+        //             expiredBadge.style.display = 'none';
+        //             reminderBox.style.borderRightColor = '#f59e0b';
+        //             reminderBox.style.background = '#fffbeb';
+        //         }
+
+        //         // مقداردهی اولیه فرم جدید
+        //         const today = new Date().toISOString().split('T')[0];
+        //         document.getElementById('newDate').value = today;
+        //         document.getElementById('newExpiry').value = calculateExpiryDate(today);
+        //         document.getElementById('newTotalFee').value = '';
+        //         document.getElementById('newPayment').value = '';
+        //         document.getElementById('remainingBox').style.display = 'none';
+
+        //         // رویدادهای محاسبه باقی مانده
+        //         document.getElementById('newTotalFee').oninput = calculateRemaining;
+        //         document.getElementById('newPayment').oninput = calculateRemaining;
+
+        //         // رویداد تغییر تاریخ
+        //         document.getElementById('newDate').onchange = function () {
+        //             let newDate = this.value;
+        //             if (newDate) {
+        //                 document.getElementById('newExpiry').value = calculateExpiryDate(newDate);
+        //             }
+        //         };
+
+        //         document.getElementById('paymentForm').style.display = 'block';
+
+        //         // هایلایت کارت انتخاب شده
+        //         filterAndDisplay();
+
+        //     } catch (err) {
+        //         alert('❌ خطا در بارگیری اطلاعات');
+        //     }
+        // }
+
         async function selectStudent(studentId) {
             try {
                 const res = await fetch(`/api/students/${studentId}`);
@@ -487,41 +565,29 @@
                 document.getElementById('studentPhoneDisplay').innerHTML = currentStudent.phone || '-';
                 document.getElementById('studentPhoneInput').value = currentStudent.phone || '';
 
-                // محاسبه باقی مانده قبلی
-                const totalFee = parseFloat(currentStudent.total_fee) || 0;
-                const paidFee = parseFloat(currentStudent.paid_fee) || 0;
-                const previousRemaining = totalFee - paidFee;
-
                 // دریافت آخرین پرداخت برای یادآوری
                 const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
                 const payments = await paymentsRes.json();
                 const lastPayment = payments.length > 0 ? payments[0] : null;
 
+                // محاسبه مجموع پرداختی
+                const totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
                 let lastPaymentText = 'اولین پرداخت';
-                let lastExpiryText = currentStudent.due_date ? formatDate(currentStudent.due_date) : 'ثبت نشده';
+                let lastExpiryText = 'ثبت نشده';
+                let previousRemaining = 0;
 
                 if (lastPayment) {
                     lastPaymentText = `${formatDate(lastPayment.payment_date)} - مبلغ: ${(lastPayment.amount || 0).toLocaleString()} AFN`;
+                    // تاریخ انقضا = یک ماه بعد از آخرین پرداخت
+                    const expiryFromLast = new Date(lastPayment.payment_date);
+                    expiryFromLast.setMonth(expiryFromLast.getMonth() + 1);
+                    lastExpiryText = formatDate(expiryFromLast);
                 }
 
                 document.getElementById('lastPaymentInfo').innerHTML = lastPaymentText;
                 document.getElementById('lastExpiryInfo').innerHTML = lastExpiryText;
                 document.getElementById('previousRemaining').innerHTML = previousRemaining.toLocaleString() + ' AFN';
-
-                // بررسی انقضای فیس قبلی
-                const isExpired = isDateExpired(currentStudent.due_date);
-                const expiredBadge = document.getElementById('expiredBadge');
-                const reminderBox = document.getElementById('reminderBox');
-
-                if (isExpired && currentStudent.due_date) {
-                    expiredBadge.style.display = 'inline-block';
-                    reminderBox.style.borderRightColor = '#dc2626';
-                    reminderBox.style.background = '#fef2f2';
-                } else {
-                    expiredBadge.style.display = 'none';
-                    reminderBox.style.borderRightColor = '#f59e0b';
-                    reminderBox.style.background = '#fffbeb';
-                }
 
                 // مقداردهی اولیه فرم جدید
                 const today = new Date().toISOString().split('T')[0];
@@ -549,7 +615,8 @@
                 filterAndDisplay();
 
             } catch (err) {
-                alert('❌ خطا در بارگیری اطلاعات');
+                console.error('Error in selectStudent:', err);
+                alert('❌ خطا در بارگیری اطلاعات: ' + err.message);
             }
         }
 
