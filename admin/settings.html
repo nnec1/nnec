@@ -10,6 +10,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
+        .settings-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-tabs .nav-link {
+            color: #4a5568;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            margin-right: 5px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -66,29 +87,6 @@
                 display: block;
             }
         }
-
-        .nav-tabs .nav-link {
-            color: #4a5568;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 12px;
-            margin-right: 5px;
-        }
-
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            border: none;
-        }
     </style>
 </head>
 
@@ -107,14 +105,16 @@
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
-                    <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
+                        فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
                     <a href="settings.html" class="nav-link active"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
                     <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
@@ -125,110 +125,50 @@
             <div class="col-md-9 col-lg-10 main-content">
                 <h3 class="section-title"><i class="fa-solid fa-gear text-success me-2"></i> تنظیمات سیستم</h3>
 
-                <ul class="nav nav-tabs mb-4" id="settingsTab" role="tablist">
-                    <li class="nav-item"><button class="nav-link active" id="general-tab" data-bs-toggle="tab"
-                            data-bs-target="#general" type="button" role="tab">🏢 تنظیمات عمومی</button></li>
-                    <li class="nav-item"><button class="nav-link" id="security-tab" data-bs-toggle="tab"
-                            data-bs-target="#security" type="button" role="tab">🔐 امنیت</button></li>
-                    <li class="nav-item"><button class="nav-link" id="fee-tab" data-bs-toggle="tab"
-                            data-bs-target="#feeSettings" type="button" role="tab">💰 تنظیمات فیس</button></li>
-                    <li class="nav-item"><button class="nav-link" id="backup-tab" data-bs-toggle="tab"
-                            data-bs-target="#backup" type="button" role="tab">💾 پشتیبان گیری</button></li>
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#generalTab">🏢 تنظیمات
+                            عمومی</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#securityTab">🔐 تغییر رمز
+                            عبور</a></li>
                 </ul>
 
-                <div class="tab-content" id="settingsTabContent">
-                    <!-- تب تنظیمات عمومی -->
-                    <div class="tab-pane fade show active" id="general" role="tabpanel">
-                        <div class="card p-4">
-                            <form id="generalSettingsForm">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="generalTab">
+                        <div class="settings-card">
+                            <form id="generalForm">
                                 <div class="row g-3">
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-building"></i>
-                                            نام آموزشگاه</label><input type="text" id="instituteName"
-                                            class="form-control" placeholder="آموزشگاه نوی نور"></div>
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-tag"></i> شعار
-                                            آموزشگاه</label><input type="text" id="instituteTagline"
-                                            class="form-control" placeholder="پیشرو در آموزش"></div>
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-phone"></i>
-                                            شماره تماس</label><input type="text" id="institutePhone"
-                                            class="form-control" placeholder="0781304830"></div>
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-envelope"></i>
-                                            ایمیل</label><input type="email" id="instituteEmail" class="form-control"
-                                            placeholder="info@noor.edu"></div>
-                                    <div class="col-md-6"><label class="form-label"><i
-                                                class="fa-solid fa-location-dot"></i> آدرس</label><input type="text"
-                                            id="instituteAddress" class="form-control" placeholder="کابل، افغانستان">
-                                    </div>
-                                    <div class="col-md-6"><label class="form-label"><i
-                                                class="fa-regular fa-calendar"></i> سال تحصیلی جاری</label><input
+                                    <div class="col-md-6"><label class="form-label">نام آموزشگاه</label><input
+                                            type="text" id="instName" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">شعار آموزشگاه</label><input
+                                            type="text" id="instTagline" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
+                                            id="instPhone" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">ایمیل</label><input type="email"
+                                            id="instEmail" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label">سال تحصیلی جاری</label><input
                                             type="text" id="academicYear" class="form-control" value="1404"></div>
-                                    <div class="col-12"><button type="submit" class="btn btn-primary w-100"><i
+                                    <div class="col-12"><label class="form-label">آدرس</label><textarea id="instAddress"
+                                            class="form-control" rows="2"></textarea></div>
+                                    <div class="col-12"><button type="submit" class="btn btn-primary"><i
                                                 class="fa-solid fa-save"></i> ذخیره تنظیمات</button></div>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- تب امنیت -->
-                    <div class="tab-pane fade" id="security" role="tabpanel">
-                        <div class="card p-4">
-                            <h5><i class="fa-solid fa-key text-success me-2"></i> تغییر رمز عبور مدیر</h5>
-                            <form id="changePasswordForm">
-                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-lock"></i> رمز عبور
-                                        فعلی</label><input type="password" id="currentPassword" class="form-control"
-                                        required></div>
-                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-key"></i> رمز عبور
-                                        جدید</label><input type="password" id="newPassword" class="form-control"
-                                        required></div>
-                                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-repeat"></i> تکرار رمز
-                                        عبور جدید</label><input type="password" id="confirmPassword"
-                                        class="form-control" required></div>
-                                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i>
-                                    تغییر رمز عبور</button>
+                    <div class="tab-pane fade" id="securityTab">
+                        <div class="settings-card">
+                            <h5><i class="fa-solid fa-key text-success me-2"></i> تغییر رمز عبور</h5>
+                            <form id="passwordForm">
+                                <div class="mb-3"><label class="form-label">رمز عبور فعلی</label><input type="password"
+                                        id="currentPass" class="form-control" required></div>
+                                <div class="mb-3"><label class="form-label">رمز عبور جدید</label><input type="password"
+                                        id="newPass" class="form-control" required></div>
+                                <div class="mb-3"><label class="form-label">تکرار رمز عبور جدید</label><input
+                                        type="password" id="confirmPass" class="form-control" required></div>
+                                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> تغییر رمز
+                                    عبور</button>
                             </form>
-                            <hr class="my-4">
-                            <div class="alert alert-warning">
-                                <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                                <strong>توجه:</strong> پس از تغییر رمز عبور، باید دوباره وارد سیستم شوید.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- تب تنظیمات فیس -->
-                    <div class="tab-pane fade" id="feeSettings" role="tabpanel">
-                        <div class="card p-4">
-                            <form id="feeSettingsForm">
-                                <div class="row g-3">
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-bell"></i>
-                                            هشدار انقضای فیس (روز قبل)</label><input type="number" id="feeWarningDays"
-                                            class="form-control" value="7"></div>
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-percent"></i>
-                                            جریمه تاخیر (درصد)</label><input type="number" id="lateFeePercent"
-                                            class="form-control" value="0" step="1"></div>
-                                    <div class="col-md-6"><label class="form-label"><i class="fa-solid fa-id-card"></i>
-                                            پیشوند آیدی کارت</label><input type="text" id="cardIdPrefix"
-                                            class="form-control" value="STU"></div>
-                                    <div class="col-12"><button type="submit" class="btn btn-primary w-100"><i
-                                                class="fa-solid fa-save"></i> ذخیره تنظیمات فیس</button></div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- تب پشتیبان گیری -->
-                    <div class="tab-pane fade" id="backup" role="tabpanel">
-                        <div class="card p-4 text-center">
-                            <i class="fa-solid fa-database fs-1 text-success"></i>
-                            <h5 class="mt-3">پشتیبان گیری از دیتابیس</h5>
-                            <p class="text-muted">با کلیک بر روی دکمه زیر می‌توانید از کل دیتابیس سیستم پشتیبان بگیرید.
-                            </p>
-                            <button class="btn btn-primary w-100" onclick="backupDatabase()"><i
-                                    class="fa-solid fa-download"></i> دریافت پشتیبان</button>
-                            <hr class="my-4">
-                            <i class="fa-solid fa-triangle-exclamation fs-1 text-danger"></i>
-                            <h5 class="mt-3">بازنشانی سیستم</h5>
-                            <p class="text-danger">توجه: تمام داده‌ها حذف می‌شود!</p>
-                            <button class="btn btn-danger w-100" onclick="resetSystem()"><i
-                                    class="fa-solid fa-trash-can"></i> بازنشانی کامل</button>
                         </div>
                     </div>
                 </div>
@@ -239,122 +179,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
-        let adminName = localStorage.getItem('userName') || 'مدیر';
-        document.getElementById('adminName').innerText = adminName;
-
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             if (!toggleBtn) return;
-            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
-            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
         async function loadSettings() {
             try {
                 const res = await fetch('/api/settings');
                 const settings = await res.json();
-                if (settings.institute_name) document.getElementById('instituteName').value = settings.institute_name;
-                if (settings.institute_tagline) document.getElementById('instituteTagline').value = settings.institute_tagline;
-                if (settings.institute_phone) document.getElementById('institutePhone').value = settings.institute_phone;
-                if (settings.institute_email) document.getElementById('instituteEmail').value = settings.institute_email;
-                if (settings.institute_address) document.getElementById('instituteAddress').value = settings.institute_address;
+                if (settings.institute_name) document.getElementById('instName').value = settings.institute_name;
+                if (settings.institute_tagline) document.getElementById('instTagline').value = settings.institute_tagline;
+                if (settings.institute_phone) document.getElementById('instPhone').value = settings.institute_phone;
+                if (settings.institute_email) document.getElementById('instEmail').value = settings.institute_email;
+                if (settings.institute_address) document.getElementById('instAddress').value = settings.institute_address;
                 if (settings.academic_year) document.getElementById('academicYear').value = settings.academic_year;
-                if (settings.fee_warning_days) document.getElementById('feeWarningDays').value = settings.fee_warning_days;
-                if (settings.late_fee_percent) document.getElementById('lateFeePercent').value = settings.late_fee_percent;
-                if (settings.card_id_prefix) document.getElementById('cardIdPrefix').value = settings.card_id_prefix;
-            } catch (err) {
-                console.error("Error loading settings:", err);
-                // اگر خطا 404 بود، پیام مناسب نشان بده
-                if (err.message.includes('404')) {
-                    console.log('API settings not found - using default values');
-                }
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // تنظیمات عمومی
-        document.getElementById('generalSettingsForm').addEventListener('submit', async (e) => {
+        document.getElementById('generalForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
-                institute_name: document.getElementById('instituteName').value,
-                institute_tagline: document.getElementById('instituteTagline').value,
-                institute_phone: document.getElementById('institutePhone').value,
-                institute_email: document.getElementById('instituteEmail').value,
-                institute_address: document.getElementById('instituteAddress').value,
+                institute_name: document.getElementById('instName').value,
+                institute_tagline: document.getElementById('instTagline').value,
+                institute_phone: document.getElementById('instPhone').value,
+                institute_email: document.getElementById('instEmail').value,
+                institute_address: document.getElementById('instAddress').value,
                 academic_year: document.getElementById('academicYear').value
             };
-            try {
-                const res = await fetch('/api/settings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) alert('✅ تنظیمات با موفقیت ذخیره شد');
-                else alert('❌ خطا در ذخیره تنظیمات');
-            } catch (err) {
-                alert('❌ خطا در ارتباط با سرور');
-            }
+            const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) alert('✅ تنظیمات با موفقیت ذخیره شد');
+            else alert('❌ خطا');
         });
 
-        // تنظیمات فیس
-        document.getElementById('feeSettingsForm').addEventListener('submit', async (e) => {
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = {
-                fee_warning_days: document.getElementById('feeWarningDays').value,
-                late_fee_percent: document.getElementById('lateFeePercent').value,
-                card_id_prefix: document.getElementById('cardIdPrefix').value
-            };
-            try {
-                const res = await fetch('/api/settings/fee', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) alert('✅ تنظیمات فیس با موفقیت ذخیره شد');
-                else alert('❌ خطا در ذخیره تنظیمات فیس');
-            } catch (err) {
-                alert('❌ خطا در ارتباط با سرور');
-            }
-        });
-
-        // تغییر رمز عبور
-        document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPass = document.getElementById('newPassword').value;
-            const confirmPass = document.getElementById('confirmPassword').value;
+            const newPass = document.getElementById('newPass').value;
+            const confirmPass = document.getElementById('confirmPass').value;
             if (newPass !== confirmPass) { alert('رمز عبور جدید و تکرار آن مطابقت ندارند'); return; }
             if (newPass.length < 4) { alert('رمز عبور باید حداقل ۴ کاراکتر باشد'); return; }
-            try {
-                const res = await fetch('/api/change-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current: document.getElementById('currentPassword').value, new: newPass })
-                });
-                if (res.ok) {
-                    alert('رمز عبور با موفقیت تغییر کرد. لطفاً دوباره وارد شوید.');
-                    localStorage.clear();
-                    setTimeout(() => window.location.href = '/index.html', 2000);
-                } else alert('رمز فعلی اشتباه است');
-            } catch (err) {
-                alert('خطا در ارتباط با سرور');
-            }
+            const res = await fetch('/api/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current: document.getElementById('currentPass').value, new: newPass }) });
+            if (res.ok) {
+                alert('رمز عبور با موفقیت تغییر کرد. لطفاً دوباره وارد شوید.');
+                setTimeout(() => logout(), 2000);
+            } else alert('رمز فعلی اشتباه است');
         });
-
-        function backupDatabase() {
-            alert('در حال آماده سازی پشتیبان...');
-            setTimeout(() => alert('پشتیبان با موفقیت دریافت شد'), 1500);
-        }
-
-        function resetSystem() {
-            if (confirm('⚠️ هشدار! این عمل تمام داده‌های سیستم را حذف می‌کند. آیا اطمینان دارید؟')) {
-                if (confirm('برای تأیید نهایی، دوباره کلیک کنید')) {
-                    alert('سیستم بازنشانی شد. در حال خروج...');
-                    setTimeout(() => logout(), 2000);
-                }
-            }
-        }
 
         setupSidebar();
         loadSettings();

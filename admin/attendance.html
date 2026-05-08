@@ -4,110 +4,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>گزارش حاضری</title>
+    <title>گزارش حاضری | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
+        }
+        .badge-present { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 30px; }
+        .badge-absent { background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 30px; }
+        .badge-late { background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 30px; }
+    </style>
 </head>
 
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                        <i class="bi bi-building fs-1 text-white"></i>
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
-                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
-                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
-                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
-                        استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
-                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
-                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link active"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="bi bi-calendar-check-fill text-primary me-2"></i> گزارش حاضری</h3>
+                <h3 class="section-title"><i class="fa-solid fa-calendar-check text-success me-2"></i> گزارش حاضری شاگردان</h3>
 
-                <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#teacherReport">حاضری
-                            استادان</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#studentReport">حاضری
-                            شاگردان</a></li>
-                </ul>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><select class="form-select" id="reportClass"><option value="">همه صنف‌ها</option></select></div>
+                    <div class="col-md-3"><input type="date" class="form-control" id="startDate"></div>
+                    <div class="col-md-3"><input type="date" class="form-control" id="endDate"></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadAttendanceReport()"><i class="fa-solid fa-magnifying-glass"></i> نمایش گزارش</button></div>
+                </div>
 
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="teacherReport">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <input type="date" class="form-control" id="teacherDate"
-                                    value="${new Date().toISOString().split('T')[0]}">
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-primary" onclick="loadTeacherReport()"><i
-                                        class="bi bi-search"></i> مشاهده</button>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-secondary" onclick="printTeacherReport()"><i
-                                        class="bi bi-printer"></i> چاپ</button>
-                            </div>
-                        </div>
-                        <div id="teacherReportResult" class="table-container">
-                            <div class="text-center py-5 text-muted">لطفاً تاریخ را انتخاب کنید</div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="studentReport">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <select id="reportClass" class="form-select">
-                                    <option value="">همه صنف‌ها</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="date" class="form-control" id="startDate"
-                                    value="${new Date(new Date().setDate(1)).toISOString().split('T')[0]}">
-                            </div>
-                            <div class="col-md-3">
-                                <input type="date" class="form-control" id="endDate"
-                                    value="${new Date().toISOString().split('T')[0]}">
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-primary" onclick="loadStudentReport()"><i
-                                        class="bi bi-search"></i> نمایش</button>
-                            </div>
-                        </div>
-                        <div id="studentReportResult" class="table-container">
-                            <div class="text-center py-5 text-muted">لطفاً بازه زمانی را انتخاب کنید</div>
-                        </div>
-                    </div>
+                <div id="reportResult" class="table-container">
+                    <div class="text-center py-5 text-muted">لطفاً بازه زمانی را انتخاب کنید</div>
                 </div>
             </div>
         </div>
@@ -116,142 +88,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
         async function loadClasses() {
             try {
                 const res = await fetch('/api/classes');
                 const classes = await res.json();
                 const select = document.getElementById('reportClass');
                 select.innerHTML = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        async function loadTeacherReport() {
-            const date = document.getElementById('teacherDate').value;
-            if (!date) { alert('تاریخ را انتخاب کنید'); return; }
-
-            const resultDiv = document.getElementById('teacherReportResult');
-            resultDiv.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div> در حال بارگیری...</div>';
-
-            try {
-                const res = await fetch(`/api/report/teacher-attendance?date=${date}`);
-                const data = await res.json();
-
-                if (data.not_taken && data.not_taken.length === 0) {
-                    resultDiv.innerHTML = `<div class="alert alert-success text-center py-4">✅ همه استادان در تاریخ ${date} حاضری گرفته‌اند</div>`;
-                    return;
-                }
-
-                let html = `<h6 class="mb-3"><i class="bi bi-calendar3"></i> تاریخ: ${date}</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                            <tr><th>نام استاد</th><th>شماره تماس</th><th>وضعیت</th></tr>
-                        </thead>
-                        <tbody>`;
-
-                data.not_taken.forEach(t => {
-                    html += `<tr class="table-danger">
-                        <td class="text-dark"><strong>${t.name}</strong></div></div></div>
-                        <td class="text-dark">${t.phone || '-'}</div></div></div>
-                        <td class="text-danger"><i class="bi bi-x-circle"></i> ⚠️ حاضری نگرفته است</div></div></div>
-                    </div></div></div>`;
-                });
-
-                html += `</tbody>
-                    </table>
-                </div>
-                <div class="mt-3 alert alert-info">
-                    <strong>مجموع استادان: ${data.total_teachers}</strong> | 
-                    <strong class="text-danger">تعداد کسانی که حاضری نگرفته‌اند: ${data.not_taken.length}</strong>
-                </div>`;
-
-                resultDiv.innerHTML = html;
-            } catch (err) {
-                console.error(err);
-                resultDiv.innerHTML = '<div class="alert alert-danger">خطا در بارگیری اطلاعات</div>';
-            }
-        }
-
-        async function loadStudentReport() {
+        async function loadAttendanceReport() {
             const classId = document.getElementById('reportClass').value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-
-            if (!startDate || !endDate) { alert('بازه زمانی را انتخاب کنید'); return; }
-
-            const resultDiv = document.getElementById('studentReportResult');
+            if (!startDate || !endDate) { alert('لطفاً بازه زمانی را انتخاب کنید'); return; }
+            const resultDiv = document.getElementById('reportResult');
             resultDiv.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div> در حال بارگیری...</div>';
-
             try {
-                const url = `/api/report/student-attendance?class_id=${classId}&start_date=${startDate}&end_date=${endDate}`;
-                const res = await fetch(url);
-                const data = await res.json();
-
-                if (!data || data.length === 0) {
-                    resultDiv.innerHTML = '<div class="alert alert-warning text-center py-4">نتیجه‌ای یافت نشد</div>';
-                    return;
+                const studentsRes = await fetch('/api/students');
+                let students = await studentsRes.json();
+                if (classId) students = students.filter(s => s.class_id == classId);
+                if (students.length === 0) { resultDiv.innerHTML = '<div class="alert alert-info text-center py-4">هیچ شاگردی یافت نشد</div>'; return; }
+                let html = `<div class="table-responsive"><table class="table table-bordered"><thead class="table-light"><tr><th>آیدی کارت</th><th>نام شاگرد</th><th>نام پدر</th><th>صنف</th><th>حاضر</th><th>غایب</th><th>تأخیر</th><th>درصد حضور</th></tr></thead><tbody>`;
+                for (const s of students) {
+                    const attRes = await fetch(`/api/student/attendance/${s.id}?month=all&year=2025`);
+                    const attData = await attRes.json();
+                    const total = (attData.present || 0) + (attData.absent || 0) + (attData.late || 0);
+                    const percent = total > 0 ? (((attData.present || 0) / total) * 100).toFixed(1) : 0;
+                    html += `<tr><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div><td class="text-dark">${s.class_name || '-'}</div></div></div>
+                        <td class="text-success">${attData.present || 0}</div></div></div><td class="text-danger">${attData.absent || 0}</div></div></div><td class="text-warning">${attData.late || 0}</div></div></div>
+                        <td><div class="progress"><div class="progress-bar bg-success" style="width: ${percent}%">${percent}%</div></div></div></div></div></div>`;
                 }
-
-                let presentCount = 0, absentCount = 0, lateCount = 0;
-                data.forEach(d => {
-                    if (d.status === 'present') presentCount++;
-                    else if (d.status === 'absent') absentCount++;
-                    else if (d.status === 'late') lateCount++;
-                });
-
-                let html = `<div class="row g-3 mb-4">
-                    <div class="col-md-4"><div class="bg-success bg-opacity-10 p-3 rounded-3 text-center"><h4 class="text-success">${presentCount}</h4><small>حاضر</small></div></div>
-                    <div class="col-md-4"><div class="bg-warning bg-opacity-10 p-3 rounded-3 text-center"><h4 class="text-warning">${lateCount}</h4><small>تأخیر</small></div></div>
-                    <div class="col-md-4"><div class="bg-danger bg-opacity-10 p-3 rounded-3 text-center"><h4 class="text-danger">${absentCount}</h4><small>غایب</small></div></div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                            <tr><th>آیدی کارت</th><th>شاگرد</th><th>نام پدر</th><th>صنف</th><th>تاریخ</th><th>وضعیت</th><th>یادداشت</th></tr>
-                        </thead>
-                        <tbody>`;
-
-                data.forEach(d => {
-                    let badgeClass = d.status === 'present' ? 'badge-present' : d.status === 'absent' ? 'badge-absent' : 'badge-late';
-                    let statusText = d.status === 'present' ? 'حاضر' : d.status === 'absent' ? 'غایب' : 'تأخیر';
-                    html += `<tr>
-                        <td class="text-dark">${d.student_card_id || '-'}</div></div></div>
-                        <td class="text-dark"><strong>${d.name}</strong></div></div></div>
-                        <td class="text-dark">${d.father_name || '-'}</div></div></div>
-                        <td class="text-dark">${d.class_name}</div></div></div>
-                        <td class="text-dark">${d.attendance_date}</div></div></div>
-                        <td class="text-dark"><span class="${badgeClass}">${statusText}</span></div></div></div>
-                        <td class="text-dark">${d.notes || '-'}</div></div></div>
-                    </div></div></div>`;
-                });
-
-                html += `</tbody>
-                    </table>
-                </div>`;
-
+                html += `</tbody></table></div>`;
                 resultDiv.innerHTML = html;
-            } catch (err) {
-                console.error(err);
-                resultDiv.innerHTML = '<div class="alert alert-danger">خطا در بارگیری اطلاعات</div>';
-            }
+            } catch (err) { console.error(err); resultDiv.innerHTML = '<div class="alert alert-danger">خطا در بارگیری اطلاعات</div>'; }
         }
 
-        function printTeacherReport() {
-            const content = document.getElementById('teacherReportResult').innerHTML;
-            const date = document.getElementById('teacherDate').value;
-            const win = window.open('', '_blank');
-            win.document.write(`<html dir="rtl">
-                <head><title>گزارش حاضری استادان - ${date}</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"></head>
-                <body><div class="container mt-3"><h3 class="text-center">گزارش حاضری استادان</h3><p>تاریخ: ${date}</p>${content}</div>
-                <script>window.print();<\/script></body></html>`);
-            win.document.close();
-        }
-
+        document.getElementById('startDate').value = new Date(new Date().setDate(1)).toISOString().split('T')[0];
+        document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+        setupSidebar();
         loadClasses();
     </script>
 </body>
-
 </html>
