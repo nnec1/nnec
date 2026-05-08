@@ -51,7 +51,10 @@ async function connectDB() {
       password: process.env.DB_PASSWORD || "Root@123",
       database: process.env.DB_NAME || "lms_db",
       port: parseInt(process.env.DB_PORT) || 3306,
-      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
+      ssl:
+        process.env.DB_SSL === "true"
+          ? { rejectUnauthorized: false }
+          : undefined,
       connectTimeout: 30000,
     });
     console.log("✅ Database connected successfully!");
@@ -65,12 +68,17 @@ async function connectDB() {
 function generateStudentCardId() {
   const prefix = "STU";
   const year = new Date().getFullYear().toString().slice(-2);
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+  const random = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
   return `${prefix}-${year}-${random}`;
 }
 
 function generateQrToken() {
-  return crypto.createHash("md5").update(Date.now() + Math.random().toString()).digest("hex");
+  return crypto
+    .createHash("md5")
+    .update(Date.now() + Math.random().toString())
+    .digest("hex");
 }
 
 function generateReceiptNumber() {
@@ -96,12 +104,14 @@ const authenticate = (req, res, next) => {
 };
 
 const isCEO = (req, res, next) => {
-  if (req.user.role !== "ceo") return res.status(403).json({ error: "دسترسی محدود به ریس سیستم" });
+  if (req.user.role !== "ceo")
+    return res.status(403).json({ error: "دسترسی محدود به ریس سیستم" });
   next();
 };
 
 const isAdminOrCEO = (req, res, next) => {
-  if (!["ceo", "admin"].includes(req.user.role)) return res.status(403).json({ error: "دسترسی محدود به مدیران" });
+  if (!["ceo", "admin"].includes(req.user.role))
+    return res.status(403).json({ error: "دسترسی محدود به مدیران" });
   next();
 };
 
@@ -115,9 +125,10 @@ app.post("/api/login", async (req, res) => {
   try {
     const [results] = await db.execute(
       `SELECT * FROM employees WHERE email = ? AND position = ? AND status = 'active'`,
-      [email, userType]
+      [email, userType],
     );
-    if (results.length === 0) return res.status(401).json({ error: "ایمیل یا رمز عبور اشتباه است" });
+    if (results.length === 0)
+      return res.status(401).json({ error: "ایمیل یا رمز عبور اشتباه است" });
     const user = results[0];
     let isValid = false;
     if (user.password.startsWith("$2a$")) {
@@ -125,15 +136,25 @@ app.post("/api/login", async (req, res) => {
     } else {
       isValid = password === user.password;
     }
-    if (!isValid) return res.status(401).json({ error: "ایمیل یا رمز عبور اشتباه است" });
+    if (!isValid)
+      return res.status(401).json({ error: "ایمیل یا رمز عبور اشتباه است" });
     const token = jwt.sign(
       { id: user.id, name: user.name, email: user.email, role: user.position },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "24h" },
     );
     res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
-    let redirectUrl = user.position === "ceo" ? "/ceo/dashboard.html" : user.position === "admin" ? "/admin/dashboard.html" : "/teacher/dashboard.html";
-    res.json({ success: true, redirectUrl, user: { id: user.id, name: user.name, role: user.position } });
+    let redirectUrl =
+      user.position === "ceo"
+        ? "/ceo/dashboard.html"
+        : user.position === "admin"
+          ? "/admin/dashboard.html"
+          : "/teacher/dashboard.html";
+    res.json({
+      success: true,
+      redirectUrl,
+      user: { id: user.id, name: user.name, role: user.position },
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "خطای سرور" });
@@ -143,12 +164,31 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/student-login-with-qr", async (req, res) => {
   const { qr_token } = req.body;
   try {
-    const [results] = await db.execute(`SELECT * FROM students WHERE qr_token = ? AND status = 'active'`, [qr_token]);
-    if (results.length === 0) return res.status(401).json({ error: "QR کد معتبر نیست یا حساب غیرفعال است" });
+    const [results] = await db.execute(
+      `SELECT * FROM students WHERE qr_token = ? AND status = 'active'`,
+      [qr_token],
+    );
+    if (results.length === 0)
+      return res
+        .status(401)
+        .json({ error: "QR کد معتبر نیست یا حساب غیرفعال است" });
     const user = results[0];
-    const token = jwt.sign({ id: user.id, name: user.name, role: "student", student_card_id: user.student_card_id }, JWT_SECRET, { expiresIn: "24h" });
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        role: "student",
+        student_card_id: user.student_card_id,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
     res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
-    res.json({ success: true, redirectUrl: "/student/dashboard.html", user: { id: user.id, name: user.name } });
+    res.json({
+      success: true,
+      redirectUrl: "/student/dashboard.html",
+      user: { id: user.id, name: user.name },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "خطای سرور" });
@@ -158,12 +198,31 @@ app.post("/api/student-login-with-qr", async (req, res) => {
 app.post("/api/student-login-with-card", async (req, res) => {
   const { student_card_id } = req.body;
   try {
-    const [results] = await db.execute(`SELECT * FROM students WHERE student_card_id = ? AND status = 'active'`, [student_card_id]);
-    if (results.length === 0) return res.status(401).json({ error: "آیدی کارت معتبر نیست یا حساب غیرفعال است" });
+    const [results] = await db.execute(
+      `SELECT * FROM students WHERE student_card_id = ? AND status = 'active'`,
+      [student_card_id],
+    );
+    if (results.length === 0)
+      return res
+        .status(401)
+        .json({ error: "آیدی کارت معتبر نیست یا حساب غیرفعال است" });
     const user = results[0];
-    const token = jwt.sign({ id: user.id, name: user.name, role: "student", student_card_id: user.student_card_id }, JWT_SECRET, { expiresIn: "24h" });
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        role: "student",
+        student_card_id: user.student_card_id,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
     res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
-    res.json({ success: true, redirectUrl: "/student/dashboard.html", user: { id: user.id, name: user.name } });
+    res.json({
+      success: true,
+      redirectUrl: "/student/dashboard.html",
+      user: { id: user.id, name: user.name },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "خطای سرور" });
@@ -177,7 +236,9 @@ app.post("/api/logout", (req, res) => {
 
 app.get("/api/announcements/public", async (req, res) => {
   try {
-    const [results] = await db.execute(`SELECT * FROM announcements WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE()) ORDER BY created_at DESC LIMIT 5`);
+    const [results] = await db.execute(
+      `SELECT * FROM announcements WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE()) ORDER BY created_at DESC LIMIT 5`,
+    );
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -216,12 +277,15 @@ app.get("/api/classes/all", authenticate, async (req, res) => {
 
 app.get("/api/classes/:id", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT c.*, e.name as teacher_name 
       FROM classes c 
       LEFT JOIN employees e ON c.teacher_id = e.id 
       WHERE c.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id],
+    );
     res.json(results[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -236,7 +300,12 @@ app.post("/api/classes", authenticate, isAdminOrCEO, async (req, res) => {
   try {
     const [result] = await db.execute(
       `INSERT INTO classes (class_name, teacher_id, start_time, is_active) VALUES (?, ?, ?, ?)`,
-      [class_name, teacher_id || null, start_time || "08:00:00", is_active !== undefined ? is_active : 1]
+      [
+        class_name,
+        teacher_id || null,
+        start_time || "08:00:00",
+        is_active !== undefined ? is_active : 1,
+      ],
     );
     res.json({ id: result.insertId, message: "صنف با موفقیت ایجاد شد" });
   } catch (err) {
@@ -253,7 +322,13 @@ app.put("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
   try {
     await db.execute(
       `UPDATE classes SET class_name=?, teacher_id=?, start_time=?, is_active=? WHERE id=?`,
-      [class_name, teacher_id || null, start_time || "08:00:00", is_active !== undefined ? is_active : 1, req.params.id]
+      [
+        class_name,
+        teacher_id || null,
+        start_time || "08:00:00",
+        is_active !== undefined ? is_active : 1,
+        req.params.id,
+      ],
     );
     res.json({ message: "صنف با موفقیت به‌روز شد" });
   } catch (err) {
@@ -291,15 +366,19 @@ app.get("/api/students", authenticate, async (req, res) => {
 
 app.get("/api/students/:id", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
              s.status, s.address, s.photo, s.qr_token, s.registration_date,
              c.class_name 
       FROM students s 
       LEFT JOIN classes c ON s.class_id = c.id 
       WHERE s.id = ?
-    `, [req.params.id]);
-    if (results.length === 0) return res.status(404).json({ error: "شاگرد یافت نشد" });
+    `,
+      [req.params.id],
+    );
+    if (results.length === 0)
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
     res.json(results[0]);
   } catch (err) {
     console.error("Error in GET /api/students/:id:", err);
@@ -307,65 +386,149 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
   }
 });
 
-app.post("/api/students", authenticate, upload.single("photo"), async (req, res) => {
-  const { name, father_name, phone, class_id, address, status, registration_date, student_card_id } = req.body;
-  if (req.user.role === "teacher") {
-    return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
-  }
-  const autoPass = Math.random().toString(36).substring(2, 8);
-  const hashedPass = await bcrypt.hash(autoPass, 10);
-  const qr_token = generateQrToken();
-  const finalStudentCardId = student_card_id || generateStudentCardId();
-  const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
-  let finalRegDate = registration_date || new Date().toISOString().split("T")[0];
-  try {
-    const [result] = await db.execute(`
+app.post(
+  "/api/students",
+  authenticate,
+  upload.single("photo"),
+  async (req, res) => {
+    const {
+      name,
+      father_name,
+      phone,
+      class_id,
+      address,
+      status,
+      registration_date,
+      student_card_id,
+    } = req.body;
+    if (req.user.role === "teacher") {
+      return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+    }
+    const autoPass = Math.random().toString(36).substring(2, 8);
+    const hashedPass = await bcrypt.hash(autoPass, 10);
+    const qr_token = generateQrToken();
+    const finalStudentCardId = student_card_id || generateStudentCardId();
+    const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+    let finalRegDate =
+      registration_date || new Date().toISOString().split("T")[0];
+    try {
+      const [result] = await db.execute(
+        `
       INSERT INTO students (student_card_id, name, father_name, phone, password, class_id, registration_date, status, qr_token, address, photo) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [finalStudentCardId, name, toNull(father_name), toNull(phone), hashedPass, class_id, finalRegDate, status || "active", qr_token, toNull(address), toNull(photoPath)]);
-    const studentId = result.insertId;
-    res.json({ success: true, id: studentId, qr_token, student_card_id: finalStudentCardId, password: autoPass, registration_date: finalRegDate });
-  } catch (err) {
-    console.error("Error in POST /api/students:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+    `,
+        [
+          finalStudentCardId,
+          name,
+          toNull(father_name),
+          toNull(phone),
+          hashedPass,
+          class_id,
+          finalRegDate,
+          status || "active",
+          qr_token,
+          toNull(address),
+          toNull(photoPath),
+        ],
+      );
+      const studentId = result.insertId;
+      res.json({
+        success: true,
+        id: studentId,
+        qr_token,
+        student_card_id: finalStudentCardId,
+        password: autoPass,
+        registration_date: finalRegDate,
+      });
+    } catch (err) {
+      console.error("Error in POST /api/students:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
-app.put("/api/students/:id", authenticate, upload.single("photo"), async (req, res) => {
-  if (req.user.role !== "ceo" && req.user.role !== "admin") {
-    return res.status(403).json({ error: "فقط مدیر و ریس می‌توانند شاگرد را ویرایش کنند" });
-  }
-  try {
-    const studentId = req.params.id;
-    const updates = req.body;
-    const [existing] = await db.execute(`SELECT id FROM students WHERE id = ?`, [studentId]);
-    if (existing.length === 0) return res.status(404).json({ error: "شاگرد یافت نشد" });
-    const updateFields = [];
-    const updateValues = [];
-    if (updates.name !== undefined) { updateFields.push("name = ?"); updateValues.push(updates.name || null); }
-    if (updates.father_name !== undefined) { updateFields.push("father_name = ?"); updateValues.push(toNull(updates.father_name)); }
-    if (updates.phone !== undefined) { updateFields.push("phone = ?"); updateValues.push(toNull(updates.phone)); }
-    if (updates.class_id !== undefined) { updateFields.push("class_id = ?"); updateValues.push(updates.class_id || null); }
-    if (updates.status !== undefined) { updateFields.push("status = ?"); updateValues.push(updates.status || "active"); }
-    if (updates.address !== undefined) { updateFields.push("address = ?"); updateValues.push(toNull(updates.address)); }
-    if (updates.registration_date !== undefined) { updateFields.push("registration_date = ?"); updateValues.push(updates.registration_date || null); }
-    if (req.file) { updateFields.push("photo = ?"); updateValues.push(`/uploads/${req.file.filename}`); }
-    if (updates.password && updates.password.trim()) { updateFields.push("password = ?"); updateValues.push(await bcrypt.hash(updates.password, 10)); }
-    if (updateFields.length === 0) return res.json({ success: true, message: "تغییری اعمال نشد" });
-    updateValues.push(studentId);
-    await db.execute(`UPDATE students SET ${updateFields.join(", ")} WHERE id = ?`, updateValues);
-    res.json({ success: true, message: "اطلاعات با موفقیت به‌روز شد" });
-  } catch (err) {
-    console.error("Error in PUT /api/students/:id:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+app.put(
+  "/api/students/:id",
+  authenticate,
+  upload.single("photo"),
+  async (req, res) => {
+    if (req.user.role !== "ceo" && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ error: "فقط مدیر و ریس می‌توانند شاگرد را ویرایش کنند" });
+    }
+    try {
+      const studentId = req.params.id;
+      const updates = req.body;
+      const [existing] = await db.execute(
+        `SELECT id FROM students WHERE id = ?`,
+        [studentId],
+      );
+      if (existing.length === 0)
+        return res.status(404).json({ error: "شاگرد یافت نشد" });
+      const updateFields = [];
+      const updateValues = [];
+      if (updates.name !== undefined) {
+        updateFields.push("name = ?");
+        updateValues.push(updates.name || null);
+      }
+      if (updates.father_name !== undefined) {
+        updateFields.push("father_name = ?");
+        updateValues.push(toNull(updates.father_name));
+      }
+      if (updates.phone !== undefined) {
+        updateFields.push("phone = ?");
+        updateValues.push(toNull(updates.phone));
+      }
+      if (updates.class_id !== undefined) {
+        updateFields.push("class_id = ?");
+        updateValues.push(updates.class_id || null);
+      }
+      if (updates.status !== undefined) {
+        updateFields.push("status = ?");
+        updateValues.push(updates.status || "active");
+      }
+      if (updates.address !== undefined) {
+        updateFields.push("address = ?");
+        updateValues.push(toNull(updates.address));
+      }
+      if (updates.registration_date !== undefined) {
+        updateFields.push("registration_date = ?");
+        updateValues.push(updates.registration_date || null);
+      }
+      if (req.file) {
+        updateFields.push("photo = ?");
+        updateValues.push(`/uploads/${req.file.filename}`);
+      }
+      if (updates.password && updates.password.trim()) {
+        updateFields.push("password = ?");
+        updateValues.push(await bcrypt.hash(updates.password, 10));
+      }
+      if (updateFields.length === 0)
+        return res.json({ success: true, message: "تغییری اعمال نشد" });
+      updateValues.push(studentId);
+      await db.execute(
+        `UPDATE students SET ${updateFields.join(", ")} WHERE id = ?`,
+        updateValues,
+      );
+      res.json({ success: true, message: "اطلاعات با موفقیت به‌روز شد" });
+    } catch (err) {
+      console.error("Error in PUT /api/students/:id:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 app.delete("/api/students/:id", authenticate, async (req, res) => {
-  if (req.user.role === "teacher") return res.status(403).json({ error: "استاد نمی‌تواند شاگرد حذف کند" });
+  if (req.user.role === "teacher")
+    return res.status(403).json({ error: "استاد نمی‌تواند شاگرد حذف کند" });
   try {
-    await db.execute(`DELETE FROM fee_payments WHERE student_id = ?`, [req.params.id]);
-    await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [req.params.id]);
+    await db.execute(`DELETE FROM fee_payments WHERE student_id = ?`, [
+      req.params.id,
+    ]);
+    await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [
+      req.params.id,
+    ]);
     await db.execute(`DELETE FROM students WHERE id = ?`, [req.params.id]);
     res.json({ success: true, message: "شاگرد با موفقیت حذف شد" });
   } catch (err) {
@@ -393,19 +556,47 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
   }
 });
 
+// ====================== API منقضی شده (fee-expired) ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
-      SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-             s.status, s.due_date, c.class_name
+      SELECT 
+        s.id, 
+        s.student_card_id, 
+        s.name, 
+        s.father_name, 
+        s.phone, 
+        s.class_id, 
+        s.status,
+        c.class_name,
+        MAX(fp.payment_date) as last_payment_date,
+        DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
+        COALESCE(fd.remaining_fee, 0) as remaining_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      WHERE s.due_date IS NOT NULL AND s.due_date < CURDATE() AND s.status = 'active'
-      ORDER BY s.due_date ASC
+      LEFT JOIN fee_payments fp ON s.id = fp.student_id
+      LEFT JOIN fee_debtors fd ON s.id = fd.student_id
+      WHERE s.status = 'active'
+      GROUP BY s.id
+      HAVING due_date < CURDATE() OR due_date IS NULL
+      ORDER BY due_date ASC
     `);
-    res.json(results);
+
+    // فرمت تاریخ برای خروجی
+    const formatted = results.map((s) => ({
+      ...s,
+      due_date: s.due_date
+        ? new Date(s.due_date).toISOString().split("T")[0]
+        : null,
+      last_payment_date: s.last_payment_date
+        ? new Date(s.last_payment_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    console.log("✅ /api/fee-expired fetched:", formatted.length);
+    res.json(formatted);
   } catch (err) {
-    console.error("Error in /api/fee-expired:", err);
+    console.error("❌ Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -435,51 +626,71 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
 
 app.post("/api/collect-fee", authenticate, async (req, res) => {
   const { student_id, amount, payment_date, notes } = req.body;
-  
+
   if (!student_id) {
     return res.status(400).json({ error: "شناسه شاگرد الزامی است" });
   }
-  
+
   const paymentAmount = parseFloat(amount);
   if (isNaN(paymentAmount) || paymentAmount <= 0) {
     return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
   }
-  
+
   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
   const issueDate = new Date().toISOString().split("T")[0];
-  const receipt_number = "RCP-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
-  
+  const receipt_number =
+    "RCP-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+
   try {
-    const [student] = await db.execute(`
+    const [student] = await db.execute(
+      `
       SELECT s.id, s.name, s.father_name, s.student_card_id, c.class_name 
       FROM students s 
       JOIN classes c ON s.class_id = c.id 
       WHERE s.id = ?
-    `, [student_id]);
-    
+    `,
+      [student_id],
+    );
+
     if (student.length === 0) {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
-    
-    await db.execute(`
+
+    await db.execute(
+      `
       INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
       VALUES (?, ?, ?, ?, ?, ?)
-    `, [student_id, paymentAmount, paymentDate, issueDate, receipt_number, notes || null]);
-    
+    `,
+      [
+        student_id,
+        paymentAmount,
+        paymentDate,
+        issueDate,
+        receipt_number,
+        notes || null,
+      ],
+    );
+
     const newDueDate = new Date(paymentDate);
     newDueDate.setMonth(newDueDate.getMonth() + 1);
     const finalDueDate = newDueDate.toISOString().split("T")[0];
-    
-    await db.execute(`UPDATE students SET due_date = ? WHERE id = ?`, [finalDueDate, student_id]);
-    
-    const [totalPaidResult] = await db.execute(`
+
+    await db.execute(`UPDATE students SET due_date = ? WHERE id = ?`, [
+      finalDueDate,
+      student_id,
+    ]);
+
+    const [totalPaidResult] = await db.execute(
+      `
       SELECT COALESCE(SUM(amount), 0) as total_paid 
       FROM fee_payments 
       WHERE student_id = ?
-    `, [student_id]);
-    
+    `,
+      [student_id],
+    );
+
     const totalPaid = parseFloat(totalPaidResult[0]?.total_paid) || 0;
-    
+
     res.json({
       success: true,
       receipt_number: receipt_number,
@@ -492,9 +703,8 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       issue_date: issueDate,
       expiry_date: finalDueDate,
       notes: notes || "",
-      remaining_fee: 0
+      remaining_fee: 0,
     });
-    
   } catch (err) {
     console.error("❌ Error in /api/collect-fee:", err);
     res.status(500).json({ error: err.message });
@@ -504,15 +714,31 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 // ====================== API پیام‌ها ======================
 
 app.post("/api/messages", authenticate, async (req, res) => {
-  const { receiver_type, receiver_id, subject, message, reply_to_id } = req.body;
+  const { receiver_type, receiver_id, subject, message, reply_to_id } =
+    req.body;
   const sender_type = req.user.role === "student" ? "student" : "admin";
   const sender_id = req.user.id;
   try {
-    const [result] = await db.execute(`
+    const [result] = await db.execute(
+      `
       INSERT INTO messages (sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id) 
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id || null]);
-    res.json({ success: true, id: result.insertId, message: "پیام با موفقیت ارسال شد" });
+    `,
+      [
+        sender_type,
+        sender_id,
+        receiver_type,
+        receiver_id,
+        subject,
+        message,
+        reply_to_id || null,
+      ],
+    );
+    res.json({
+      success: true,
+      id: result.insertId,
+      message: "پیام با موفقیت ارسال شد",
+    });
   } catch (err) {
     console.error("Error in POST /api/messages:", err);
     res.status(500).json({ error: err.message });
@@ -523,7 +749,8 @@ app.get("/api/messages", authenticate, async (req, res) => {
   const userId = req.user.id;
   const userRole = req.user.role === "student" ? "student" : "admin";
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT m.*, 
         CASE 
           WHEN m.sender_type = 'student' THEN (SELECT name FROM students WHERE id = m.sender_id)
@@ -536,7 +763,9 @@ app.get("/api/messages", authenticate, async (req, res) => {
       FROM messages m
       WHERE (m.sender_type = ? AND m.sender_id = ?) OR (m.receiver_type = ? AND m.receiver_id = ?)
       ORDER BY m.created_at DESC
-    `, [userRole, userId, userRole, userId]);
+    `,
+      [userRole, userId, userRole, userId],
+    );
     res.json(results);
   } catch (err) {
     console.error("Error in GET /api/messages:", err);
@@ -548,21 +777,29 @@ app.post("/api/messages/:id/reply", authenticate, async (req, res) => {
   const parentId = req.params.id;
   const { message } = req.body;
   try {
-    const [parent] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [parentId]);
-    if (parent.length === 0) return res.status(404).json({ error: "پیام اصلی یافت نشد" });
-    await db.execute(`
+    const [parent] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [
+      parentId,
+    ]);
+    if (parent.length === 0)
+      return res.status(404).json({ error: "پیام اصلی یافت نشد" });
+    await db.execute(
+      `
       INSERT INTO messages (sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id) 
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-      req.user.role === "student" ? "student" : "admin",
-      req.user.id,
-      parent[0].sender_type,
-      parent[0].sender_id,
-      `پاسخ: ${parent[0].subject}`,
-      message,
-      parentId
+    `,
+      [
+        req.user.role === "student" ? "student" : "admin",
+        req.user.id,
+        parent[0].sender_type,
+        parent[0].sender_id,
+        `پاسخ: ${parent[0].subject}`,
+        message,
+        parentId,
+      ],
+    );
+    await db.execute(`UPDATE messages SET status = 'replied' WHERE id = ?`, [
+      parentId,
     ]);
-    await db.execute(`UPDATE messages SET status = 'replied' WHERE id = ?`, [parentId]);
     res.json({ success: true, message: "پاسخ با موفقیت ارسال شد" });
   } catch (err) {
     console.error("Error in POST /api/messages/:id/reply:", err);
@@ -574,7 +811,10 @@ app.post("/api/messages/:id/reply", authenticate, async (req, res) => {
 
 app.get("/api/teacher/info/:teacherId", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`SELECT id, name, father_name, phone, email, photo FROM employees WHERE id = ?`, [req.params.teacherId]);
+    const [results] = await db.execute(
+      `SELECT id, name, father_name, phone, email, photo FROM employees WHERE id = ?`,
+      [req.params.teacherId],
+    );
     res.json(results[0] || {});
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -583,12 +823,15 @@ app.get("/api/teacher/info/:teacherId", authenticate, async (req, res) => {
 
 app.get("/api/teacher/classes/:teacherId", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT c.*, e.name as teacher_name 
       FROM classes c 
       JOIN employees e ON c.teacher_id = e.id 
       WHERE c.teacher_id = ? AND c.is_active = 1
-    `, [req.params.teacherId]);
+    `,
+      [req.params.teacherId],
+    );
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -597,12 +840,15 @@ app.get("/api/teacher/classes/:teacherId", authenticate, async (req, res) => {
 
 app.get("/api/teacher/students/:teacherId", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT s.*, c.class_name, s.due_date
       FROM students s 
       JOIN classes c ON s.class_id = c.id 
       WHERE c.teacher_id = ? AND s.status = 'active'
-    `, [req.params.teacherId]);
+    `,
+      [req.params.teacherId],
+    );
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -612,15 +858,29 @@ app.get("/api/teacher/students/:teacherId", authenticate, async (req, res) => {
 app.post("/api/teacher/save-attendance", authenticate, async (req, res) => {
   const { teacher_id, class_id, date, attendance } = req.body;
   try {
-    const [existing] = await db.execute(`SELECT id FROM daily_attendance WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`, [teacher_id, class_id, date]);
+    const [existing] = await db.execute(
+      `SELECT id FROM daily_attendance WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
+      [teacher_id, class_id, date],
+    );
     if (existing.length > 0) {
-      await db.execute(`DELETE FROM attendance_details WHERE attendance_id = ?`, [existing[0].id]);
-      await db.execute(`DELETE FROM daily_attendance WHERE id = ?`, [existing[0].id]);
+      await db.execute(
+        `DELETE FROM attendance_details WHERE attendance_id = ?`,
+        [existing[0].id],
+      );
+      await db.execute(`DELETE FROM daily_attendance WHERE id = ?`, [
+        existing[0].id,
+      ]);
     }
-    const [result] = await db.execute(`INSERT INTO daily_attendance (teacher_id, class_id, attendance_date) VALUES (?, ?, ?)`, [teacher_id, class_id, date]);
+    const [result] = await db.execute(
+      `INSERT INTO daily_attendance (teacher_id, class_id, attendance_date) VALUES (?, ?, ?)`,
+      [teacher_id, class_id, date],
+    );
     const attId = result.insertId;
     for (const a of attendance) {
-      await db.execute(`INSERT INTO attendance_details (attendance_id, student_id, status, notes) VALUES (?, ?, ?, ?)`, [attId, a.student_id, a.status, toNull(a.notes)]);
+      await db.execute(
+        `INSERT INTO attendance_details (attendance_id, student_id, status, notes) VALUES (?, ?, ?, ?)`,
+        [attId, a.student_id, a.status, toNull(a.notes)],
+      );
     }
     res.json({ success: true, message: "حاضری با موفقیت ثبت شد" });
   } catch (err) {
@@ -632,13 +892,16 @@ app.get("/api/attendance/class/:classId", authenticate, async (req, res) => {
   const { classId } = req.params;
   const { date } = req.query;
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT da.id, da.attendance_date, ad.student_id, ad.status, ad.notes, s.name, s.father_name 
       FROM daily_attendance da 
       JOIN attendance_details ad ON da.id = ad.attendance_id 
       JOIN students s ON ad.student_id = s.id 
       WHERE da.class_id = ? AND da.attendance_date = ?
-    `, [classId, date]);
+    `,
+      [classId, date],
+    );
     res.json({ exists: results.length > 0, details: results });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -649,11 +912,24 @@ app.get("/api/attendance/class/:classId", authenticate, async (req, res) => {
 
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
   try {
-    const [students] = await db.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'active'`);
-    const [teachers] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`);
-    const [debtors] = await db.execute(`SELECT COUNT(*) as total FROM fee_debtors WHERE remaining_fee > 0`);
-    const [revenue] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`);
-    res.json({ total_students: students[0]?.total || 0, total_teachers: teachers[0]?.total || 0, total_debtors: debtors[0]?.total || 0, monthly_revenue: revenue[0]?.total || 0 });
+    const [students] = await db.execute(
+      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+    );
+    const [teachers] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+    const [debtors] = await db.execute(
+      `SELECT COUNT(*) as total FROM fee_debtors WHERE remaining_fee > 0`,
+    );
+    const [revenue] = await db.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
+    );
+    res.json({
+      total_students: students[0]?.total || 0,
+      total_teachers: teachers[0]?.total || 0,
+      total_debtors: debtors[0]?.total || 0,
+      monthly_revenue: revenue[0]?.total || 0,
+    });
   } catch (err) {
     console.error("Error in /api/dashboard-stats:", err);
     res.status(500).json({ error: err.message });
@@ -663,14 +939,17 @@ app.get("/api/dashboard-stats", authenticate, async (req, res) => {
 app.get("/api/recent-transactions", authenticate, async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT fp.id, fp.amount, fp.payment_date, fp.receipt_number, s.id as student_id, s.name as student_name, s.student_card_id, c.class_name
       FROM fee_payments fp 
       JOIN students s ON fp.student_id = s.id 
       JOIN classes c ON s.class_id = c.id 
       ORDER BY fp.payment_date DESC, fp.id DESC 
       LIMIT ?
-    `, [limit]);
+    `,
+      [limit],
+    );
     res.json(results);
   } catch (err) {
     console.error("Error in /api/recent-transactions:", err);
@@ -685,16 +964,20 @@ app.get("/api/financial-summary", authenticate, async (req, res) => {
   if (start_date && end_date) {
     query += ` AND payment_date BETWEEN ? AND ?`;
     params.push(start_date, end_date);
-  } else if (period === 'monthly') {
+  } else if (period === "monthly") {
     query += ` AND MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`;
-  } else if (period === 'yearly') {
+  } else if (period === "yearly") {
     query += ` AND YEAR(payment_date) = YEAR(CURDATE())`;
   } else {
     query += ` AND payment_date = CURDATE()`;
   }
   try {
     const [incomeResult] = await db.execute(query, params);
-    res.json({ total_income: incomeResult[0]?.total_income || 0, total_expense: 0, transaction_count: 0 });
+    res.json({
+      total_income: incomeResult[0]?.total_income || 0,
+      total_expense: 0,
+      transaction_count: 0,
+    });
   } catch (err) {
     console.error("Error in /api/financial-summary:", err);
     res.status(500).json({ error: err.message });
@@ -704,10 +987,14 @@ app.get("/api/financial-summary", authenticate, async (req, res) => {
 // ====================== API کارمندان ======================
 
 app.get("/api/employees", authenticate, async (req, res) => {
-  let query = "SELECT id, name, father_name, phone, email, position, salary, hire_date, status, created_at FROM employees";
-  if (req.user.role === "ceo") query += " WHERE position IN ('admin', 'teacher', 'accountant')";
-  else if (req.user.role === "admin") query += " WHERE position IN ('teacher', 'accountant')";
-  else if (req.user.role === "teacher") return res.status(403).json({ error: "دسترسی محدود" });
+  let query =
+    "SELECT id, name, father_name, phone, email, position, salary, hire_date, status, created_at FROM employees";
+  if (req.user.role === "ceo")
+    query += " WHERE position IN ('admin', 'teacher', 'accountant')";
+  else if (req.user.role === "admin")
+    query += " WHERE position IN ('teacher', 'accountant')";
+  else if (req.user.role === "teacher")
+    return res.status(403).json({ error: "دسترسی محدود" });
   query += " ORDER BY created_at DESC";
   try {
     const [results] = await db.execute(query);
@@ -719,47 +1006,114 @@ app.get("/api/employees", authenticate, async (req, res) => {
 
 app.get("/api/teachers", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`SELECT id, name, email, phone FROM employees WHERE position = 'teacher' AND status = 'active'`);
+    const [results] = await db.execute(
+      `SELECT id, name, email, phone FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/employees", authenticate, upload.single("photo"), async (req, res) => {
-  const { name, father_name, phone, email, password, position, salary, hire_date } = req.body;
-  if (position === "admin" && req.user.role !== "ceo") return res.status(403).json({ error: "❌ فقط ریس سیستم می‌تواند مدیر ایجاد کند" });
-  const hashedPass = await bcrypt.hash(password || "123456", 10);
-  const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
-  try {
-    const [result] = await db.execute(`
+app.post(
+  "/api/employees",
+  authenticate,
+  upload.single("photo"),
+  async (req, res) => {
+    const {
+      name,
+      father_name,
+      phone,
+      email,
+      password,
+      position,
+      salary,
+      hire_date,
+    } = req.body;
+    if (position === "admin" && req.user.role !== "ceo")
+      return res
+        .status(403)
+        .json({ error: "❌ فقط ریس سیستم می‌تواند مدیر ایجاد کند" });
+    const hashedPass = await bcrypt.hash(password || "123456", 10);
+    const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+    try {
+      const [result] = await db.execute(
+        `
       INSERT INTO employees (name, father_name, phone, email, password, position, salary, hire_date, photo, status) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
-    `, [name, toNull(father_name), toNull(phone), email, hashedPass, position, toNull(salary), toNull(hire_date), toNull(photoPath)]);
-    res.json({ id: result.insertId, message: `${position} با موفقیت ایجاد شد` });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+    `,
+        [
+          name,
+          toNull(father_name),
+          toNull(phone),
+          email,
+          hashedPass,
+          position,
+          toNull(salary),
+          toNull(hire_date),
+          toNull(photoPath),
+        ],
+      );
+      res.json({
+        id: result.insertId,
+        message: `${position} با موفقیت ایجاد شد`,
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
-app.put("/api/employees/:id", authenticate, upload.single("photo"), async (req, res) => {
-  const { name, father_name, phone, email, password, position, salary, hire_date, status } = req.body;
-  let photoPath = req.file ? `/uploads/${req.file.filename}` : null;
-  let setClause = `name=?, father_name=?, phone=?, email=?, position=?, salary=?, hire_date=?, status=?`;
-  let values = [name, toNull(father_name), toNull(phone), email, position, toNull(salary), toNull(hire_date), status];
-  if (photoPath) { setClause += `, photo=?`; values.push(photoPath); }
-  if (password && password.trim()) { const hashed = await bcrypt.hash(password, 10); setClause += `, password=?`; values.push(hashed); }
-  values.push(req.params.id);
-  try {
-    await db.execute(`UPDATE employees SET ${setClause} WHERE id=?`, values);
-    res.json({ message: "به‌روز شد" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+app.put(
+  "/api/employees/:id",
+  authenticate,
+  upload.single("photo"),
+  async (req, res) => {
+    const {
+      name,
+      father_name,
+      phone,
+      email,
+      password,
+      position,
+      salary,
+      hire_date,
+      status,
+    } = req.body;
+    let photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+    let setClause = `name=?, father_name=?, phone=?, email=?, position=?, salary=?, hire_date=?, status=?`;
+    let values = [
+      name,
+      toNull(father_name),
+      toNull(phone),
+      email,
+      position,
+      toNull(salary),
+      toNull(hire_date),
+      status,
+    ];
+    if (photoPath) {
+      setClause += `, photo=?`;
+      values.push(photoPath);
+    }
+    if (password && password.trim()) {
+      const hashed = await bcrypt.hash(password, 10);
+      setClause += `, password=?`;
+      values.push(hashed);
+    }
+    values.push(req.params.id);
+    try {
+      await db.execute(`UPDATE employees SET ${setClause} WHERE id=?`, values);
+      res.json({ message: "به‌روز شد" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 app.delete("/api/employees/:id", authenticate, async (req, res) => {
-  if (req.user.role !== "ceo" && req.user.role !== "admin") return res.status(403).json({ error: "دسترسی محدود" });
+  if (req.user.role !== "ceo" && req.user.role !== "admin")
+    return res.status(403).json({ error: "دسترسی محدود" });
   try {
     await db.execute("DELETE FROM employees WHERE id = ?", [req.params.id]);
     res.json({ message: "حذف شد" });
@@ -772,9 +1126,13 @@ app.delete("/api/employees/:id", authenticate, async (req, res) => {
 
 app.get("/api/settings", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute("SELECT setting_key, setting_value FROM system_settings");
+    const [results] = await db.execute(
+      "SELECT setting_key, setting_value FROM system_settings",
+    );
     const settings = {};
-    results.forEach(r => { settings[r.setting_key] = r.setting_value; });
+    results.forEach((r) => {
+      settings[r.setting_key] = r.setting_value;
+    });
     res.json(settings);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -782,7 +1140,14 @@ app.get("/api/settings", authenticate, async (req, res) => {
 });
 
 app.post("/api/settings", authenticate, isAdminOrCEO, async (req, res) => {
-  const { institute_name, institute_tagline, institute_phone, institute_email, institute_address, academic_year } = req.body;
+  const {
+    institute_name,
+    institute_tagline,
+    institute_phone,
+    institute_email,
+    institute_address,
+    academic_year,
+  } = req.body;
   try {
     const updates = [
       { key: "institute_name", value: institute_name },
@@ -794,7 +1159,10 @@ app.post("/api/settings", authenticate, isAdminOrCEO, async (req, res) => {
     ];
     for (const item of updates) {
       if (item.value) {
-        await db.execute(`INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`, [item.key, item.value]);
+        await db.execute(
+          `INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+          [item.key, item.value],
+        );
       }
     }
     res.json({ success: true, message: "تنظیمات با موفقیت ذخیره شد" });
@@ -808,14 +1176,22 @@ app.post("/api/change-password", authenticate, async (req, res) => {
   const { current, new: newPassword } = req.body;
   const table = req.user.role === "student" ? "students" : "employees";
   try {
-    const [results] = await db.execute(`SELECT password FROM ${table} WHERE id = ?`, [req.user.id]);
-    if (results.length === 0) return res.status(500).json({ error: "کاربر یافت نشد" });
+    const [results] = await db.execute(
+      `SELECT password FROM ${table} WHERE id = ?`,
+      [req.user.id],
+    );
+    if (results.length === 0)
+      return res.status(500).json({ error: "کاربر یافت نشد" });
     let isValid = false;
-    if (results[0].password.startsWith("$2a$")) isValid = await bcrypt.compare(current, results[0].password);
+    if (results[0].password.startsWith("$2a$"))
+      isValid = await bcrypt.compare(current, results[0].password);
     else isValid = current === results[0].password;
     if (!isValid) return res.status(401).json({ error: "رمز فعلی اشتباه است" });
     const hashed = await bcrypt.hash(newPassword, 10);
-    await db.execute(`UPDATE ${table} SET password = ? WHERE id = ?`, [hashed, req.user.id]);
+    await db.execute(`UPDATE ${table} SET password = ? WHERE id = ?`, [
+      hashed,
+      req.user.id,
+    ]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
