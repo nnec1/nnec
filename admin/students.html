@@ -68,6 +68,19 @@
             border: none;
         }
 
+        .btn-payment-sm {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .btn-payment-sm:hover {
+            transform: translateY(-2px);
+        }
+
         .barcode-preview {
             background: #f8fafc;
             border-radius: 12px;
@@ -133,6 +146,11 @@
 
             .overlay.show {
                 display: block;
+            }
+
+            .btn-payment-sm {
+                padding: 3px 8px;
+                font-size: 10px;
             }
         }
     </style>
@@ -212,7 +230,7 @@
                                     <th>صنف</th>
                                     <th>تاریخ ثبت</th>
                                     <th>وضعیت</th>
-                                    <th>عملیات</th>
+                                    <th colspan="2">عملیات</th>
                                 </tr>
                             </thead>
                             <tbody id="studentsList"></tbody>
@@ -223,7 +241,7 @@
         </div>
     </div>
 
-    <!-- مودال شاگرد (بدون فیلدهای مالی) -->
+    <!-- مودال شاگرد -->
     <div class="modal fade" id="studentModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -369,33 +387,41 @@
                 if (search) students = students.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
 
                 if (!students || students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></td>';
+                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
                     return;
                 }
 
                 document.getElementById('studentsList').innerHTML = students.map(s => {
                     let statusClass = s.status === 'active' ? 'status-active' : (s.status === 'graduated' ? 'status-graduated' : 'status-disabled');
                     let statusText = s.status === 'active' ? 'فعال' : (s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال');
-                    return `<tr>
-                        <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
-                        <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></div></div></div>
-                        <td class="text-dark">${s.name}</div></div></div>
-                        <td class="text-dark">${s.father_name || '-'}</div></div></div>
-                        <td class="text-dark">${s.phone || '-'}</div></div></div>
-                        <td class="text-dark">${s.class_name || '-'}</div></div></div>
-                        <td class="text-dark">${s.registration_date ? formatDate(s.registration_date) : '-'}</div></div></div>
-                        <td><span class="${statusClass}">${statusText}</span></div></div></div>
-                        <td>
-                            <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="fa-solid fa-pencil"></i></button>
-                            <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="fa-solid fa-trash"></i></button>
-                            <button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i></button>
-                         </div></div></div>
-                    </div></div></div>`;
+                    return `
+                        <tr>
+                            <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
+                            <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></div></div></div>
+                            <td class="text-dark">${s.name}</div></div></div>
+                            <td class="text-dark">${s.father_name || '-'}</div></div></div>
+                            <td class="text-dark">${s.phone || '-'}</div></div></div>
+                            <td class="text-dark">${s.class_name || '-'}</div></div></div>
+                            <td class="text-dark">${s.registration_date ? formatDate(s.registration_date) : '-'}</div></div></div>
+                            <td><span class="${statusClass}">${statusText}</span></div></div></div>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="fa-solid fa-pencil"></i> ویرایش</button>
+                                <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="fa-solid fa-trash"></i> حذف</button>
+                                <button class="btn btn-sm btn-payment-sm" onclick="goToPayment(${s.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت فیس</button>
+                                <button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i> کارت</button>
+                             </div></div></div>
+                        </div></div></div>
+                    `;
                 }).join('');
             } catch (err) {
                 console.error('Error loading students:', err);
-                document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+                document.getElementById('studentsList').innerHTML = '<table><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
             }
+        }
+
+        // رفتن به صفحه پرداخت فیس برای شاگرد انتخاب شده
+        function goToPayment(studentId) {
+            window.location.href = `payment-page.html?id=${studentId}`;
         }
 
         async function deleteStudent(id) {
@@ -449,9 +475,6 @@
             formData.append('status', document.getElementById('stuStatus').value);
             formData.append('address', document.getElementById('stuAddress').value);
             formData.append('student_card_id', generatedCardId);
-            formData.append('total_fee', 0);
-            formData.append('paid_fee', 0);
-            formData.append('due_date', null);
 
             if (document.getElementById('stuPhoto').files[0]) formData.append('photo', document.getElementById('stuPhoto').files[0]);
             if (document.getElementById('stuPassword').value) formData.append('password', document.getElementById('stuPassword').value);
