@@ -228,14 +228,22 @@
                         <i class="fa-solid fa-plus-circle"></i> پرداخت جدید
                     </button>
                 </div>
-
+                <!-- 
                 <ul class="nav nav-tabs mb-4">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#debtors"><i
                                 class="fa-solid fa-triangle-exclamation"></i> ⚠️ بدهکاران</a></li>
                     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i
                                 class="fa-solid fa-clock"></i> ⌛ منقضی شده</a></li>
+                </ul> -->
+                <!-- اضافه کردن تب جدید در کنار تب‌های موجود -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#debtors"><i
+                                class="fa-solid fa-triangle-exclamation"></i> ⚠️ بدهکاران</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expired"><i
+                                class="fa-solid fa-clock"></i> ⌛ منقضی شده</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#feeHistory"><i
+                                class="fa-solid fa-clock-rotate-left"></i> 📜 تاریخچه فیس</a></li>
                 </ul>
-
                 <div class="tab-content">
                     <!-- تب بدهکاران (خلاصه) -->
                     <div class="tab-pane fade show active" id="debtors">
@@ -280,102 +288,173 @@
             </div>
         </div>
     </div>
-
-    <!-- مودال ویرایش فیس -->
-    <div class="modal fade" id="editFeeModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title"><i class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <!-- تب تاریخچه فیس -->
+    <div class="tab-pane fade" id="feeHistory">
+        <div class="filter-box">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <select id="historyClassFilter" class="form-select">
+                        <option value="">همه صنف‌ها</option>
+                    </select>
                 </div>
-                <div class="modal-body">
-                    <form id="editFeeForm">
-                        <input type="hidden" id="editStudentId">
-                        <div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number"
-                                id="editTotalFee" class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">فیس پرداخت شده (AFN)</label><input type="number"
-                                id="editPaidFee" class="form-control" required oninput="updateEditRemaining()"></div>
-                        <div class="mb-3"><label class="form-label">باقی مانده (AFN)</label><input type="number"
-                                id="editRemainingFee" class="form-control" readonly style="background:#f1f5f9"></div>
-                        <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date"
-                                id="editDueDate" class="form-control"></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
-                            تغییرات</button>
-                    </form>
+                <div class="col-md-3">
+                    <input type="text" id="historySearch" class="form-control" placeholder="جستجوی نام یا آیدی...">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="historyDateFrom" class="form-control" placeholder="از تاریخ">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="historyDateTo" class="form-control" placeholder="تا تاریخ">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="loadFeeHistory()"><i
+                            class="fa-solid fa-magnifying-glass"></i> جستجو</button>
                 </div>
             </div>
         </div>
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>نام شاگرد</th>
+                            <th>نام پدر</th>
+                            <th>آیدی کارت</th>
+                            <th>صنف</th>
+                            <th>تاریخ پرداخت</th>
+                            <th>تاریخ صدور</th>
+                            <th>مبلغ پرداخت (AFN)</th>
+                            <th>شماره رسید</th>
+                            <th>یادداشت</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feeHistoryTable">
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <div class="spinner-border text-success"></div>
+                                <p class="text-muted mt-2">در حال بارگیری...</p>
+            </div>
+        </div>
     </div>
+    <tr>
+        </tbody>
+        <tfoot id="historyFooter" style="display: none;">
+            <tr>
+                <td colspan="7" class="text-end fw-bold">مجموع:</div>
+                    </div>
+                    </div>
+                <td class="text-success fw-bold" id="historyTotal">0 AFN</div>
+                    </div>
+                    </div>
+                <td colspan="2">
+                    </div>
+                    </div>
+                    </div>
+            </tr>
+        </tfoot>
+        </table>
+        </div>
+        </div>
+        </div>
+        <!-- مودال ویرایش فیس -->
+        <div class="modal fade" id="editFeeModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                        <h5 class="modal-title"><i class="fa-solid fa-pen"></i> ویرایش فیس شاگرد</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editFeeForm">
+                            <input type="hidden" id="editStudentId">
+                            <div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number"
+                                    id="editTotalFee" class="form-control" required></div>
+                            <div class="mb-3"><label class="form-label">فیس پرداخت شده (AFN)</label><input type="number"
+                                    id="editPaidFee" class="form-control" required oninput="updateEditRemaining()">
+                            </div>
+                            <div class="mb-3"><label class="form-label">باقی مانده (AFN)</label><input type="number"
+                                    id="editRemainingFee" class="form-control" readonly style="background:#f1f5f9">
+                            </div>
+                            <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date"
+                                    id="editDueDate" class="form-control"></div>
+                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
+                                تغییرات</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/main.js"></script>
-    <script>
-        let editFeeModal = null;
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="/main.js"></script>
+        <script>
+            let editFeeModal = null;
 
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            try {
-                let d = new Date(dateString);
-                if (isNaN(d.getTime())) return dateString;
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            } catch (e) { return dateString; }
-        }
-
-        function isDateExpired(dateString) {
-            if (!dateString) return false;
-            try {
-                let dueDate = new Date(dateString);
-                let today = new Date();
-                today.setHours(0, 0, 0, 0);
-                return dueDate < today;
-            } catch (e) { return false; }
-        }
-
-        function setupSidebar() {
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (!toggleBtn) return;
-            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
-            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
-        }
-
-        async function loadClasses() {
-            try {
-                const res = await fetch('/api/classes');
-                const classes = await res.json();
-                const options = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
-                document.getElementById('debtorClassFilter').innerHTML = options;
-                document.getElementById('expiredClassFilter').innerHTML = options;
-            } catch (err) { console.error(err); }
-        }
-
-        // ========== بارگذاری بدهکاران ==========
-        async function loadDebtors() {
-            const res = await fetch('/api/fee-defaulters');
-            let data = await res.json();
-
-            const classId = document.getElementById('debtorClassFilter').value;
-            const search = document.getElementById('debtorSearch').value.toLowerCase();
-            const dateFrom = document.getElementById('debtorDateFrom').value;
-            const dateTo = document.getElementById('debtorDateTo').value;
-
-            if (classId) data = data.filter(d => d.class_id == classId);
-            if (search) data = data.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.includes(search)));
-            if (dateFrom) data = data.filter(d => d.due_date >= dateFrom);
-            if (dateTo) data = data.filter(d => d.due_date <= dateTo);
-
-            if (!data || data.length === 0) {
-                document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
-                return;
+            function formatDate(dateString) {
+                if (!dateString) return '-';
+                try {
+                    let d = new Date(dateString);
+                    if (isNaN(d.getTime())) return dateString;
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                } catch (e) { return dateString; }
             }
 
-            let html = '';
-            for (const d of data) {
-                const remainingFee = parseFloat(d.remaining_fee) || 0;
-                html += `
+            function isDateExpired(dateString) {
+                if (!dateString) return false;
+                try {
+                    let dueDate = new Date(dateString);
+                    let today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return dueDate < today;
+                } catch (e) { return false; }
+            }
+
+            function setupSidebar() {
+                const toggleBtn = document.getElementById('sidebarToggle');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('overlay');
+                if (!toggleBtn) return;
+                toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
+                if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
+                window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
+            }
+
+            async function loadClasses() {
+                try {
+                    const res = await fetch('/api/classes');
+                    const classes = await res.json();
+                    const options = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                    document.getElementById('debtorClassFilter').innerHTML = options;
+                    document.getElementById('expiredClassFilter').innerHTML = options;
+                    document.getElementById('historyClassFilter').innerHTML = options;
+                } catch (err) { console.error(err); }
+            }
+
+            // ========== بارگذاری بدهکاران ==========
+            async function loadDebtors() {
+                const res = await fetch('/api/fee-defaulters');
+                let data = await res.json();
+
+                const classId = document.getElementById('debtorClassFilter').value;
+                const search = document.getElementById('debtorSearch').value.toLowerCase();
+                const dateFrom = document.getElementById('debtorDateFrom').value;
+                const dateTo = document.getElementById('debtorDateTo').value;
+
+                if (classId) data = data.filter(d => d.class_id == classId);
+                if (search) data = data.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.includes(search)));
+                if (dateFrom) data = data.filter(d => d.due_date >= dateFrom);
+                if (dateTo) data = data.filter(d => d.due_date <= dateTo);
+
+                if (!data || data.length === 0) {
+                    document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
+                    return;
+                }
+
+                let html = '';
+                for (const d of data) {
+                    const remainingFee = parseFloat(d.remaining_fee) || 0;
+                    html += `
                     <div class="col-md-6 col-lg-4">
                         <div class="debtor-card" style="border-right:4px solid #f59e0b;background:white;border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
                             <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap">
@@ -412,41 +491,41 @@
                         </div>
                     </div>
                 `;
-            }
-            document.getElementById('debtorsList').innerHTML = html;
-        }
-
-        // ========== بارگذاری منقضی شده (بر اساس due_date) ==========
-        async function loadExpired() {
-            try {
-                // دریافت شاگردانی که تاریخ انقضای آنها از امروز گذشته است
-                const res = await fetch('/api/fee-expired');
-                let expiredStudents = await res.json();
-
-                console.log("📅 Expired students found:", expiredStudents.length);
-
-                // اعمال فیلترهای جستجو
-                const classId = document.getElementById('expiredClassFilter').value;
-                const search = document.getElementById('expiredSearch').value.toLowerCase();
-                const dateFrom = document.getElementById('expiredDateFrom').value;
-                const dateTo = document.getElementById('expiredDateTo').value;
-
-                if (classId) expiredStudents = expiredStudents.filter(d => d.class_id == classId);
-                if (search) expiredStudents = expiredStudents.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
-                if (dateFrom) expiredStudents = expiredStudents.filter(d => d.due_date >= dateFrom);
-                if (dateTo) expiredStudents = expiredStudents.filter(d => d.due_date <= dateTo);
-
-                if (expiredStudents.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div>';
-                    return;
                 }
+                document.getElementById('debtorsList').innerHTML = html;
+            }
 
-                let html = '';
-                for (const d of expiredStudents) {
-                    const remainingFee = parseFloat(d.remaining_fee) || 0;
-                    const hasDebt = remainingFee > 0;
+            // ========== بارگذاری منقضی شده (بر اساس due_date) ==========
+            async function loadExpired() {
+                try {
+                    // دریافت شاگردانی که تاریخ انقضای آنها از امروز گذشته است
+                    const res = await fetch('/api/fee-expired');
+                    let expiredStudents = await res.json();
 
-                    html += `
+                    console.log("📅 Expired students found:", expiredStudents.length);
+
+                    // اعمال فیلترهای جستجو
+                    const classId = document.getElementById('expiredClassFilter').value;
+                    const search = document.getElementById('expiredSearch').value.toLowerCase();
+                    const dateFrom = document.getElementById('expiredDateFrom').value;
+                    const dateTo = document.getElementById('expiredDateTo').value;
+
+                    if (classId) expiredStudents = expiredStudents.filter(d => d.class_id == classId);
+                    if (search) expiredStudents = expiredStudents.filter(d => d.name.toLowerCase().includes(search) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
+                    if (dateFrom) expiredStudents = expiredStudents.filter(d => d.due_date >= dateFrom);
+                    if (dateTo) expiredStudents = expiredStudents.filter(d => d.due_date <= dateTo);
+
+                    if (expiredStudents.length === 0) {
+                        document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد با فیس منقضی شده وجود ندارد</div></div>';
+                        return;
+                    }
+
+                    let html = '';
+                    for (const d of expiredStudents) {
+                        const remainingFee = parseFloat(d.remaining_fee) || 0;
+                        const hasDebt = remainingFee > 0;
+
+                        html += `
                         <div class="col-md-6 col-lg-4">
                             <div class="expired-card">
                                 <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap">
@@ -488,168 +567,233 @@
                             </div>
                         </div>
                     `;
+                    }
+                    document.getElementById('expiredList').innerHTML = html;
+                } catch (err) {
+                    console.error('Error loading expired:', err);
+                    document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا در بارگیری اطلاعات</div></div>';
                 }
-                document.getElementById('expiredList').innerHTML = html;
-            } catch (err) {
-                console.error('Error loading expired:', err);
-                document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا در بارگیری اطلاعات</div></div>';
             }
-        }
 
-        // ========== باز کردن صفحه پرداخت ==========
-        function openPaymentPage(studentId) {
-            window.location.href = `payment-page.html?id=${studentId}`;
-        }
 
-        // ========== پرداخت کامل یکجا ==========
-        // async function openFullPayment(studentId, amount) {
-        //     if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+            // ========== بارگذاری تاریخچه فیس ==========
+            async function loadFeeHistory() {
+                const classId = document.getElementById('historyClassFilter').value;
+                const search = document.getElementById('historySearch').value.toLowerCase();
+                const dateFrom = document.getElementById('historyDateFrom').value;
+                const dateTo = document.getElementById('historyDateTo').value;
 
-        //     const res = await fetch('/api/collect-fee', {
-        //         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
-        //     });
-        //     const data = await res.json();
-        //     if (res.ok) {
-        //         alert('✅ پرداخت کامل ثبت شد');
-        //         loadDebtors();
-        //         loadExpired();
-        //         if (typeof printReceipt === 'function') {
-        //             printReceipt(
-        //                 data.student_name, data.student_father, data.student_card_id,
-        //                 data.total_fee, data.paid_fee, data.remaining_fee,
-        //                 data.payment_amount, data.payment_date, data.expiry_date,
-        //                 data.receipt_number, 'پرداخت کامل یکجا',
-        //                 '', 'paid', 0, false
-        //             );
-        //         }
-        //     } else { alert(data.error || 'خطا'); }
-        // }
-        // async function openFullPayment(studentId, amount) {
-        //     if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+                const resultDiv = document.getElementById('feeHistoryTable');
+                resultDiv.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></tr>';
 
-        //     const res = await fetch('/api/collect-fee', {
-        //         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
-        //     });
-        //     const data = await res.json();
-        //     if (res.ok) {
-        //         alert('✅ پرداخت کامل ثبت شد');
-        //         // به‌روزرسانی هر دو لیست
-        //         await loadDebtors();
-        //         await loadExpired();
-        //         if (typeof printReceipt === 'function') {
-        //             printReceipt(
-        //                 data.student_name, data.student_father, data.student_card_id,
-        //                 data.total_fee, data.paid_fee, data.remaining_fee,
-        //                 data.payment_amount, data.payment_date, data.expiry_date,
-        //                 data.receipt_number, 'پرداخت کامل یکجا',
-        //                 '', 'paid', 0, false
-        //             );
-        //         }
-        //     } else { alert(data.error || 'خطا'); }
-        // }
+                try {
+                    let url = '/api/fee-payments-history';
+                    const params = [];
+                    if (dateFrom && dateTo) params.push(`start_date=${dateFrom}&end_date=${dateTo}`);
+                    if (params.length) url += `?${params.join('&')}`;
 
-        async function openFullPayment(studentId, amount) {
-            if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+                    const res = await fetch(url);
+                    let payments = await res.json();
 
-            const res = await fetch('/api/collect-fee', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+                    // فیلتر بر اساس صنف و جستجو
+                    if (classId || search) {
+                        const studentsRes = await fetch('/api/students');
+                        let students = await studentsRes.json();
+                        if (classId) students = students.filter(s => s.class_id == classId);
+                        if (search) students = students.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
+                        const studentIds = students.map(s => s.id);
+                        payments = payments.filter(p => studentIds.includes(p.student_id));
+                    }
+
+                    if (payments.length === 0) {
+                        resultDiv.innerHTML = '<td><td colspan="10" class="text-center text-muted py-4">✅ هیچ پرداختی ثبت نشده است</div></div></div></td>';
+                        document.getElementById('historyFooter').style.display = 'none';
+                        return;
+                    }
+
+                    let html = '';
+                    let total = 0;
+                    payments.forEach((p, index) => {
+                        total += parseFloat(p.amount) || 0;
+                        html += `
+                <tr>
+                    <td class="text-dark">${index + 1}</div></div></div>
+                    <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
+                    <td class="text-dark">${p.father_name || '-'}</div></div></div>
+                    <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
+                    <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                    <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+                    <td class="text-dark">${p.issue_date ? formatDate(p.issue_date) : '-'}</div></div></div>
+                    <td class="text-success fw-bold">${(parseFloat(p.amount) || 0).toLocaleString()} AFN</div></div></div>
+                    <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                    <td class="text-dark">${p.notes || '-'}</div></div></div>
+                <tr>
+            `;
+                    });
+
+                    resultDiv.innerHTML = html;
+                    document.getElementById('historyFooter').style.display = 'table-row-group';
+                    document.getElementById('historyTotal').innerHTML = total.toLocaleString() + ' AFN';
+
+                } catch (err) {
+                    console.error('Error loading fee history:', err);
+                    resultDiv.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات</div></div></div></tr>';
+                }
+            }
+            // ========== باز کردن صفحه پرداخت ==========
+            function openPaymentPage(studentId) {
+                window.location.href = `payment-page.html?id=${studentId}`;
+            }
+
+            // ========== پرداخت کامل یکجا ==========
+            // async function openFullPayment(studentId, amount) {
+            //     if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+
+            //     const res = await fetch('/api/collect-fee', {
+            //         method: 'POST', headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+            //     });
+            //     const data = await res.json();
+            //     if (res.ok) {
+            //         alert('✅ پرداخت کامل ثبت شد');
+            //         loadDebtors();
+            //         loadExpired();
+            //         if (typeof printReceipt === 'function') {
+            //             printReceipt(
+            //                 data.student_name, data.student_father, data.student_card_id,
+            //                 data.total_fee, data.paid_fee, data.remaining_fee,
+            //                 data.payment_amount, data.payment_date, data.expiry_date,
+            //                 data.receipt_number, 'پرداخت کامل یکجا',
+            //                 '', 'paid', 0, false
+            //             );
+            //         }
+            //     } else { alert(data.error || 'خطا'); }
+            // }
+            // async function openFullPayment(studentId, amount) {
+            //     if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+
+            //     const res = await fetch('/api/collect-fee', {
+            //         method: 'POST', headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+            //     });
+            //     const data = await res.json();
+            //     if (res.ok) {
+            //         alert('✅ پرداخت کامل ثبت شد');
+            //         // به‌روزرسانی هر دو لیست
+            //         await loadDebtors();
+            //         await loadExpired();
+            //         if (typeof printReceipt === 'function') {
+            //             printReceipt(
+            //                 data.student_name, data.student_father, data.student_card_id,
+            //                 data.total_fee, data.paid_fee, data.remaining_fee,
+            //                 data.payment_amount, data.payment_date, data.expiry_date,
+            //                 data.receipt_number, 'پرداخت کامل یکجا',
+            //                 '', 'paid', 0, false
+            //             );
+            //         }
+            //     } else { alert(data.error || 'خطا'); }
+            // }
+
+            async function openFullPayment(studentId, amount) {
+                if (!confirm(`⚠️ آیا مبلغ ${amount.toLocaleString()} AFN به صورت کامل پرداخت شود؟`)) return;
+
+                const res = await fetch('/api/collect-fee', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, amount, payment_date: new Date().toISOString().split('T')[0], new_due_date: '', notes: 'پرداخت کامل یکجا' })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ پرداخت کامل ثبت شد');
+                    // به‌روزرسانی هر دو لیست
+                    await loadDebtors();
+                    await loadExpired();
+                    if (typeof printReceipt === 'function') {
+                        printReceipt(
+                            data.student_name, data.student_father, data.student_card_id,
+                            data.total_fee, data.paid_fee, data.remaining_fee,
+                            data.payment_amount, data.payment_date, data.expiry_date,
+                            data.receipt_number, 'پرداخت کامل یکجا',
+                            '', 'paid', 0, false
+                        );
+                    }
+                } else { alert(data.error || 'خطا'); }
+            }
+
+            // // ========== باز کردن مودال ویرایش فیس ==========
+            function openEditFeeModal(studentId, totalFee, paidFee, dueDate) {
+                document.getElementById('editStudentId').value = studentId;
+                document.getElementById('editTotalFee').value = totalFee;
+                document.getElementById('editPaidFee').value = paidFee;
+                document.getElementById('editRemainingFee').value = totalFee - paidFee;
+                document.getElementById('editDueDate').value = dueDate ? formatDate(dueDate) : '';
+
+                if (!editFeeModal) editFeeModal = new bootstrap.Modal(document.getElementById('editFeeModal'));
+                editFeeModal.show();
+            }
+
+            function updateEditRemaining() {
+                const total = parseFloat(document.getElementById('editTotalFee').value) || 0;
+                const paid = parseFloat(document.getElementById('editPaidFee').value) || 0;
+                document.getElementById('editRemainingFee').value = total - paid;
+            }
+
+            // ========== ذخیره ویرایش فیس ==========
+            document.getElementById('editFeeForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const studentId = document.getElementById('editStudentId').value;
+                const totalFee = document.getElementById('editTotalFee').value;
+                const paidFee = document.getElementById('editPaidFee').value;
+                const dueDate = document.getElementById('editDueDate').value;
+
+                try {
+                    const res = await fetch(`/api/students/${studentId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ total_fee: totalFee, paid_fee: paidFee, due_date: dueDate })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        alert('✅ اطلاعات فیس با موفقیت به‌روز شد');
+                        if (editFeeModal) editFeeModal.hide();
+                        loadDebtors();
+                        loadExpired();
+                    } else {
+                        alert('❌ خطا: ' + (data.error || 'مشخص نیست'));
+                    }
+                } catch (err) {
+                    alert('❌ خطا در ارتباط با سرور');
+                }
             });
-            const data = await res.json();
-            if (res.ok) {
-                alert('✅ پرداخت کامل ثبت شد');
-                // به‌روزرسانی هر دو لیست
-                await loadDebtors();
-                await loadExpired();
-                if (typeof printReceipt === 'function') {
-                    printReceipt(
-                        data.student_name, data.student_father, data.student_card_id,
-                        data.total_fee, data.paid_fee, data.remaining_fee,
-                        data.payment_amount, data.payment_date, data.expiry_date,
-                        data.receipt_number, 'پرداخت کامل یکجا',
-                        '', 'paid', 0, false
-                    );
+
+            // ========== حذف فیس شاگرد ==========
+            async function deleteStudentFee(studentId) {
+                if (!confirm('⚠️ آیا از حذف تمام اطلاعات فیس این شاگرد اطمینان دارید؟\n\nاین عمل بازگشت‌ناپذیر است.')) return;
+                if (!confirm('برای تأیید نهایی، دوباره کلیک کنید')) return;
+
+                try {
+                    const res = await fetch(`/api/students/${studentId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ total_fee: 0, paid_fee: 0, due_date: null })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        alert('✅ اطلاعات فیس با موفقیت حذف شد');
+                        loadDebtors();
+                        loadExpired();
+                    } else {
+                        alert('❌ خطا: ' + (data.error || 'مشخص نیست'));
+                    }
+                } catch (err) {
+                    alert('❌ خطا در ارتباط با سرور');
                 }
-            } else { alert(data.error || 'خطا'); }
-        }
-
-        // // ========== باز کردن مودال ویرایش فیس ==========
-        function openEditFeeModal(studentId, totalFee, paidFee, dueDate) {
-            document.getElementById('editStudentId').value = studentId;
-            document.getElementById('editTotalFee').value = totalFee;
-            document.getElementById('editPaidFee').value = paidFee;
-            document.getElementById('editRemainingFee').value = totalFee - paidFee;
-            document.getElementById('editDueDate').value = dueDate ? formatDate(dueDate) : '';
-
-            if (!editFeeModal) editFeeModal = new bootstrap.Modal(document.getElementById('editFeeModal'));
-            editFeeModal.show();
-        }
-
-        function updateEditRemaining() {
-            const total = parseFloat(document.getElementById('editTotalFee').value) || 0;
-            const paid = parseFloat(document.getElementById('editPaidFee').value) || 0;
-            document.getElementById('editRemainingFee').value = total - paid;
-        }
-
-        // ========== ذخیره ویرایش فیس ==========
-        document.getElementById('editFeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const studentId = document.getElementById('editStudentId').value;
-            const totalFee = document.getElementById('editTotalFee').value;
-            const paidFee = document.getElementById('editPaidFee').value;
-            const dueDate = document.getElementById('editDueDate').value;
-
-            try {
-                const res = await fetch(`/api/students/${studentId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ total_fee: totalFee, paid_fee: paidFee, due_date: dueDate })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    alert('✅ اطلاعات فیس با موفقیت به‌روز شد');
-                    if (editFeeModal) editFeeModal.hide();
-                    loadDebtors();
-                    loadExpired();
-                } else {
-                    alert('❌ خطا: ' + (data.error || 'مشخص نیست'));
-                }
-            } catch (err) {
-                alert('❌ خطا در ارتباط با سرور');
             }
-        });
 
-        // ========== حذف فیس شاگرد ==========
-        async function deleteStudentFee(studentId) {
-            if (!confirm('⚠️ آیا از حذف تمام اطلاعات فیس این شاگرد اطمینان دارید؟\n\nاین عمل بازگشت‌ناپذیر است.')) return;
-            if (!confirm('برای تأیید نهایی، دوباره کلیک کنید')) return;
-
-            try {
-                const res = await fetch(`/api/students/${studentId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ total_fee: 0, paid_fee: 0, due_date: null })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    alert('✅ اطلاعات فیس با موفقیت حذف شد');
-                    loadDebtors();
-                    loadExpired();
-                } else {
-                    alert('❌ خطا: ' + (data.error || 'مشخص نیست'));
-                }
-            } catch (err) {
-                alert('❌ خطا در ارتباط با سرور');
-            }
-        }
-
-        setupSidebar();
-        loadClasses();
-        loadDebtors();
-        loadExpired();
-    </script>
+            setupSidebar();
+            loadClasses();
+            loadDebtors();
+            loadExpired();
+        </script>
 </body>
 
 </html>
