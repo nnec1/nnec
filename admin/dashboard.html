@@ -328,20 +328,45 @@
             } catch (err) { console.error(err); }
         }
 
-        async function loadRecentTransactions() {
-            try {
-                const res = await fetch('/api/recent-transactions?limit=5');
-                const data = await res.json();
-                if (!data || data.length === 0) {
-                    document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="3" class="text-center text-muted">هیچ تراکنشی ثبت نشده</td></tr>';
-                    return;
-                }
-                document.getElementById('recentTransactions').innerHTML = data.map(t => `
-                    <tr><td>${formatDate(t.payment_date)}</td><td>${t.student_name}</td><td class="text-success">${(t.amount || 0).toLocaleString()} AFN</td></tr>
-                `).join('');
-            } catch (err) { console.error(err); }
-        }
+        // async function loadRecentTransactions() {
+        //     try {
+        //         const res = await fetch('/api/recent-transactions?limit=5');
+        //         const data = await res.json();
+        //         if (!data || data.length === 0) {
+        //             document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="3" class="text-center text-muted">هیچ تراکنشی ثبت نشده</td></tr>';
+        //             return;
+        //         }
+        //         document.getElementById('recentTransactions').innerHTML = data.map(t => `
+        //             <tr><td>${formatDate(t.payment_date)}</td><td>${t.student_name}</td><td class="text-success">${(t.amount || 0).toLocaleString()} AFN</td></tr>
+        //         `).join('');
+        //     } catch (err) { console.error(err); }
+        // }
 
+        async function loadRecentTransactions() {
+    try {
+        const res = await fetch('/api/recent-transactions?limit=5');
+        const data = await res.json();
+        
+        // بررسی اینکه data یک آرایه است
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">هیچ تراکنشی ثبت نشده است</div></div></div></tr>';
+            return;
+        }
+        
+        document.getElementById('recentTransactions').innerHTML = data.map(t => `
+            <tr>
+                <td class="text-dark">${t.payment_date || '-'}</div></div></div>
+                <td class="text-dark">${t.student_name || '-'}</div></div></div>
+                <td class="text-dark">${t.class_name || '-'}</div></div></div>
+                <td class="text-success">${(t.amount || 0).toLocaleString()} AFN</div></div></div>
+                <td class="text-dark"><span class="badge bg-success">درآمد</span></div></div></div>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error('Error loading recent transactions:', err);
+        document.getElementById('recentTransactions').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">خطا در بارگیری تراکنش‌ها</div></div></div></tr>';
+    }
+}
         async function loadFinancialReport(period) {
             document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('period-active'));
             if (event && event.target) event.target.classList.add('period-active');
