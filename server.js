@@ -4700,6 +4700,167 @@ app.get("/api/financial-summary", authenticate, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+// ====================== API بدهکاران (شاگردانی که بدهی دارند) ======================
+app.get("/api/fee-debtors", authenticate, async (req, res) => {
+    const { class_id, search } = req.query;
+    
+    let query = `
+        SELECT 
+            fd.id, fd.student_id, fd.total_fee, fd.paid_fee, fd.remaining_fee, 
+            fd.notes as debt_note, fd.created_at,
+            s.name, s.father_name, s.student_card_id, s.phone, s.class_id,
+            c.class_name
+        FROM fee_debtors fd
+        JOIN students s ON fd.student_id = s.id
+        JOIN classes c ON s.class_id = c.id
+        WHERE fd.remaining_fee > 0 AND s.status = 'active'
+    `;
+    let params = [];
+    
+    if (class_id) {
+        query += ` AND s.class_id = ?`;
+        params.push(class_id);
+    }
+    
+    if (search) {
+        query += ` AND (s.name LIKE ? OR s.student_card_id LIKE ?)`;
+        params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    query += ` ORDER BY fd.created_at DESC`;
+    
+    try {
+        const [results] = await db.execute(query, params);
+        res.json(results);
+    } catch (err) {
+        console.error("Error in /api/fee-debtors:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== API ثبت پرداخت و ایجاد بدهکار ======================
+app.post("/api/create-payment", authenticate, async (req, res) => {
+    const { student_id, total_fee, paid_fee, remaining_fee, payment_date, due_date, notes } = req.body;
+    const receipt_number = generateReceiptNumber();
+    const issueDate = new Date().toISOString().split("T")[0];
+    const paymentAmount = parseFloat(paid_fee);
+    const finalTotalFee = parseFloat(total_fee) || 0;
+    const finalPaidFee = parseFloat(paid_fee) || 0;
+    const finalRemainingFee = finalTotalFee - finalPaidFee;
+    
+    if (isNaN(finalPaidFee) || finalPaidFee <= 0) {
+        return res.status(400).json({ error: "مبلغ پرداختی معتبر وارد کنید" });
+    }
+    
+    try {
+        const [student] = await db.execute(
+            `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+            [student_id]
+        );
+        if (student.length === 0) return res.status(404).json({ error: "شاگرد یافت نشد" });
+        
+        // ثبت پرداخت در fee_payments
+        await db.execute(
+            `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [student_id, finalPaidFee, payment_date, issueDate, receipt_number, notes || null]
+        );
+        
+        // اگر باقی مانده > 0، در جدول بدهکاران ثبت کن
+        if (finalRemainingFee > 0) {
+            // بررسی آیا قبلاً بدهکار ثبت شده
+            const [existing] = await db.execute(
+                `SELECT id FROM fee_debtors WHERE student_id = ?`,
+                [student_id]
+            );
+            
+            if (existing.length > 0) {
+                await db.execute(
+                    `UPDATE fee_debtors SET total_fee = ?, paid_fee = ?, remaining_fee = ?, notes = ?, updated_at = NOW() WHERE student_id = ?`,
+                    [finalTotalFee, finalPaidFee, finalRemainingFee, notes || null, student_id]
+                );
+            } else {
+                await db.execute(
+                    `INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee, notes) 
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [student_id, finalTotalFee, finalPaidFee, finalRemainingFee, notes || null]
+                );
+            }
+        } else {
+            // اگر باقی مانده صفر است، از جدول بدهکاران حذف کن
+            await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [student_id]);
+        }
+        
+        res.json({
+            success: true,
+            receipt_number,
+            student_name: student[0].name || "",
+            student_father: student[0].father_name || "",
+            student_card_id: student[0].student_card_id || "",
+            total_fee: finalTotalFee,
+            paid_fee: finalPaidFee,
+            remaining_fee: finalRemainingFee,
+            payment_amount: finalPaidFee,
+            payment_date: payment_date,
+            issue_date: issueDate,
+            notes: notes || "",
+            has_debt: finalRemainingFee > 0
+        });
+    } catch (err) {
+        console.error("Error in /api/create-payment:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== API پرداخت کامل (تسویه بدهی) ======================
+app.post("/api/clear-debt", authenticate, async (req, res) => {
+    const { student_id, amount, payment_date, notes } = req.body;
+    const receipt_number = generateReceiptNumber();
+    const issueDate = new Date().toISOString().split("T")[0];
+    const paymentAmount = parseFloat(amount);
+    
+    try {
+        // دریافت اطلاعات بدهکار
+        const [debtor] = await db.execute(
+            `SELECT * FROM fee_debtors WHERE student_id = ?`,
+            [student_id]
+        );
+        if (debtor.length === 0) {
+            return res.status(404).json({ error: "شاگرد بدهکار یافت نشد" });
+        }
+        
+        const [student] = await db.execute(
+            `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+            [student_id]
+        );
+        
+        // ثبت پرداخت
+        await db.execute(
+            `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [student_id, paymentAmount, payment_date, issueDate, receipt_number, notes || "تسویه کامل بدهی"]
+        );
+        
+        // حذف از جدول بدهکاران
+        await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [student_id]);
+        
+        res.json({
+            success: true,
+            receipt_number,
+            student_name: student[0].name || "",
+            student_father: student[0].father_name || "",
+            student_card_id: student[0].student_card_id || "",
+            amount: paymentAmount,
+            payment_date: payment_date,
+            issue_date: issueDate
+        });
+    } catch (err) {
+        console.error("Error in /api/clear-debt:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "404.html"));
