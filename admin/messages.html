@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>پیام‌ها | آموزشگاه نوی نور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .message-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-in {
+            border-right: 4px solid #10b981;
+        }
+
+        .message-out {
+            border-right: 4px solid #3b82f6;
+            background: #f8fafc;
+        }
+
+        .reply-box {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
+                        فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="messages.html" class="nav-link active"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
+                    <h3 class="section-title"><i class="fa-solid fa-envelope text-success me-2"></i> پیام‌ها</h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newMessageModal"><i
+                            class="fa-solid fa-plus-circle"></i> پیام جدید</button>
+                </div>
+
+                <div id="messagesList" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال پیام جدید -->
+    <div class="modal fade" id="newMessageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-envelope"></i> پیام جدید</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="messageForm">
+                        <div class="mb-3"><label class="form-label">گیرنده</label><select class="form-select"
+                                id="receiverStudentId" required>
+                                <option value="">انتخاب شاگرد...</option>
+                            </select></div>
+                        <div class="mb-3"><label class="form-label">موضوع</label><input type="text" class="form-control"
+                                id="messageSubject" required></div>
+                        <div class="mb-3"><label class="form-label">متن پیام</label><textarea class="form-control"
+                                id="messageText" rows="5" required></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-paper-plane"></i>
+                            ارسال پیام</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال پاسخ به پیام -->
+    <div class="modal fade" id="replyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-reply"></i> پاسخ به پیام</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="originalMessage" class="alert alert-secondary mb-3"></div>
+                    <form id="replyForm">
+                        <input type="hidden" id="replyToId">
+                        <div class="mb-3"><label class="form-label">متن پاسخ</label><textarea class="form-control"
+                                id="replyText" rows="4" required></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-paper-plane"></i>
+                            ارسال پاسخ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
+        async function loadStudents() {
+            const res = await fetch('/api/students');
+            const students = await res.json();
+            const activeStudents = students.filter(s => s.status === 'active');
+            document.getElementById('receiverStudentId').innerHTML = '<option value="">انتخاب شاگرد...</option>' + activeStudents.map(s => `<option value="${s.id}">${s.name} - ${s.student_card_id}</option>`).join('');
+        }
+
+        async function loadMessages() {
+            const res = await fetch('/api/messages');
+            const messages = await res.json();
+            if (messages.length === 0) { document.getElementById('messagesList').innerHTML = '<div class="alert alert-info text-center">هیچ پیامی وجود ندارد</div>'; return; }
+            document.getElementById('messagesList').innerHTML = messages.map(m => `
+                <div class="message-card ${m.sender_type === 'admin' ? 'message-out' : 'message-in'}">
+                    <div class="d-flex justify-content-between flex-wrap">
+                        <h6><i class="fa-solid fa-user-circle"></i> <strong>${m.sender_name}</strong> → <strong>${m.receiver_name}</strong></h6>
+                        <small class="text-muted">${new Date(m.created_at).toLocaleString('fa-IR')}</small>
+                    </div>
+                    <div class="mt-2"><strong>موضوع:</strong> ${m.subject}</div>
+                    <div class="mt-1"><strong>متن پیام:</strong></div>
+                    <p class="mt-1">${m.message}</p>
+                    ${m.status !== 'replied' && m.receiver_type === 'admin' ? `<button class="btn btn-sm btn-primary mt-2" onclick="openReplyModal(${m.id}, '${m.subject.replace(/'/g, "\\'")}', '${m.message.replace(/'/g, "\\'")}', '${m.sender_name}')"><i class="fa-solid fa-reply"></i> پاسخ</button>` : ''}
+                    ${m.reply_to_id ? `<div class="reply-box mt-2"><small class="text-muted">پاسخ به پیام شماره ${m.reply_to_id}</small></div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function openReplyModal(id, subject, message, senderName) {
+            document.getElementById('replyToId').value = id;
+            document.getElementById('originalMessage').innerHTML = `<strong>از: ${senderName}</strong><br><strong>موضوع:</strong> ${subject}<br><strong>متن:</strong> ${message}`;
+            document.getElementById('replyText').value = '';
+            new bootstrap.Modal(document.getElementById('replyModal')).show();
+        }
+
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                receiver_type: 'admin',
+                receiver_id: 2,
+                subject: document.getElementById('messageSubject').value,
+                message: document.getElementById('messageText').value
+            };
+            const res = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) {
+                alert('پیام با موفقیت ارسال شد');
+                bootstrap.Modal.getInstance(document.getElementById('newMessageModal')).hide();
+                document.getElementById('messageForm').reset();
+                loadMessages();
+            } else alert('خطا');
+        });
+
+        document.getElementById('replyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('replyToId').value;
+            const message = document.getElementById('replyText').value;
+            const res = await fetch(`/api/messages/${id}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+            if (res.ok) {
+                alert('پاسخ با موفقیت ارسال شد');
+                bootstrap.Modal.getInstance(document.getElementById('replyModal')).hide();
+                loadMessages();
+            } else alert('خطا');
+        });
+
+        setupSidebar();
+        loadStudents();
+        loadMessages();
+    </script>
+</body>
+
+</html>

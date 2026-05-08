@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -8,142 +7,28 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="/style.css">
     <style>
-        .present-checkbox {
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-            accent-color: #10b981;
-            transform: scale(1.1);
-            margin: 0;
-        }
-
-        .absent-checkbox {
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-            accent-color: #dc2626;
-            transform: scale(1.1);
-            margin: 0;
-        }
-
-        .late-checkbox {
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-            accent-color: #f59e0b;
-            transform: scale(1.1);
-            margin: 0;
-        }
-
-        .student-photo-small {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #f1f5f9;
-        }
-
-        .attendance-present-row {
-            background-color: #dcfce7 !important;
-            border-right: 4px solid #10b981;
-        }
-
-        .attendance-absent-row {
-            background-color: #fee2e2 !important;
-            border-right: 4px solid #dc2626;
-        }
-
-        .attendance-late-row {
-            background-color: #fef3c7 !important;
-            border-right: 4px solid #f59e0b;
-        }
-
-        .checkbox-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .quick-actions {
-            background: white;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .fee-warning-badge {
-            background: #dc2626;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 20px;
-            margin-right: 8px;
-        }
-
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1050;
-            background: white;
-            border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-        }
-
+        .present-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #10b981; }
+        .absent-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #dc2626; }
+        .late-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #f59e0b; }
+        .student-photo-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #f1f5f9; }
+        .attendance-present-row { background-color: #dcfce7 !important; border-right: 4px solid #10b981; }
+        .attendance-absent-row { background-color: #fee2e2 !important; border-right: 4px solid #dc2626; }
+        .attendance-late-row { background-color: #fef3c7 !important; border-right: 4px solid #f59e0b; }
+        .checkbox-group { display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .quick-actions { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .fee-warning-badge { background: #dc2626; color: white; font-size: 10px; padding: 2px 6px; border-radius: 20px; margin-right: 8px; }
+        .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 1050; background: white; border: none; width: 48px; height: 48px; border-radius: 14px; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; }
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 15px 25px 15px;
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
-
-            .overlay.show {
-                display: block;
-            }
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
         }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -151,8 +36,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-chalkboard-user fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل استاد</h5>
@@ -160,32 +44,24 @@
                 </div>
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
-                    <a href="attendance.html" class="nav-link active"><i class="fa-solid fa-calendar-check"></i>
-                        حاضری</a>
+                    <a href="attendance.html" class="nav-link active"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="fa-solid fa-calendar-check text-success me-2"></i> حاضری شاگردان
-                </h3>
+                <h3 class="section-title"><i class="fa-solid fa-calendar-check text-success me-2"></i> حاضری شاگردان</h3>
 
                 <div class="quick-actions">
                     <div class="row align-items-center">
-                        <div class="col-md-4"><select class="form-select" id="attendanceClass"
-                                onchange="loadAttendanceList()">
-                                <option value="">انتخاب صنف...</option>
-                            </select></div>
+                        <div class="col-md-4"><select class="form-select" id="attendanceClass" onchange="loadAttendanceList()"><option value="">انتخاب صنف...</option></select></div>
                         <div class="col-md-3"><input type="date" class="form-control" id="attendanceDate"></div>
-                        <div class="col-md-3"><button class="btn btn-success w-100" onclick="saveAttendance()"><i
-                                    class="fa-solid fa-save"></i> ذخیره حاضری</button></div>
-                        <div class="col-md-2"><button class="btn btn-secondary w-100" onclick="markAllPresent()"><i
-                                    class="fa-solid fa-check-double"></i> همه حاضر</button></div>
+                        <div class="col-md-3"><button class="btn btn-success w-100" onclick="saveAttendance()"><i class="fa-solid fa-save"></i> ذخیره حاضری</button></div>
+                        <div class="col-md-2"><button class="btn btn-secondary w-100" onclick="markAllPresent()"><i class="fa-solid fa-check-double"></i> همه حاضر</button></div>
                     </div>
                 </div>
 
@@ -195,23 +71,10 @@
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle">
                             <thead class="table-light">
-                                <tr>
-                                    <th style="width:50px">#</th>
-                                    <th>عکس</th>
-                                    <th>آیدی کارت</th>
-                                    <th>نام شاگرد</th>
-                                    <th>نام پدر</th>
-                                    <th>وضعیت فیس</th>
-                                    <th style="width:200px">وضعیت حاضری</th>
-                                    <th>یادداشت</th>
-                                </tr>
+                                <tr><th style="width:50px">#</th><th>عکس</th><th>آیدی کارت</th><th>نام شاگرد</th><th>نام پدر</th><th>وضعیت فیس</th><th style="width:200px">وضعیت حاضری</th><th>یادداشت</th></tr>
                             </thead>
-                            <tbody id="attendanceList">
-                                <tr>
-                                    <td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                            <tbody id="attendanceList"><tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></tr></tbody>
+                        追赶
                     </div>
                 </div>
             </div>
@@ -249,32 +112,39 @@
                 const classes = await res.json();
                 const select = document.getElementById('attendanceClass');
                 if (classes.length === 0) select.innerHTML = '<option value="">هیچ صنفی به شما تخصیص داده نشده</option>';
-                else select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}">${c.class_name} - ${c.subject_name || ''}</option>`).join('');
+                else select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
             } catch (err) { console.error(err); }
         }
 
         async function loadAttendanceList() {
             const classId = document.getElementById('attendanceClass').value;
-            if (!classId) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></tr>'; return; }
+            if (!classId) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></table>'; return; }
             const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
             try {
                 const res = await fetch(`/api/teacher/students/${teacherId}`);
                 let students = await res.json();
                 students = students.filter(s => s.class_id == classId);
                 if (students.length === 0) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">هیچ شاگردی در این صنف وجود ندارد</div></div></div></tr>'; return; }
-                feeExpiredStudents = students.filter(s => s.due_date && new Date(s.due_date) < new Date() && s.remaining_fee > 0);
-                if (feeExpiredStudents.length > 0) document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی شده دارند!`;
-                else document.getElementById('feeWarning').classList.add('d-none');
+                
+                // بررسی شاگردان منقضی شده بر اساس due_date
+                feeExpiredStudents = students.filter(s => s.due_date && new Date(s.due_date) < new Date());
+                if (feeExpiredStudents.length > 0) {
+                    document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی شده دارند! لطفاً به دفتر مراجعه کنید.`;
+                    document.getElementById('feeWarning').classList.remove('d-none');
+                } else {
+                    document.getElementById('feeWarning').classList.add('d-none');
+                }
+                
                 currentAttendance = students.map(s => ({ student_id: s.id, name: s.name, father_name: s.father_name, student_card_id: s.student_card_id, photo: s.photo, fee_expired: s.due_date && new Date(s.due_date) < new Date(), status: 'present', notes: '' }));
                 await checkExistingAttendance(classId, date);
                 document.getElementById('attendanceList').innerHTML = students.map((s, i) => `<tr id="attendance-row-${i}" class="${currentAttendance[i].status === 'present' ? 'attendance-present-row' : (currentAttendance[i].status === 'absent' ? 'attendance-absent-row' : 'attendance-late-row')}">
                     <td class="text-center">${i + 1}</td><td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></td>
                     <td class="text-dark"><strong>${s.student_card_id || '-'}</strong>${currentAttendance[i].fee_expired ? '<span class="fee-warning-badge"><i class="fa-solid fa-circle-exclamation"></i> فیس منقضی</span>' : ''}</td>
-                    <td class="text-dark"><strong>${s.name}</strong></td><td class="text-dark">${s.father_name || '-'}</td>
-                    <td class="text-dark">${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="fa-regular fa-circle-xmark"></i> منقضی</span>' : '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر</span>') : '-'}</td>
-                    <td class="text-center"><div class="checkbox-group"><label class="label-present" onclick="event.stopPropagation()"><input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')"> <i class="fa-solid fa-check-circle"></i> حاضر</label><label class="label-absent" onclick="event.stopPropagation()"><input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')"> <i class="fa-solid fa-xmark-circle"></i> غایب</label><label class="label-late" onclick="event.stopPropagation()"><input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')"> <i class="fa-solid fa-clock"></i> تأخیر</label></div></td>
-                    <td><input type="text" class="form-control form-control-sm" placeholder="یادداشت..." value="${currentAttendance[i].notes || ''}" onchange="currentAttendance[${i}].notes = this.value"></td>
-                </tr>`).join('');
+                    <td class="text-dark"><strong>${s.name}</strong></td><td class="text-dark">${s.father_name || '-'}</div></div></div>
+                    <td class="text-dark">${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="fa-regular fa-circle-xmark"></i> منقضی - به دفتر مراجعه کنید</span>' : '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر</span>') : '-'}</td>
+                    <td class="text-center"><div class="checkbox-group"><label><input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')"> <i class="fa-solid fa-check-circle"></i> حاضر</label><label><input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')"> <i class="fa-solid fa-xmark-circle"></i> غایب</label><label><input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')"> <i class="fa-solid fa-clock"></i> تأخیر</label></div></div></div></div>
+                    <td><input type="text" class="form-control form-control-sm" placeholder="یادداشت..." value="${currentAttendance[i].notes || ''}" onchange="currentAttendance[${i}].notes = this.value"></div></div></div>
+                </div></div></div>`).join('');
             } catch (err) { console.error(err); }
         }
 
@@ -296,8 +166,10 @@
             const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
             try {
                 const res = await fetch('/api/teacher/save-attendance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teacher_id: teacherId, class_id: classId, date, attendance: currentAttendance }) });
-                if (res.ok) { alert('حاضری با موفقیت ذخیره شد'); if (feeExpiredStudents.length > 0) alert(`⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی دارند. لطفاً به مدیریت اطلاع دهید.`); }
-                else alert('خطا در ذخیره حاضری');
+                if (res.ok) {
+                    alert('حاضری با موفقیت ذخیره شد');
+                    if (feeExpiredStudents.length > 0) alert(`⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی دارند. لطفاً به مدیریت اطلاع دهید.`);
+                } else alert('خطا در ذخیره حاضری');
             } catch (err) { alert('خطا در ارتباط با سرور'); }
         }
 
@@ -306,5 +178,4 @@
         loadClasses();
     </script>
 </body>
-
 </html>
