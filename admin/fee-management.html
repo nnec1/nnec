@@ -444,30 +444,31 @@
         }
 
         // ========== تب 2: منقضی شده ==========
-        async function loadExpired() {
-            const classId = document.getElementById('expiredClassFilter').value;
-            const search = document.getElementById('expiredSearch').value.toLowerCase();
-            try {
-                const res = await fetch('/api/fee-expired');
-                let data = await res.json();
-
-                if (!Array.isArray(data)) {
-                    console.error('Expected array but got:', data);
-                    document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">خطا: ' + (data.error || 'unknown') + '</div></div>';
-                    return;
-                }
-
-                if (classId) data = data.filter(d => d.class_id == classId);
-                if (search) data = data.filter(d => (d.name && d.name.toLowerCase().includes(search)) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
-
-                if (!data || data.length === 0) {
-                    document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد منقضی شده وجود ندارد</div></div>';
-                    return;
-                }
-
-                let html = '';
-                for (const d of data) {
-                    html += `<div class="col-md-6 col-lg-4"><div class="expired-card">
+async function loadExpired() {
+    const classId = document.getElementById('expiredClassFilter').value;
+    const search = document.getElementById('expiredSearch').value.toLowerCase();
+    try {
+        const res = await fetch('/api/fee-expired');
+        let data = await res.json();
+        
+        // بررسی اینکه داده آرایه است یا نه
+        if (!Array.isArray(data)) {
+            console.error('Expected array but got:', data);
+            document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا: ' + (data.error || 'unknown') + '</div></div>';
+            return;
+        }
+        
+        if (classId) data = data.filter(d => d.class_id == classId);
+        if (search) data = data.filter(d => (d.name && d.name.toLowerCase().includes(search)) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
+        
+        if (!data || data.length === 0) { 
+            document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد منقضی شده وجود ندارد</div></div>'; 
+            return; 
+        }
+        
+        let html = '';
+        for (const d of data) {
+            html += `<div class="col-md-6 col-lg-4 mb-3"><div class="expired-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
                     <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
@@ -483,20 +484,19 @@
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span><strong>تاریخ انقضا:</strong></span>
-                    <span class="text-danger fw-bold">${formatDate(d.due_date)}</span>
+                    <span class="text-danger fw-bold">${d.due_date || '-'}</span>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
                     <button class="btn btn-sm btn-payment" onclick="openPartialPayment(${d.id}, ${d.remaining_fee || 0})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت</button>
                 </div>
             </div></div>`;
-                }
-                document.getElementById('expiredList').innerHTML = html;
-            } catch (err) {
-                console.error(err);
-                document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا: ' + err.message + '</div></div>';
-            }
         }
-        // ========== تب 3: تاریخچه فیس با سرچ بازه تاریخ ==========
+        document.getElementById('expiredList').innerHTML = html;
+    } catch (err) { 
+        console.error(err); 
+        document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
+    }
+}        // ========== تب 3: تاریخچه فیس با سرچ بازه تاریخ ==========
         async function loadPaymentHistory() {
             const startDate = document.getElementById('historyStartDate').value;
             const endDate = document.getElementById('historyEndDate').value;
