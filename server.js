@@ -589,11 +589,9 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 
 // دریافت شاگردان منقضی شده (تاریخ انقضا از امروز گذشته باشد)
 // ====================== API منقضی شده (fee-expired) ======================
-// ====================== API منقضی شده (fee-expired) ======================
+// شاگردانی که تاریخ آخرین پرداخت آنها بیش از یک ماه پیش است
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
-    // شاگردانی که تاریخ انقضای آنها از امروز گذشته است
-    // باقی مانده از جدول fee_debtors گرفته می‌شود
     const [results] = await db.execute(`
       SELECT 
         s.id, 
@@ -602,66 +600,41 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         s.father_name, 
         s.phone, 
         s.class_id, 
-        s.status, 
-        s.due_date, 
+        s.status,
         c.class_name,
+        MAX(fp.payment_date) as last_payment_date,
+        DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
+        COALESCE(SUM(fp.amount), 0) as total_paid,
         COALESCE(fd.remaining_fee, 0) as remaining_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
+      LEFT JOIN fee_payments fp ON s.id = fp.student_id
       LEFT JOIN fee_debtors fd ON s.id = fd.student_id
-      WHERE s.due_date IS NOT NULL 
-        AND s.due_date < CURDATE() 
-        AND s.status = 'active'
-      ORDER BY s.due_date ASC
+      WHERE s.status = 'active'
+      GROUP BY s.id
+      HAVING due_date < CURDATE() OR due_date IS NULL
+      ORDER BY due_date ASC
     `);
 
-    console.log("✅ /api/fee-expired fetched:", results.length);
-    res.json(results);
+    // فرمت تاریخ برای خروجی
+    const formatted = results.map((s) => ({
+      ...s,
+      due_date: s.due_date
+        ? new Date(s.due_date).toISOString().split("T")[0]
+        : null,
+      last_payment_date: s.last_payment_date
+        ? new Date(s.last_payment_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    console.log("✅ /api/fee-expired fetched:", formatted.length);
+    res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/fee-expired:", err);
-    res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ====================== API منقضی شده برای استاد ======================
-app.get(
-  "/api/teacher/expired-students/:teacherId",
-  authenticate,
-  async (req, res) => {
-    try {
-      const [results] = await db.execute(
-        `
-      SELECT 
-        s.id, 
-        s.student_card_id, 
-        s.name, 
-        s.father_name, 
-        s.phone, 
-        s.class_id, 
-        s.status, 
-        s.due_date, 
-        c.class_name,
-        COALESCE(fd.remaining_fee, 0) as remaining_fee
-      FROM students s
-      JOIN classes c ON s.class_id = c.id
-      LEFT JOIN fee_debtors fd ON s.id = fd.student_id
-      WHERE c.teacher_id = ?
-        AND s.due_date IS NOT NULL 
-        AND s.due_date < CURDATE() 
-        AND s.status = 'active'
-      ORDER BY s.due_date ASC
-    `,
-        [req.params.teacherId],
-      );
-
-      res.json(results);
-    } catch (err) {
-      console.error("Error in /api/teacher/expired-students:", err);
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-// ====================== API بدهکاران (fee-debtors) ======================
 // ====================== API بدهکاران (fee-debtors) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
@@ -686,12 +659,12 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
       WHERE fd.remaining_fee > 0
       ORDER BY fd.created_at DESC
     `);
-    
+
     console.log("✅ /api/fee-debtors fetched:", results.length);
     res.json(results);
   } catch (err) {
     console.error("❌ Error in /api/fee-debtors:", err);
-    res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -699,7 +672,18 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
   let query = `
-    SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name
+    SELECT 
+      fp.id,
+      fp.amount,
+      fp.payment_date,
+      fp.receipt_number,
+      fp.notes,
+      s.id as student_id,
+      s.name as student_name,
+      s.father_name,
+      s.student_card_id,
+      c.class_name,
+      c.id as class_id
     FROM fee_payments fp
     JOIN students s ON fp.student_id = s.id
     JOIN classes c ON s.class_id = c.id
@@ -708,20 +692,29 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   let params = [];
 
   if (start_date && end_date) {
-    query += ` AND fp.payment_date BETWEEN ? AND ?`;
+    query += ` AND DATE(fp.payment_date) BETWEEN ? AND ?`;
     params.push(start_date, end_date);
   }
   query += ` ORDER BY fp.payment_date DESC`;
 
   try {
     const [results] = await db.execute(query, params);
-    console.log("✅ /api/fee-payments-history fetched:", results.length);
-    res.json(results);
+
+    const formatted = results.map((p) => ({
+      ...p,
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    console.log("✅ /api/fee-payments-history fetched:", formatted.length);
+    res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/fee-payments-history:", err);
-    res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: err.message });
   }
-});
+}); // ====================== API بدهکاران (fee-debtors) ======================
+// ====================== API تاریخچه پرداخت ======================
 // دریافت تاریخچه پرداخت‌ها با بازه تاریخ
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
