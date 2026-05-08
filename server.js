@@ -3031,21 +3031,21 @@ app.post("/api/new-payment", authenticate, async (req, res) => {
 //   try {
 //     const [payments] = await db.execute(
 //       `
-//             SELECT 
-//                 fp.id, 
-//                 fp.student_id, 
-//                 fp.amount, 
-//                 fp.payment_date, 
-//                 fp.receipt_number, 
+//             SELECT
+//                 fp.id,
+//                 fp.student_id,
+//                 fp.amount,
+//                 fp.payment_date,
+//                 fp.receipt_number,
 //                 fp.notes,
-//                 s.name as student_name, 
-//                 s.father_name, 
-//                 s.student_card_id, 
+//                 s.name as student_name,
+//                 s.father_name,
+//                 s.student_card_id,
 //                 s.due_date as old_expiry_date,
 //                 c.class_name
-//             FROM fee_payments fp 
-//             JOIN students s ON fp.student_id = s.id 
-//             JOIN classes c ON s.class_id = c.id 
+//             FROM fee_payments fp
+//             JOIN students s ON fp.student_id = s.id
+//             JOIN classes c ON s.class_id = c.id
 //             WHERE DATE(fp.issue_date) = ?
 //             ORDER BY fp.payment_date DESC
 //         `,
@@ -3105,15 +3105,16 @@ app.post("/api/new-payment", authenticate, async (req, res) => {
 // });
 // ====================== API آمار روزمره فیس با نمایش تاریخ انقضا ======================
 app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
-    const { date } = req.query;
-    const targetDate = date || new Date().toISOString().split("T")[0];
+  const { date } = req.query;
+  const targetDate = date || new Date().toISOString().split("T")[0];
 
-    console.log("Fetching daily stats for date:", targetDate);
+  console.log("Fetching daily stats for date:", targetDate);
 
-    try {
-        // دریافت تمام پرداخت‌های تاریخ انتخاب شده
-        // تاریخ انقضا: یک ماه بعد از آخرین پرداخت هر شاگرد
-        const [payments] = await db.execute(`
+  try {
+    // دریافت تمام پرداخت‌های تاریخ انتخاب شده
+    // تاریخ انقضا: یک ماه بعد از آخرین پرداخت هر شاگرد
+    const [payments] = await db.execute(
+      `
             SELECT 
                 fp.id, 
                 fp.student_id, 
@@ -3135,58 +3136,62 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
             JOIN classes c ON s.class_id = c.id 
             WHERE DATE(fp.issue_date) = ?
             ORDER BY fp.payment_date DESC
-        `, [targetDate]);
+        `,
+      [targetDate],
+    );
 
-        console.log("Payments found:", payments.length);
+    console.log("Payments found:", payments.length);
 
-        // محاسبه تاریخ انقضای قبلی برای هر پرداخت (یک ماه بعد از آخرین پرداخت قبلی)
-        const formattedPayments = payments.map((p) => {
-            let oldExpiryDate = null;
-            if (p.previous_payment_date) {
-                const expiryFromPrev = new Date(p.previous_payment_date);
-                expiryFromPrev.setMonth(expiryFromPrev.getMonth() + 1);
-                oldExpiryDate = expiryFromPrev.toISOString().split("T")[0];
-            }
+    // محاسبه تاریخ انقضای قبلی برای هر پرداخت (یک ماه بعد از آخرین پرداخت قبلی)
+    const formattedPayments = payments.map((p) => {
+      let oldExpiryDate = null;
+      if (p.previous_payment_date) {
+        const expiryFromPrev = new Date(p.previous_payment_date);
+        expiryFromPrev.setMonth(expiryFromPrev.getMonth() + 1);
+        oldExpiryDate = expiryFromPrev.toISOString().split("T")[0];
+      }
 
-            let paymentDate = p.payment_date;
-            if (paymentDate) {
-                const d = new Date(paymentDate);
-                if (!isNaN(d.getTime())) {
-                    paymentDate = d.toISOString().split("T")[0];
-                }
-            }
+      let paymentDate = p.payment_date;
+      if (paymentDate) {
+        const d = new Date(paymentDate);
+        if (!isNaN(d.getTime())) {
+          paymentDate = d.toISOString().split("T")[0];
+        }
+      }
 
-            return {
-                id: p.id,
-                student_id: p.student_id,
-                student_name: p.student_name,
-                father_name: p.father_name,
-                student_card_id: p.student_card_id,
-                class_name: p.class_name,
-                amount: parseFloat(p.amount) || 0,
-                payment_date: paymentDate,
-                old_expiry_date: oldExpiryDate,
-                receipt_number: p.receipt_number,
-                notes: p.notes,
-            };
-        });
+      return {
+        id: p.id,
+        student_id: p.student_id,
+        student_name: p.student_name,
+        father_name: p.father_name,
+        student_card_id: p.student_card_id,
+        class_name: p.class_name,
+        amount: parseFloat(p.amount) || 0,
+        payment_date: paymentDate,
+        old_expiry_date: oldExpiryDate,
+        receipt_number: p.receipt_number,
+        notes: p.notes,
+      };
+    });
 
-        const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
-        const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id)).size;
+    const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
+    const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id))
+      .size;
 
-        res.json({
-            success: true,
-            date: targetDate,
-            total_amount: totalToday,
-            student_count: uniqueStudents,
-            transaction_count: formattedPayments.length,
-            payments: formattedPayments,
-        });
-    } catch (err) {
-        console.error("Error in /api/daily-fee-stats-with-expiry:", err);
-        res.status(500).json({ error: err.message });
-    }
+    res.json({
+      success: true,
+      date: targetDate,
+      total_amount: totalToday,
+      student_count: uniqueStudents,
+      transaction_count: formattedPayments.length,
+      payments: formattedPayments,
+    });
+  } catch (err) {
+    console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
+
 app.put("/api/fee-payment/:id", authenticate, async (req, res) => {
   const { payment_date, notes } = req.body;
   const paymentId = req.params.id;
@@ -3778,31 +3783,69 @@ app.post("/api/change-password", authenticate, async (req, res) => {
 
 // ====================== آمار داشبورد ======================
 
+// app.get("/api/dashboard-stats", authenticate, async (req, res) => {
+//   try {
+//     if (req.user.role === "admin") {
+//       const [students] = await db.execute(
+//         `SELECT COUNT(*) as total_students FROM students WHERE status='active'`,
+//       );
+//       const [teachers] = await db.execute(
+//         `SELECT COUNT(*) as total_teachers FROM employees WHERE position='teacher'`,
+//       );
+//       const [debtors] = await db.execute(
+//         `SELECT COUNT(*) as total_debtors FROM students WHERE remaining_fee > 0`,
+//       );
+//       const [revenue] = await db.execute(
+//         `SELECT COALESCE(SUM(amount),0) as monthly_revenue FROM fee_payments WHERE MONTH(payment_date)=MONTH(CURDATE())`,
+//       );
+//       res.json({
+//         total_students: students[0]?.total_students || 0,
+//         total_teachers: teachers[0]?.total_teachers || 0,
+//         total_debtors: debtors[0]?.total_debtors || 0,
+//         monthly_revenue: revenue[0]?.monthly_revenue || 0,
+//       });
+//     } else {
+//       res.json({});
+//     }
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ====================== آمار داشبورد ======================
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
   try {
-    if (req.user.role === "admin") {
-      const [students] = await db.execute(
-        `SELECT COUNT(*) as total_students FROM students WHERE status='active'`,
-      );
-      const [teachers] = await db.execute(
-        `SELECT COUNT(*) as total_teachers FROM employees WHERE position='teacher'`,
-      );
-      const [debtors] = await db.execute(
-        `SELECT COUNT(*) as total_debtors FROM students WHERE remaining_fee > 0`,
-      );
-      const [revenue] = await db.execute(
-        `SELECT COALESCE(SUM(amount),0) as monthly_revenue FROM fee_payments WHERE MONTH(payment_date)=MONTH(CURDATE())`,
-      );
-      res.json({
-        total_students: students[0]?.total_students || 0,
-        total_teachers: teachers[0]?.total_teachers || 0,
-        total_debtors: debtors[0]?.total_debtors || 0,
-        monthly_revenue: revenue[0]?.monthly_revenue || 0,
-      });
-    } else {
-      res.json({});
-    }
+    // تعداد شاگردان فعال
+    const [students] = await db.execute(
+      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+    );
+
+    // تعداد استادان
+    const [teachers] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+
+    // تعداد بدهکاران (بر اساس آخرین پرداخت)
+    const [debtors] = await db.execute(`
+            SELECT COUNT(DISTINCT s.id) as total 
+            FROM students s
+            WHERE s.status = 'active'
+        `);
+
+    // درآمد ماه جاری
+    const [revenue] = await db.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments 
+             WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
+    );
+
+    res.json({
+      total_students: students[0]?.total || 0,
+      total_teachers: teachers[0]?.total || 0,
+      total_debtors: debtors[0]?.total || 0,
+      monthly_revenue: revenue[0]?.total || 0,
+    });
   } catch (err) {
+    console.error("Error in /api/dashboard-stats:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -4278,6 +4321,292 @@ app.get("/api/issue-dates", authenticate, async (req, res) => {
   }
 });
 
+// ====================== خلاصه مالی ======================
+app.get("/api/financial-summary", authenticate, async (req, res) => {
+  const { start_date, end_date, period } = req.query;
+
+  try {
+    let total_income = 0;
+    let total_expense = 0;
+    let transaction_count = 0;
+
+    if (period === "monthly") {
+      // درآمد این ماه
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments 
+                 WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
+      );
+      total_income = income[0]?.total || 0;
+
+      // هزینه این ماه
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses 
+                 WHERE MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())`,
+      );
+      total_expense = expense[0]?.total || 0;
+
+      // تعداد تراکنش‌ها
+      const [count] = await db.execute(
+        `SELECT COUNT(*) as cnt FROM fee_payments 
+                 WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
+      );
+      transaction_count = count[0]?.cnt || 0;
+    } else if (period === "yearly") {
+      // درآمد امسال
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments 
+                 WHERE YEAR(payment_date) = YEAR(CURDATE())`,
+      );
+      total_income = income[0]?.total || 0;
+
+      // هزینه امسال
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses 
+                 WHERE YEAR(expense_date) = YEAR(CURDATE())`,
+      );
+      total_expense = expense[0]?.total || 0;
+
+      // تعداد تراکنش‌ها
+      const [count] = await db.execute(
+        `SELECT COUNT(*) as cnt FROM fee_payments 
+                 WHERE YEAR(payment_date) = YEAR(CURDATE())`,
+      );
+      transaction_count = count[0]?.cnt || 0;
+    } else if (start_date && end_date) {
+      // بازه دلخواه
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments 
+                 WHERE payment_date BETWEEN ? AND ?`,
+        [start_date, end_date],
+      );
+      total_income = income[0]?.total || 0;
+
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses 
+                 WHERE expense_date BETWEEN ? AND ?`,
+        [start_date, end_date],
+      );
+      total_expense = expense[0]?.total || 0;
+
+      const [count] = await db.execute(
+        `SELECT COUNT(*) as cnt FROM fee_payments 
+                 WHERE payment_date BETWEEN ? AND ?`,
+        [start_date, end_date],
+      );
+      transaction_count = count[0]?.cnt || 0;
+    }
+
+    res.json({
+      total_income,
+      total_expense,
+      net_profit: total_income - total_expense,
+      transaction_count,
+    });
+  } catch (err) {
+    console.error("Error in /api/financial-summary:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== گزارش مالی ======================
+app.get("/api/financial-reports", authenticate, async (req, res) => {
+  const { period, start_date, end_date } = req.query;
+  let periods = [],
+    incomes = [],
+    expenses = [];
+
+  try {
+    if (period === "daily") {
+      // 7 روز اخیر
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split("T")[0];
+        periods.push(dateStr);
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
+          [dateStr],
+        );
+        const [expense] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
+          [dateStr],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(expense[0]?.total || 0);
+      }
+    } else if (period === "monthly") {
+      // 12 ماه اخیر
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        periods.push(monthStr);
+
+        const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+          .toISOString()
+          .split("T")[0];
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
+          [startDate, endDate],
+        );
+        const [expense] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
+          [startDate, endDate],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(expense[0]?.total || 0);
+      }
+    } else if (period === "yearly") {
+      // 5 سال اخیر
+      const currentYear = new Date().getFullYear();
+      for (let i = 4; i >= 0; i--) {
+        const year = currentYear - i;
+        periods.push(year.toString());
+
+        const startDate = `${year}-01-01`;
+        const endDate = `${year}-12-31`;
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
+          [startDate, endDate],
+        );
+        const [expense] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
+          [startDate, endDate],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(expense[0]?.total || 0);
+      }
+    } else if (start_date && end_date) {
+      // بازه دلخواه
+      let current = new Date(start_date);
+      const end = new Date(end_date);
+
+      while (current <= end) {
+        const dateStr = current.toISOString().split("T")[0];
+        periods.push(dateStr);
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
+          [dateStr],
+        );
+        const [expense] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
+          [dateStr],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(expense[0]?.total || 0);
+
+        current.setDate(current.getDate() + 1);
+      }
+    }
+
+    const total_income = incomes.reduce((a, b) => a + b, 0);
+    const total_expense = expenses.reduce((a, b) => a + b, 0);
+
+    res.json({
+      periods,
+      incomes,
+      expenses,
+      total_income,
+      total_expense,
+      net_profit: total_income - total_expense,
+    });
+  } catch (err) {
+    console.error("Error in /api/financial-reports:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== آخرین تراکنش‌ها ======================
+app.get("/api/recent-transactions", authenticate, async (req, res) => {
+  const { limit } = req.query;
+  const limitNum = parseInt(limit) || 10;
+
+  try {
+    const [results] = await db.execute(
+      `
+            SELECT fp.*, s.name as student_name, s.student_card_id, c.class_name 
+            FROM fee_payments fp 
+            JOIN students s ON fp.student_id = s.id 
+            JOIN classes c ON s.class_id = c.id 
+            ORDER BY fp.payment_date DESC 
+            LIMIT ?
+        `,
+      [limitNum],
+    );
+
+    const formatted = results.map((p) => {
+      if (p.payment_date) {
+        const d = new Date(p.payment_date);
+        if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
+      }
+      return {
+        id: p.id,
+        student_id: p.student_id,
+        student_name: p.student_name,
+        student_card_id: p.student_card_id,
+        class_name: p.class_name,
+        amount: parseFloat(p.amount) || 0,
+        payment_date: p.payment_date,
+        receipt_number: p.receipt_number,
+        notes: p.notes,
+      };
+    });
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in /api/recent-transactions:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// این API مشابه financial-summary است، فقط برای داشبورد
+app.get("/api/financial-summary", authenticate, async (req, res) => {
+    const { start_date, end_date, period } = req.query;
+    
+    try {
+        let total_income = 0;
+        let total_expense = 0;
+        
+        if (period === 'daily') {
+            const today = new Date().toISOString().split('T')[0];
+            const [income] = await db.execute(
+                `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
+                [today]
+            );
+            const [expense] = await db.execute(
+                `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
+                [today]
+            );
+            total_income = income[0]?.total || 0;
+            total_expense = expense[0]?.total || 0;
+        } else if (start_date && end_date) {
+            const [income] = await db.execute(
+                `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
+                [start_date, end_date]
+            );
+            const [expense] = await db.execute(
+                `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
+                [start_date, end_date]
+            );
+            total_income = income[0]?.total || 0;
+            total_expense = expense[0]?.total || 0;
+        }
+        
+        res.json({
+            total_income,
+            total_expense,
+            net_profit: total_income - total_expense,
+            transaction_count: 0
+        });
+    } catch (err) {
+        console.error("Error in /api/financial-summary:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحه 404 ======================
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "404.html"));
