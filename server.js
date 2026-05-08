@@ -799,18 +799,35 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 // ====================== API شاگردان ======================
 
 // GET /api/students - دریافت لیست همه شاگردان
+// app.get("/api/students", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(`
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
+//                    s.address, s.photo, s.qr_token, s.registration_date,
+//                    c.class_name
+//             FROM students s
+//             LEFT JOIN classes c ON s.class_id = c.id
+//             ORDER BY s.id DESC
+//         `);
+
 app.get("/api/students", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, 
-                   s.address, s.photo, s.qr_token, s.registration_date,
+                   s.status, s.address, s.photo, s.qr_token, s.registration_date,
                    c.class_name 
             FROM students s 
             LEFT JOIN classes c ON s.class_id = c.id 
             ORDER BY s.id DESC
         `);
 
+    //         res.json(results);
+    //     } catch (err) {
+    //         console.error("Error in GET /api/students:", err);
+    //         res.status(500).json({ error: err.message });
+    //     }
+    // });
     // فرمت تاریخ‌ها
     const formattedResults = results.map((student) => {
       if (student.due_date) {
@@ -834,13 +851,33 @@ app.get("/api/students", authenticate, async (req, res) => {
 });
 
 // GET /api/students/:id - دریافت اطلاعات یک شاگرد
+// app.get("/api/students/:id", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(
+//       `
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
+//                    s.address, s.photo, s.qr_token, s.registration_date,
+//                    c.class_name
+//             FROM students s
+//             LEFT JOIN classes c ON s.class_id = c.id
+//             WHERE s.id = ?
+//         `,
+//       [req.params.id],
+//     );
+
+//     if (results.length === 0) {
+//       return res.status(404).json({ error: "شاگرد یافت نشد" });
+//     }
+
+//     const student = results[0];
+
 app.get("/api/students/:id", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
       `
             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status, 
-                   s.address, s.photo, s.qr_token, s.registration_date,
+                   s.status, s.address, s.photo, s.qr_token, s.registration_date,
                    c.class_name 
             FROM students s 
             LEFT JOIN classes c ON s.class_id = c.id 
@@ -853,7 +890,12 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
 
-    const student = results[0];
+    //         res.json(results[0]);
+    //     } catch (err) {
+    //         console.error("Error in GET /api/students/:id:", err);
+    //         res.status(500).json({ error: err.message });
+    //     }
+    // // });
 
     // فرمت تاریخ‌ها
     if (student.due_date) {
@@ -993,6 +1035,181 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
 // );
 
 // POST /api/students - ثبت شاگرد جدید
+// app.post(
+//   "/api/students",
+//   authenticate,
+//   upload.single("photo"),
+//   async (req, res) => {
+//     const {
+//       name,
+//       father_name,
+//       phone,
+//       class_id,
+//       total_fee,
+//       paid_fee,
+//       due_date,
+//       address,
+//       status,
+//       registration_date,
+//       student_card_id,
+//     } = req.body;
+
+//     if (req.user.role === "teacher") {
+//       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+//     }
+
+// app.post("/api/students", authenticate, upload.single("photo"), async (req, res) => {
+//     const { name, father_name, phone, class_id, address, status, registration_date, student_card_id } = req.body;
+
+//     if (req.user.role === "teacher") {
+//         return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
+//     }
+
+//     const autoPass = Math.random().toString(36).substring(2, 8);
+//     const hashedPass = await bcrypt.hash(autoPass, 10);
+//     const qr_token = generateQrToken();
+//     const finalStudentCardId = student_card_id || generateStudentCardId();
+//     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+//     let finalRegDate = registration_date;
+//     if (!finalRegDate) {
+//         finalRegDate = new Date().toISOString().split("T")[0];
+//     }
+
+//     try {
+//         const [result] = await db.execute(`
+//             INSERT INTO students
+//             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+//              status, qr_token, address, photo)
+//             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//         `, [
+//             finalStudentCardId,
+//             name,
+//             toNull(father_name),
+//             toNull(phone),
+//             hashedPass,
+//             class_id,
+//             finalRegDate,
+//             status || "active",
+//             qr_token,
+//             toNull(address),
+//             toNull(photoPath)
+//         ]);
+
+//         const studentId = result.insertId;
+
+//         res.json({
+//             success: true,
+//             id: studentId,
+//             qr_token,
+//             student_card_id: finalStudentCardId,
+//             password: autoPass,
+//             registration_date: finalRegDate,
+//         });
+// //     } catch (err) {
+// //         console.error("Error in POST /api/students:", err);
+// //         res.status(500).json({ error: err.message });
+// //     }
+// // });
+
+//     // تولید اطلاعات خودکار
+//     const autoPass = Math.random().toString(36).substring(2, 8);
+//     const hashedPass = await bcrypt.hash(autoPass, 10);
+//     const qr_token = generateQrToken();
+//     const finalStudentCardId = student_card_id || generateStudentCardId();
+//     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+//     // محاسبات مالی
+//     const finalTotalFee = parseFloat(total_fee) || 0;
+//     const finalPaidFee = parseFloat(paid_fee) || 0;
+//     const finalRemainingFee = finalTotalFee - finalPaidFee;
+
+//     // تاریخ ثبت (تاریخ مراجعه شاگرد) - توسط کاربر انتخاب می‌شود
+//     let finalRegDate = registration_date;
+//     if (!finalRegDate) {
+//       finalRegDate = new Date().toISOString().split("T")[0];
+//     }
+
+//     // تاریخ انقضا: یک ماه بعد از تاریخ ثبت
+//     let finalDueDate = due_date;
+//     if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
+//       const nextMonth = new Date(finalRegDate);
+//       nextMonth.setMonth(nextMonth.getMonth() + 1);
+//       finalDueDate = nextMonth.toISOString().split("T")[0];
+//     }
+
+//     // تاریخ صدور (امروز - تاریخ جاری سیستم)
+//     const today = new Date().toISOString().split("T")[0];
+
+//     try {
+//       const [result] = await db.execute(
+//         `
+//             INSERT INTO students
+//             (student_card_id, name, father_name, phone, password, class_id, registration_date,
+//              status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo)
+//             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//         `,
+//         [
+//           finalStudentCardId,
+//           name,
+//           toNull(father_name),
+//           toNull(phone),
+//           hashedPass,
+//           class_id,
+//           finalRegDate,
+//           status || "active",
+//           qr_token,
+//           finalTotalFee,
+//           finalPaidFee,
+//           finalRemainingFee < 0 ? 0 : finalRemainingFee,
+//           finalDueDate,
+//           toNull(address),
+//           toNull(photoPath),
+//         ],
+//       );
+
+//       const studentId = result.insertId;
+
+//       // ثبت پرداخت اولیه در fee_payments
+//       // payment_date = تاریخ ثبت (تاریخ مراجعه شاگرد)
+//       // issue_date = امروز (تاریخ صدور رسید)
+//       if (finalPaidFee > 0) {
+//         const receipt_number = generateReceiptNumber();
+
+//         await db.execute(
+//           `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes)
+//                  VALUES (?, ?, ?, ?, ?, ?)`,
+//           [
+//             studentId,
+//             finalPaidFee,
+//             finalRegDate,
+//             today,
+//             receipt_number,
+//             "پرداخت اولیه هنگام ثبت‌نام",
+//           ],
+//         );
+//       }
+
+//       res.json({
+//         success: true,
+//         id: studentId,
+//         qr_token,
+//         student_card_id: finalStudentCardId,
+//         password: autoPass,
+//         total_fee: finalTotalFee,
+//         paid_fee: finalPaidFee,
+//         remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
+//         due_date: finalDueDate,
+//         registration_date: finalRegDate,
+//         issue_date: today, // تاریخ صدور = امروز
+//       });
+//     } catch (err) {
+//       console.error("Error in POST /api/students:", err);
+//       res.status(500).json({ error: err.message });
+//     }
+//   },
+// );
+
 app.post(
   "/api/students",
   authenticate,
@@ -1003,9 +1220,6 @@ app.post(
       father_name,
       phone,
       class_id,
-      total_fee,
-      paid_fee,
-      due_date,
       address,
       status,
       registration_date,
@@ -1016,42 +1230,24 @@ app.post(
       return res.status(403).json({ error: "استاد نمی‌تواند شاگرد ثبت کند" });
     }
 
-    // تولید اطلاعات خودکار
     const autoPass = Math.random().toString(36).substring(2, 8);
     const hashedPass = await bcrypt.hash(autoPass, 10);
     const qr_token = generateQrToken();
     const finalStudentCardId = student_card_id || generateStudentCardId();
     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // محاسبات مالی
-    const finalTotalFee = parseFloat(total_fee) || 0;
-    const finalPaidFee = parseFloat(paid_fee) || 0;
-    const finalRemainingFee = finalTotalFee - finalPaidFee;
-
-    // تاریخ ثبت (تاریخ مراجعه شاگرد) - توسط کاربر انتخاب می‌شود
     let finalRegDate = registration_date;
     if (!finalRegDate) {
       finalRegDate = new Date().toISOString().split("T")[0];
     }
-
-    // تاریخ انقضا: یک ماه بعد از تاریخ ثبت
-    let finalDueDate = due_date;
-    if (!finalDueDate && (finalTotalFee > 0 || finalPaidFee > 0)) {
-      const nextMonth = new Date(finalRegDate);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      finalDueDate = nextMonth.toISOString().split("T")[0];
-    }
-
-    // تاریخ صدور (امروز - تاریخ جاری سیستم)
-    const today = new Date().toISOString().split("T")[0];
 
     try {
       const [result] = await db.execute(
         `
             INSERT INTO students 
             (student_card_id, name, father_name, phone, password, class_id, registration_date, 
-             status, qr_token, total_fee, paid_fee, remaining_fee, due_date, address, photo) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             status, qr_token, address, photo) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
           finalStudentCardId,
@@ -1063,10 +1259,6 @@ app.post(
           finalRegDate,
           status || "active",
           qr_token,
-          finalTotalFee,
-          finalPaidFee,
-          finalRemainingFee < 0 ? 0 : finalRemainingFee,
-          finalDueDate,
           toNull(address),
           toNull(photoPath),
         ],
@@ -1074,38 +1266,13 @@ app.post(
 
       const studentId = result.insertId;
 
-      // ثبت پرداخت اولیه در fee_payments
-      // payment_date = تاریخ ثبت (تاریخ مراجعه شاگرد)
-      // issue_date = امروز (تاریخ صدور رسید)
-      if (finalPaidFee > 0) {
-        const receipt_number = generateReceiptNumber();
-
-        await db.execute(
-          `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            studentId,
-            finalPaidFee,
-            finalRegDate,
-            today,
-            receipt_number,
-            "پرداخت اولیه هنگام ثبت‌نام",
-          ],
-        );
-      }
-
       res.json({
         success: true,
         id: studentId,
         qr_token,
         student_card_id: finalStudentCardId,
         password: autoPass,
-        total_fee: finalTotalFee,
-        paid_fee: finalPaidFee,
-        remaining_fee: finalRemainingFee < 0 ? 0 : finalRemainingFee,
-        due_date: finalDueDate,
         registration_date: finalRegDate,
-        issue_date: today, // تاریخ صدور = امروز
       });
     } catch (err) {
       console.error("Error in POST /api/students:", err);
@@ -1115,6 +1282,163 @@ app.post(
 );
 
 // PUT /api/students/:id - ویرایش کامل شاگرد
+// app.put(
+//   "/api/students/:id",
+//   authenticate,
+//   upload.single("photo"),
+//   async (req, res) => {
+//     try {
+//       const studentId = req.params.id;
+//       const updates = req.body;
+
+//       console.log("Updating student ID:", studentId);
+//       console.log("Request body:", updates);
+
+//       // بررسی وجود شاگرد
+//       const [existing] = await db.execute(
+//         `SELECT * FROM students WHERE id = ?`,
+//         [studentId],
+//       );
+//       if (existing.length === 0) {
+//         return res.status(404).json({ error: "شاگرد یافت نشد" });
+//       }
+
+//       // ساخت کوئری داینامیک
+//       const updateFields = [];
+//       const updateValues = [];
+
+//       // فیلدهای پایه
+//       if (updates.name !== undefined) {
+//         updateFields.push("name = ?");
+//         updateValues.push(updates.name || null);
+//       }
+//       if (updates.father_name !== undefined) {
+//         updateFields.push("father_name = ?");
+//         updateValues.push(toNull(updates.father_name));
+//       }
+//       if (updates.phone !== undefined) {
+//         updateFields.push("phone = ?");
+//         updateValues.push(toNull(updates.phone));
+//       }
+//       if (updates.class_id !== undefined) {
+//         updateFields.push("class_id = ?");
+//         updateValues.push(updates.class_id || null);
+//       }
+//       if (updates.status !== undefined) {
+//         updateFields.push("status = ?");
+//         updateValues.push(updates.status || "active");
+//       }
+//       if (updates.address !== undefined) {
+//         updateFields.push("address = ?");
+//         updateValues.push(toNull(updates.address));
+//       }
+//       if (updates.registration_date !== undefined) {
+//         updateFields.push("registration_date = ?");
+//         updateValues.push(updates.registration_date || null);
+//       }
+
+//       // فیلدهای مالی
+//       let totalFeeChanged = false;
+//       let paidFeeChanged = false;
+//       let newTotalFee = null;
+//       let newPaidFee = null;
+
+//       if (updates.total_fee !== undefined) {
+//         newTotalFee = parseFloat(updates.total_fee) || 0;
+//         updateFields.push("total_fee = ?");
+//         updateValues.push(newTotalFee);
+//         totalFeeChanged = true;
+//       }
+//       if (updates.paid_fee !== undefined) {
+//         newPaidFee = parseFloat(updates.paid_fee) || 0;
+//         updateFields.push("paid_fee = ?");
+//         updateValues.push(newPaidFee);
+//         paidFeeChanged = true;
+//       }
+
+//       // محاسبه remaining_fee
+//       if (totalFeeChanged || paidFeeChanged) {
+//         const currentTotal =
+//           newTotalFee !== null
+//             ? newTotalFee
+//             : parseFloat(existing[0].total_fee) || 0;
+//         const currentPaid =
+//           newPaidFee !== null
+//             ? newPaidFee
+//             : parseFloat(existing[0].paid_fee) || 0;
+//         const newRemaining = currentTotal - currentPaid;
+//         updateFields.push("remaining_fee = ?");
+//         updateValues.push(newRemaining < 0 ? 0 : newRemaining);
+//       }
+
+//       // تاریخ انقضا
+//       if (updates.due_date !== undefined) {
+//         updateFields.push("due_date = ?");
+//         updateValues.push(updates.due_date || null);
+//       }
+
+//       // عکس
+//       if (req.file) {
+//         const photoPath = `/uploads/${req.file.filename}`;
+//         updateFields.push("photo = ?");
+//         updateValues.push(photoPath);
+//       }
+
+//       // رمز عبور
+//       if (updates.password && updates.password.trim()) {
+//         const hashed = await bcrypt.hash(updates.password, 10);
+//         updateFields.push("password = ?");
+//         updateValues.push(hashed);
+//       }
+
+//       // اگر هیچ فیلدی برای به روزرسانی وجود ندارد
+//       if (updateFields.length === 0) {
+//         return res.json({ success: true, message: "تغییری اعمال نشد" });
+//       }
+
+//       // ساخت و اجرای کوئری
+//       updateValues.push(studentId);
+//       const query = `UPDATE students SET ${updateFields.join(", ")} WHERE id = ?`;
+
+//       console.log("Query:", query);
+//       console.log("Values:", updateValues);
+
+//       await db.execute(query, updateValues);
+
+//       // دریافت اطلاعات به روز شده
+//       const [updated] = await db.execute(
+//         `SELECT * FROM students WHERE id = ?`,
+//         [studentId],
+//       );
+
+//       // فرمت تاریخ‌ها
+//       if (updated[0].due_date) {
+//         const d = new Date(updated[0].due_date);
+//         if (!isNaN(d.getTime()))
+//           updated[0].due_date = d.toISOString().split("T")[0];
+//       }
+//       if (updated[0].registration_date) {
+//         const d = new Date(updated[0].registration_date);
+//         if (!isNaN(d.getTime()))
+//           updated[0].registration_date = d.toISOString().split("T")[0];
+//       }
+
+//       res.json({
+//         success: true,
+//         message: "اطلاعات با موفقیت به‌روز شد",
+//         student: updated[0],
+//       });
+//     } catch (err) {
+//       console.error("Error in PUT /api/students/:id:", err);
+//       res.status(500).json({
+//         error: err.message,
+//         code: err.code,
+//         sqlMessage: err.sqlMessage,
+//       });
+//     }
+//   },
+// );
+
 app.put(
   "/api/students/:id",
   authenticate,
@@ -1124,23 +1448,17 @@ app.put(
       const studentId = req.params.id;
       const updates = req.body;
 
-      console.log("Updating student ID:", studentId);
-      console.log("Request body:", updates);
-
-      // بررسی وجود شاگرد
       const [existing] = await db.execute(
-        `SELECT * FROM students WHERE id = ?`,
+        `SELECT id FROM students WHERE id = ?`,
         [studentId],
       );
       if (existing.length === 0) {
         return res.status(404).json({ error: "شاگرد یافت نشد" });
       }
 
-      // ساخت کوئری داینامیک
       const updateFields = [];
       const updateValues = [];
 
-      // فیلدهای پایه
       if (updates.name !== undefined) {
         updateFields.push("name = ?");
         updateValues.push(updates.name || null);
@@ -1170,108 +1488,34 @@ app.put(
         updateValues.push(updates.registration_date || null);
       }
 
-      // فیلدهای مالی
-      let totalFeeChanged = false;
-      let paidFeeChanged = false;
-      let newTotalFee = null;
-      let newPaidFee = null;
-
-      if (updates.total_fee !== undefined) {
-        newTotalFee = parseFloat(updates.total_fee) || 0;
-        updateFields.push("total_fee = ?");
-        updateValues.push(newTotalFee);
-        totalFeeChanged = true;
-      }
-      if (updates.paid_fee !== undefined) {
-        newPaidFee = parseFloat(updates.paid_fee) || 0;
-        updateFields.push("paid_fee = ?");
-        updateValues.push(newPaidFee);
-        paidFeeChanged = true;
-      }
-
-      // محاسبه remaining_fee
-      if (totalFeeChanged || paidFeeChanged) {
-        const currentTotal =
-          newTotalFee !== null
-            ? newTotalFee
-            : parseFloat(existing[0].total_fee) || 0;
-        const currentPaid =
-          newPaidFee !== null
-            ? newPaidFee
-            : parseFloat(existing[0].paid_fee) || 0;
-        const newRemaining = currentTotal - currentPaid;
-        updateFields.push("remaining_fee = ?");
-        updateValues.push(newRemaining < 0 ? 0 : newRemaining);
-      }
-
-      // تاریخ انقضا
-      if (updates.due_date !== undefined) {
-        updateFields.push("due_date = ?");
-        updateValues.push(updates.due_date || null);
-      }
-
-      // عکس
       if (req.file) {
         const photoPath = `/uploads/${req.file.filename}`;
         updateFields.push("photo = ?");
         updateValues.push(photoPath);
       }
 
-      // رمز عبور
       if (updates.password && updates.password.trim()) {
         const hashed = await bcrypt.hash(updates.password, 10);
         updateFields.push("password = ?");
         updateValues.push(hashed);
       }
 
-      // اگر هیچ فیلدی برای به روزرسانی وجود ندارد
       if (updateFields.length === 0) {
         return res.json({ success: true, message: "تغییری اعمال نشد" });
       }
 
-      // ساخت و اجرای کوئری
       updateValues.push(studentId);
       const query = `UPDATE students SET ${updateFields.join(", ")} WHERE id = ?`;
 
-      console.log("Query:", query);
-      console.log("Values:", updateValues);
-
       await db.execute(query, updateValues);
 
-      // دریافت اطلاعات به روز شده
-      const [updated] = await db.execute(
-        `SELECT * FROM students WHERE id = ?`,
-        [studentId],
-      );
-
-      // فرمت تاریخ‌ها
-      if (updated[0].due_date) {
-        const d = new Date(updated[0].due_date);
-        if (!isNaN(d.getTime()))
-          updated[0].due_date = d.toISOString().split("T")[0];
-      }
-      if (updated[0].registration_date) {
-        const d = new Date(updated[0].registration_date);
-        if (!isNaN(d.getTime()))
-          updated[0].registration_date = d.toISOString().split("T")[0];
-      }
-
-      res.json({
-        success: true,
-        message: "اطلاعات با موفقیت به‌روز شد",
-        student: updated[0],
-      });
+      res.json({ success: true, message: "اطلاعات با موفقیت به‌روز شد" });
     } catch (err) {
       console.error("Error in PUT /api/students/:id:", err);
-      res.status(500).json({
-        error: err.message,
-        code: err.code,
-        sqlMessage: err.sqlMessage,
-      });
+      res.status(500).json({ error: err.message });
     }
   },
 );
-
 // DELETE /api/students/:id - حذف شاگرد
 app.delete("/api/students/:id", authenticate, async (req, res) => {
   if (req.user.role === "teacher") {
@@ -2186,100 +2430,150 @@ app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
 //     res.status(500).json({ error: err.message });
 //   }
 // });
+// app.post("/api/collect-fee", authenticate, async (req, res) => {
+//   const { student_id, amount, payment_date, new_due_date, notes } = req.body;
+//   const receipt_number = generateReceiptNumber();
+//   const paymentAmount = parseFloat(amount);
+
+//   if (isNaN(paymentAmount) || paymentAmount <= 0) {
+//     return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
+//   }
+
+//   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
+//   const issueDate = new Date().toISOString().split("T")[0];
+
+//   try {
+//     const [student] = await db.execute(
+//       `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+//       [student_id],
+//     );
+//     if (student.length === 0)
+//       return res.status(404).json({ error: "شاگرد یافت نشد" });
+
+//     const currentPaidFee = parseFloat(student[0].paid_fee) || 0;
+//     const currentTotalFee = parseFloat(student[0].total_fee) || 0;
+
+//     let newPaidFee = currentPaidFee + paymentAmount;
+//     let newRemainingFee = currentTotalFee - newPaidFee;
+
+//     let overPaymentNote = "";
+//     if (newRemainingFee < 0) {
+//       overPaymentNote = ` (مبلغ اضافه پرداختی: ${Math.abs(newRemainingFee).toLocaleString()} AFN)`;
+//       newRemainingFee = 0;
+//     }
+
+//     const finalRemainingFee = newRemainingFee < 0 ? 0 : newRemainingFee;
+
+//     // ========== اصلاح مهم: محاسبه تاریخ انقضای جدید ==========
+//     let finalDueDate;
+//     if (new_due_date && new_due_date !== "") {
+//       // اگر کاربر تاریخ انقضای جدید وارد کرده، از همان استفاده کن
+//       finalDueDate = new_due_date;
+//     } else {
+//       // در غیر این صورت، یک ماه بعد از تاریخ پرداخت
+//       const nextMonth = new Date(paymentDate);
+//       nextMonth.setMonth(nextMonth.getMonth() + 1);
+//       finalDueDate = nextMonth.toISOString().split("T")[0];
+//     }
+
+//     console.log(
+//       `📅 Updating due_date for student ${student_id}: ${finalDueDate}`,
+//     );
+
+//     // به‌روزرسانی اطلاعات شاگرد (با due_date جدید)
+//     await db.execute(
+//       `UPDATE students SET paid_fee = ?, remaining_fee = ?, due_date = ? WHERE id = ?`,
+//       [newPaidFee, finalRemainingFee, finalDueDate, student_id],
+//     );
+
+//     const finalNotes =
+//       notes && notes !== "undefined" && notes !== ""
+//         ? notes + overPaymentNote
+//         : overPaymentNote || null;
+
+//     // ثبت پرداخت در جدول fee_payments
+//     await db.execute(
+//       `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
+//              VALUES (?, ?, ?, ?, ?, ?)`,
+//       [
+//         student_id,
+//         paymentAmount,
+//         paymentDate,
+//         issueDate,
+//         receipt_number,
+//         finalNotes === "" ? null : finalNotes,
+//       ],
+//     );
+
+//     res.json({
+//       success: true,
+//       receipt_number,
+//       student_name: student[0].name || "",
+//       student_father: student[0].father_name || "",
+//       student_card_id: student[0].student_card_id || "",
+//       total_fee: currentTotalFee,
+//       paid_fee: newPaidFee,
+//       remaining_fee: finalRemainingFee,
+//       payment_amount: paymentAmount,
+//       payment_date: paymentDate,
+//       issue_date: issueDate,
+//       expiry_date: finalDueDate,
+//       notes: finalNotes || "",
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/collect-fee:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 app.post("/api/collect-fee", authenticate, async (req, res) => {
-  const { student_id, amount, payment_date, new_due_date, notes } = req.body;
-  const receipt_number = generateReceiptNumber();
-  const paymentAmount = parseFloat(amount);
+    const { student_id, amount, payment_date, notes } = req.body;
+    const receipt_number = generateReceiptNumber();
+    const paymentAmount = parseFloat(amount);
 
-  if (isNaN(paymentAmount) || paymentAmount <= 0) {
-    return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
-  }
-
-  const paymentDate = payment_date || new Date().toISOString().split("T")[0];
-  const issueDate = new Date().toISOString().split("T")[0];
-
-  try {
-    const [student] = await db.execute(
-      `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
-      [student_id],
-    );
-    if (student.length === 0)
-      return res.status(404).json({ error: "شاگرد یافت نشد" });
-
-    const currentPaidFee = parseFloat(student[0].paid_fee) || 0;
-    const currentTotalFee = parseFloat(student[0].total_fee) || 0;
-
-    let newPaidFee = currentPaidFee + paymentAmount;
-    let newRemainingFee = currentTotalFee - newPaidFee;
-
-    let overPaymentNote = "";
-    if (newRemainingFee < 0) {
-      overPaymentNote = ` (مبلغ اضافه پرداختی: ${Math.abs(newRemainingFee).toLocaleString()} AFN)`;
-      newRemainingFee = 0;
+    if (isNaN(paymentAmount) || paymentAmount <= 0) {
+        return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
     }
 
-    const finalRemainingFee = newRemainingFee < 0 ? 0 : newRemainingFee;
+    const paymentDate = payment_date || new Date().toISOString().split("T")[0];
+    const issueDate = new Date().toISOString().split("T")[0];
 
-    // ========== اصلاح مهم: محاسبه تاریخ انقضای جدید ==========
-    let finalDueDate;
-    if (new_due_date && new_due_date !== "") {
-      // اگر کاربر تاریخ انقضای جدید وارد کرده، از همان استفاده کن
-      finalDueDate = new_due_date;
-    } else {
-      // در غیر این صورت، یک ماه بعد از تاریخ پرداخت
-      const nextMonth = new Date(paymentDate);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      finalDueDate = nextMonth.toISOString().split("T")[0];
-    }
+    try {
+        const [student] = await db.execute(
+            `SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+            [student_id]
+        );
+        if (student.length === 0) return res.status(404).json({ error: "شاگرد یافت نشد" });
 
-    console.log(
-      `📅 Updating due_date for student ${student_id}: ${finalDueDate}`,
-    );
-
-    // به‌روزرسانی اطلاعات شاگرد (با due_date جدید)
-    await db.execute(
-      `UPDATE students SET paid_fee = ?, remaining_fee = ?, due_date = ? WHERE id = ?`,
-      [newPaidFee, finalRemainingFee, finalDueDate, student_id],
-    );
-
-    const finalNotes =
-      notes && notes !== "undefined" && notes !== ""
-        ? notes + overPaymentNote
-        : overPaymentNote || null;
-
-    // ثبت پرداخت در جدول fee_payments
-    await db.execute(
-      `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
+        // فقط ثبت پرداخت در جدول fee_payments (بدون به‌روزرسانی students)
+        await db.execute(
+            `INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
              VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        student_id,
-        paymentAmount,
-        paymentDate,
-        issueDate,
-        receipt_number,
-        finalNotes === "" ? null : finalNotes,
-      ],
-    );
+            [student_id, paymentAmount, paymentDate, issueDate, receipt_number, notes || null]
+        );
 
-    res.json({
-      success: true,
-      receipt_number,
-      student_name: student[0].name || "",
-      student_father: student[0].father_name || "",
-      student_card_id: student[0].student_card_id || "",
-      total_fee: currentTotalFee,
-      paid_fee: newPaidFee,
-      remaining_fee: finalRemainingFee,
-      payment_amount: paymentAmount,
-      payment_date: paymentDate,
-      issue_date: issueDate,
-      expiry_date: finalDueDate,
-      notes: finalNotes || "",
-    });
-  } catch (err) {
-    console.error("Error in /api/collect-fee:", err);
-    res.status(500).json({ error: err.message });
-  }
+        // محاسبه مجموع پرداختی شاگرد
+        const [totalPaid] = await db.execute(
+            `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE student_id = ?`,
+            [student_id]
+        );
+
+        res.json({
+            success: true,
+            receipt_number,
+            student_name: student[0].name || "",
+            student_father: student[0].father_name || "",
+            student_card_id: student[0].student_card_id || "",
+            total_paid: totalPaid[0]?.total || 0,
+            payment_amount: paymentAmount,
+            payment_date: paymentDate,
+            issue_date: issueDate,
+            notes: notes || "",
+        });
+    } catch (err) {
+        console.error("Error in /api/collect-fee:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // app.post("/api/new-payment", authenticate, async (req, res) => {
@@ -2758,26 +3052,50 @@ app.delete("/api/fee-payment/:id", authenticate, async (req, res) => {
   }
 });
 
+// app.get("/api/fee-defaulters", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(`
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
+//                    c.class_name
+//             FROM students s
+//             JOIN classes c ON s.class_id = c.id
+//             WHERE s.remaining_fee > 0 AND s.status = 'active'
+//             ORDER BY s.remaining_fee DESC
+//         `);
+//     const formatted = results.map((s) => {
+//       if (s.due_date) {
+//         const d = new Date(s.due_date);
+//         if (!isNaN(d.getTime())) s.due_date = d.toISOString().split("T")[0];
+//       }
+//       return s;
+//     });
+//     res.json(formatted);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 app.get("/api/fee-defaulters", authenticate, async (req, res) => {
   try {
+    // شاگردانی که در fee_payments آخرین پرداخت آنها منقضی شده یا بدهی دارند
     const [results] = await db.execute(`
-            SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
-                   c.class_name 
+            SELECT DISTINCT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
+                   s.status, c.class_name,
+                   COALESCE(SUM(fp.amount), 0) as total_paid,
+                   MAX(fp.payment_date) as last_payment_date
             FROM students s 
             JOIN classes c ON s.class_id = c.id 
-            WHERE s.remaining_fee > 0 AND s.status = 'active' 
-            ORDER BY s.remaining_fee DESC
+            LEFT JOIN fee_payments fp ON s.id = fp.student_id
+            WHERE s.status = 'active'
+            GROUP BY s.id
+            HAVING total_paid < 5000  -- این مقدار باید از تنظیمات یا محاسبه شود
+            ORDER BY last_payment_date ASC
         `);
-    const formatted = results.map((s) => {
-      if (s.due_date) {
-        const d = new Date(s.due_date);
-        if (!isNaN(d.getTime())) s.due_date = d.toISOString().split("T")[0];
-      }
-      return s;
-    });
-    res.json(formatted);
+
+    res.json(results);
   } catch (err) {
+    console.error("Error in /api/fee-defaulters:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -2879,40 +3197,73 @@ app.get("/api/fee-defaulters", authenticate, async (req, res) => {
 // });
 
 // ====================== API منقضی شده ======================
+// app.get("/api/fee-expired", authenticate, async (req, res) => {
+//   try {
+//     // دریافت همه شاگردانی که تاریخ انقضای آنها از امروز گذشته است
+//     // صرف نظر از بدهی (حتی اگر remaining_fee = 0 باشد)
+//     const [results] = await db.execute(`
+//             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id,
+//                    s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
+//                    c.class_name
+//             FROM students s
+//             JOIN classes c ON s.class_id = c.id
+//             WHERE s.due_date IS NOT NULL
+//               AND s.due_date < CURDATE()
+//               AND s.status = 'active'
+//             ORDER BY s.due_date ASC
+//         `);
+
+//     // فرمت تاریخ برای خروجی
+//     const formatted = results.map((s) => {
+//       if (s.due_date) {
+//         const d = new Date(s.due_date);
+//         if (!isNaN(d.getTime())) {
+//           s.due_date = d.toISOString().split("T")[0];
+//         }
+//       }
+//       return s;
+//     });
+
+//     console.log(`📅 Expired students found: ${formatted.length}`);
+//     res.json(formatted);
+//   } catch (err) {
+//     console.error("Error in /api/fee-expired:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
-    // دریافت همه شاگردانی که تاریخ انقضای آنها از امروز گذشته است
-    // صرف نظر از بدهی (حتی اگر remaining_fee = 0 باشد)
+    // شاگردانی که آخرین پرداخت آنها بیش از یک ماه پیش بوده است
     const [results] = await db.execute(`
             SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-                   s.total_fee, s.paid_fee, s.remaining_fee, s.due_date, s.status,
-                   c.class_name 
+                   s.status, c.class_name,
+                   MAX(fp.payment_date) as last_payment_date,
+                   DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as expiry_date
             FROM students s 
             JOIN classes c ON s.class_id = c.id 
-            WHERE s.due_date IS NOT NULL 
-              AND s.due_date < CURDATE() 
-              AND s.status = 'active' 
-            ORDER BY s.due_date ASC
+            LEFT JOIN fee_payments fp ON s.id = fp.student_id
+            WHERE s.status = 'active'
+            GROUP BY s.id
+            HAVING expiry_date < CURDATE() OR last_payment_date IS NULL
+            ORDER BY expiry_date ASC
         `);
 
-    // فرمت تاریخ برای خروجی
     const formatted = results.map((s) => {
-      if (s.due_date) {
-        const d = new Date(s.due_date);
-        if (!isNaN(d.getTime())) {
-          s.due_date = d.toISOString().split("T")[0];
-        }
+      if (s.expiry_date) {
+        const d = new Date(s.expiry_date);
+        if (!isNaN(d.getTime())) s.expiry_date = d.toISOString().split("T")[0];
       }
       return s;
     });
 
-    console.log(`📅 Expired students found: ${formatted.length}`);
     res.json(formatted);
   } catch (err) {
     console.error("Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 // ====================== API تخصیص استاد ======================
 
 app.get("/api/teacher-classes", authenticate, async (req, res) => {
