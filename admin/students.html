@@ -68,19 +68,6 @@
             border: none;
         }
 
-        .btn-payment-sm {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: white;
-        }
-
-        .btn-payment-sm:hover {
-            transform: translateY(-2px);
-        }
-
         .barcode-preview {
             background: #f8fafc;
             border-radius: 12px;
@@ -147,11 +134,6 @@
             .overlay.show {
                 display: block;
             }
-
-            .btn-payment-sm {
-                padding: 3px 8px;
-                font-size: 10px;
-            }
         }
     </style>
 </head>
@@ -174,16 +156,14 @@
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="students.html" class="nav-link active"><i class="fa-solid fa-graduation-cap"></i>
                         شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> فارغ
-                        التحصیلان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
                     <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
                         فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
                     <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
@@ -253,65 +233,43 @@
                     <form id="studentForm" enctype="multipart/form-data">
                         <input type="hidden" id="stuId">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">نام کامل <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="stuName" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">نام پدر <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="stuFather" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">شماره تماس</label>
-                                <input type="text" class="form-control" id="stuPhone">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">صنف <span class="text-danger">*</span></label>
-                                <select class="form-select" id="stuClassId" required>
+                            <div class="col-md-6"><label class="form-label">نام کامل <span
+                                        class="text-danger">*</span></label><input type="text" class="form-control"
+                                    id="stuName" required></div>
+                            <div class="col-md-6"><label class="form-label">نام پدر <span
+                                        class="text-danger">*</span></label><input type="text" class="form-control"
+                                    id="stuFather" required></div>
+                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
+                                    class="form-control" id="stuPhone"></div>
+                            <div class="col-md-6"><label class="form-label">صنف <span
+                                        class="text-danger">*</span></label><select class="form-select" id="stuClassId"
+                                    required>
                                     <option value="">انتخاب صنف...</option>
-                                </select>
+                                </select></div>
+                            <div class="col-md-6"><label class="form-label">تاریخ مراجعه</label><input type="date"
+                                    class="form-control" id="stuRegDate"><small class="text-muted">خالی = امروز</small>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">تاریخ ثبت</label>
-                                <input type="date" class="form-control" id="stuRegDate">
-                                <small class="text-muted">خالی = امروز</small>
+                            <div class="col-md-12"><label class="form-label"><i class="fa-solid fa-barcode"></i> آیدی
+                                    کارت / بارکد</label>
+                                <div class="barcode-preview" id="barcodePreview">در حال تولید...</div><small
+                                    class="text-muted">به طور خودکار تولید می‌شود</small>
                             </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label"><i class="fa-solid fa-barcode"></i> آیدی کارت / بارکد</label>
-                                <div class="barcode-preview" id="barcodePreview">
-                                    در حال تولید...
-                                </div>
-                                <small class="text-muted">به طور خودکار تولید می‌شود</small>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">وضعیت</label>
-                                <select class="form-select" id="stuStatus">
+                            <div class="col-md-6"><label class="form-label">وضعیت</label><select class="form-select"
+                                    id="stuStatus">
                                     <option value="active">فعال</option>
                                     <option value="graduated">فارغ‌التحصیل</option>
                                     <option value="disabled">غیرفعال</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">آدرس</label>
-                                <textarea class="form-control" id="stuAddress" rows="2"></textarea>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">عکس شاگرد</label>
-                                <input type="file" class="form-control" id="stuPhoto" accept="image/*">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">رمز عبور (خالی = خودکار)</label>
-                                <input type="password" class="form-control" id="stuPassword"
-                                    placeholder="در صورت خالی، رمز خودکار تولید می‌شود">
-                            </div>
+                                </select></div>
+                            <div class="col-12"><label class="form-label">آدرس</label><textarea class="form-control"
+                                    id="stuAddress" rows="2"></textarea></div>
+                            <div class="col-12"><label class="form-label">عکس شاگرد</label><input type="file"
+                                    class="form-control" id="stuPhoto" accept="image/*"></div>
+                            <div class="col-12"><label class="form-label">رمز عبور (خالی = خودکار)</label><input
+                                    type="password" class="form-control" id="stuPassword"
+                                    placeholder="در صورت خالی، رمز خودکار تولید می‌شود"></div>
                         </div>
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
-                                شاگرد</button>
-                        </div>
+                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i
+                                    class="fa-solid fa-save"></i> ذخیره شاگرد</button></div>
                     </form>
                 </div>
             </div>
@@ -341,13 +299,8 @@
 
         function formatDate(dateString) {
             if (!dateString) return '-';
-            try {
-                let d;
-                if (dateString.includes('T')) d = new Date(dateString.split('T')[0]);
-                else d = new Date(dateString);
-                if (isNaN(d.getTime())) return dateString;
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            } catch (e) { return dateString; }
+            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+            catch (e) { return dateString; }
         }
 
         function setupSidebar() {
@@ -367,7 +320,7 @@
                 const select = document.getElementById('stuClassId');
                 const filterSelect = document.getElementById('filterClass');
                 if (classes && classes.length > 0) {
-                    const options = classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                    const options = classes.map(c => `<option value="${c.id}">${c.class_name} - ${c.teacher_name || 'بدون استاد'}</option>`).join('');
                     select.innerHTML = '<option value="">انتخاب صنف...</option>' + options;
                     filterSelect.innerHTML = '<option value="">همه صنف‌ها</option>' + options;
                 }
@@ -381,55 +334,19 @@
                 const classId = document.getElementById('filterClass').value;
                 const status = document.getElementById('filterStatus').value;
                 const search = document.getElementById('searchStudent').value.toLowerCase();
-
                 if (classId) students = students.filter(s => s.class_id == classId);
                 if (status) students = students.filter(s => s.status === status);
                 if (search) students = students.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
-
-                if (!students || students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
-                    return;
-                }
-
+                if (!students || students.length === 0) { document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></td>'; return; }
                 document.getElementById('studentsList').innerHTML = students.map(s => {
                     let statusClass = s.status === 'active' ? 'status-active' : (s.status === 'graduated' ? 'status-graduated' : 'status-disabled');
                     let statusText = s.status === 'active' ? 'فعال' : (s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال');
-                    return `
-                        <tr>
-                            <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
-                            <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></div></div></div>
-                            <td class="text-dark">${s.name}</div></div></div>
-                            <td class="text-dark">${s.father_name || '-'}</div></div></div>
-                            <td class="text-dark">${s.phone || '-'}</div></div></div>
-                            <td class="text-dark">${s.class_name || '-'}</div></div></div>
-                            <td class="text-dark">${s.registration_date ? formatDate(s.registration_date) : '-'}</div></div></div>
-                            <td><span class="${statusClass}">${statusText}</span></div></div></div>
-                            <td>
-                                <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="fa-solid fa-pencil"></i> ویرایش</button>
-                                <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="fa-solid fa-trash"></i> حذف</button>
-                                <button class="btn btn-sm btn-payment-sm" onclick="goToPayment(${s.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت فیس</button>
-                                <button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i> کارت</button>
-                             </div></div></div>
-                        </div></div></div>
-                    `;
+                    return `<tr><td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></td><td class="text-dark"><strong>${s.student_card_id || '-'}</strong></td><td class="text-dark">${s.name}</td><td class="text-dark">${s.father_name || '-'}</td><td class="text-dark">${s.phone || '-'}</td><td class="text-dark">${s.class_name || '-'}</td><td class="text-dark">${s.registration_date ? formatDate(s.registration_date) : '-'}</td><td><span class="${statusClass}">${statusText}</span></td><td><button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="fa-solid fa-pencil"></i> ویرایش</button><button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="fa-solid fa-trash"></i> حذف</button><button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i> کارت</button></td></tr>`;
                 }).join('');
-            } catch (err) {
-                console.error('Error loading students:', err);
-                document.getElementById('studentsList').innerHTML = '<table><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
-            }
+            } catch (err) { console.error('Error loading students:', err); document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></td>'; }
         }
 
-        // رفتن به صفحه پرداخت فیس برای شاگرد انتخاب شده
-        function goToPayment(studentId) {
-            window.location.href = `payment-page.html?id=${studentId}`;
-        }
-
-        async function deleteStudent(id) {
-            if (confirm('حذف شود؟')) {
-                await fetch(`/api/students/${id}`, { method: 'DELETE' });
-                loadStudents();
-            }
-        }
+        async function deleteStudent(id) { if (confirm('حذف شود؟')) { await fetch(`/api/students/${id}`, { method: 'DELETE' }); loadStudents(); } }
 
         async function editStudent(id) {
             try {
@@ -446,9 +363,7 @@
                 document.getElementById('barcodePreview').innerHTML = `<i class="fa-solid fa-barcode"></i> ${s.student_card_id || generateStudentCardId()}`;
                 document.getElementById('studentModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش شاگرد';
                 if (studentModal) studentModal.show();
-            } catch (err) {
-                alert('خطا در بارگیری اطلاعات');
-            }
+            } catch (err) { alert('خطا در بارگیری اطلاعات'); }
         }
 
         function resetStudentForm() {
@@ -462,10 +377,8 @@
 
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const regDate = document.getElementById('stuRegDate').value;
             const today = new Date().toISOString().split('T')[0];
-
             const formData = new FormData();
             formData.append('name', document.getElementById('stuName').value);
             formData.append('father_name', document.getElementById('stuFather').value);
@@ -475,13 +388,10 @@
             formData.append('status', document.getElementById('stuStatus').value);
             formData.append('address', document.getElementById('stuAddress').value);
             formData.append('student_card_id', generatedCardId);
-
             if (document.getElementById('stuPhoto').files[0]) formData.append('photo', document.getElementById('stuPhoto').files[0]);
             if (document.getElementById('stuPassword').value) formData.append('password', document.getElementById('stuPassword').value);
-
             const url = currentEditId ? `/api/students/${currentEditId}` : '/api/students';
             const method = currentEditId ? 'PUT' : 'POST';
-
             try {
                 const res = await fetch(url, { method, body: formData });
                 const data = await res.json();
@@ -490,16 +400,9 @@
                     if (studentModal) studentModal.hide();
                     loadStudents();
                     resetStudentForm();
-
-                    if (!currentEditId && data.id) {
-                        window.open(`/student-card.html?id=${data.id}`, '_blank');
-                    }
-                } else {
-                    alert(data.error || 'خطا در ثبت شاگرد');
-                }
-            } catch (err) {
-                alert('خطا در ارتباط با سرور');
-            }
+                    if (!currentEditId && data.id) { window.open(`/student-card.html?id=${data.id}`, '_blank'); }
+                } else { alert(data.error || 'خطا در ثبت شاگرد'); }
+            } catch (err) { alert('خطا در ارتباط با سرور'); }
         });
 
         resetStudentForm();
