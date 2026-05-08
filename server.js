@@ -616,11 +616,8 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
 });
 
 app.post("/api/collect-fee", authenticate, async (req, res) => {
-  const { student_id, amount, payment_date, notes } = req.body;
-
-  if (!student_id) {
-    return res.status(400).json({ error: "شناسه شاگرد الزامی است" });
-  }
+  const { student_id, amount, total_fee, payment_date, due_date, notes } =
+    req.body;
 
   const paymentAmount = parseFloat(amount);
   if (isNaN(paymentAmount) || paymentAmount <= 0) {
@@ -629,79 +626,18 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 
   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
   const issueDate = new Date().toISOString().split("T")[0];
-  const receipt_number =
-    "RCP-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+  const receipt_number = generateReceiptNumber();
 
-  // محاسبه تاریخ انقضای جدید (یک ماه بعد از تاریخ پرداخت)
-  const newDueDate = new Date(paymentDate);
-  newDueDate.setMonth(newDueDate.getMonth() + 1);
-  const finalDueDate = newDueDate.toISOString().split("T")[0];
+  // تعیین تاریخ انقضا
+  let finalDueDate = due_date;
+  if (!finalDueDate || finalDueDate === "") {
+    const nextMonth = new Date(paymentDate);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    finalDueDate = nextMonth.toISOString().split("T")[0];
+  }
 
   try {
-    const [student] = await db.execute(
-      `
-      SELECT s.id, s.name, s.father_name, s.student_card_id, c.class_name 
-      FROM students s 
-      JOIN classes c ON s.class_id = c.id 
-      WHERE s.id = ?
-    `,
-      [student_id],
-    );
-
-    if (student.length === 0) {
-      return res.status(404).json({ error: "شاگرد یافت نشد" });
-    }
-
-    // 1. ثبت پرداخت جدید در fee_payments
-    await db.execute(
-      `
-      INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
-      VALUES (?, ?, ?, ?, ?, ?)
-    `,
-      [
-        student_id,
-        paymentAmount,
-        paymentDate,
-        issueDate,
-        receipt_number,
-        notes || null,
-      ],
-    );
-
-    // 2. دریافت مبلغ باقی مانده فعلی از fee_debtors
-    const [debtor] = await db.execute(
-      `
-      SELECT remaining_fee FROM fee_debtors WHERE student_id = ?
-    `,
-      [student_id],
-    );
-
-    let currentRemaining =
-      debtor.length > 0 ? parseFloat(debtor[0].remaining_fee) || 0 : 0;
-    let newRemaining = currentRemaining - paymentAmount;
-    if (newRemaining < 0) newRemaining = 0;
-
-    // 3. بروزرسانی fee_debtors با due_date جدید
-    if (newRemaining > 0) {
-      await db.execute(
-        `
-        INSERT INTO fee_debtors (student_id, remaining_fee, due_date, notes, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, NOW(), NOW()) 
-        ON DUPLICATE KEY UPDATE 
-        remaining_fee = VALUES(remaining_fee), 
-        due_date = VALUES(due_date),
-        notes = VALUES(notes), 
-        updated_at = NOW()
-      `,
-        [student_id, newRemaining, finalDueDate, notes || null],
-      );
-    } else {
-      // اگر بدهی تسویه شده، از fee_debtors حذف کن
-      await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [
-        student_id,
-      ]);
-    }
-
+    // دریافت مجموع پرداختی قبلی
     const [totalPaidResult] = await db.execute(
       `
       SELECT COALESCE(SUM(amount), 0) as total_paid 
@@ -711,21 +647,60 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       [student_id],
     );
 
-    const totalPaid = parseFloat(totalPaidResult[0]?.total_paid) || 0;
+    const previousTotalPaid = parseFloat(totalPaidResult[0]?.total_paid) || 0;
+    const newPaidFee = previousTotalPaid + paymentAmount;
+    const finalTotalFee =
+      parseFloat(total_fee) || previousTotalPaid + paymentAmount;
+    const newRemaining = finalTotalFee - newPaidFee;
+
+    // ثبت پرداخت
+    await db.execute(
+      `
+      INSERT INTO fee_payments 
+      (student_id, amount, total_fee, paid_fee, remaining_after, 
+       payment_date, due_date, issue_date, receipt_number, notes) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+      [
+        student_id,
+        paymentAmount,
+        finalTotalFee,
+        newPaidFee,
+        newRemaining > 0 ? newRemaining : 0,
+        paymentDate,
+        finalDueDate,
+        issueDate,
+        receipt_number,
+        notes || null,
+      ],
+    );
+
+    // دریافت اطلاعات شاگرد
+    const [student] = await db.execute(
+      `
+      SELECT s.name, s.father_name, s.student_card_id, c.class_name 
+      FROM students s 
+      JOIN classes c ON s.class_id = c.id 
+      WHERE s.id = ?
+    `,
+      [student_id],
+    );
 
     res.json({
       success: true,
       receipt_number: receipt_number,
-      student_name: student[0].name || "",
-      student_father: student[0].father_name || "",
-      student_card_id: student[0].student_card_id || "",
-      total_paid: totalPaid,
+      student_name: student[0]?.name || "",
+      student_father: student[0]?.father_name || "",
+      student_card_id: student[0]?.student_card_id || "",
+      class_name: student[0]?.class_name || "",
+      total_fee: finalTotalFee,
+      paid_fee: newPaidFee,
+      remaining_fee: newRemaining > 0 ? newRemaining : 0,
       payment_amount: paymentAmount,
       payment_date: paymentDate,
       issue_date: issueDate,
       expiry_date: finalDueDate,
       notes: notes || "",
-      remaining_fee: newRemaining,
     });
   } catch (err) {
     console.error("❌ Error in /api/collect-fee:", err);
