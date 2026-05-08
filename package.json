@@ -1,6 +1,7 @@
 {
   "name": "lms-project",
   "version": "3.0.0",
+  "type": "module",
   "description": "سیستم کامل مدیریت آموزشگاه",
   "main": "server.js",
   "scripts": {
