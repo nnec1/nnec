@@ -541,11 +541,10 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 // ====================== API بدهکاران (بر اساس fee_payments) ======================
 // ====================== API بدهکاران ======================
 // ====================== بدهکاران (بر اساس آخرین پرداخت هر شاگرد) ======================
+// ====================== بدهکاران ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
-  const { class_id, search } = req.query;
-
   try {
-    let query = `
+    const [results] = await db.execute(`
       SELECT 
         s.id,
         s.student_card_id,
@@ -554,36 +553,18 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
         s.phone,
         s.class_id,
         c.class_name,
+        fp.remaining_after,
         fp.total_fee,
         fp.paid_fee,
-        fp.remaining_after as remaining_fee,
-        fp.due_date,
-        fp.payment_date as last_payment_date,
-        fp.issue_date
+        fp.due_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
       JOIN fee_payments fp ON s.id = fp.student_id
-      WHERE s.status = 'active'
-        AND fp.remaining_after > 0
-    `;
+      WHERE fp.remaining_after > 0
+      ORDER BY fp.remaining_after DESC
+    `);
 
-    let params = [];
-
-    if (class_id && class_id !== "") {
-      query += ` AND s.class_id = ?`;
-      params.push(class_id);
-    }
-
-    if (search && search !== "") {
-      query += ` AND (s.name LIKE ? OR s.student_card_id LIKE ?)`;
-      params.push(`%${search}%`, `%${search}%`);
-    }
-
-    query += ` ORDER BY fp.remaining_after DESC`;
-
-    const [results] = await db.execute(query, params);
-
-    console.log(`✅ Debtors found: ${results.length}`);
+    console.log("✅ Debtors found:", results.length);
     res.json(results);
   } catch (err) {
     console.error("❌ Error in /api/fee-debtors:", err);
@@ -593,10 +574,8 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 
 // ====================== منقضی شده ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
-  const { class_id, search } = req.query;
-  
   try {
-    let query = `
+    const [results] = await db.execute(`
       SELECT 
         s.id,
         s.student_card_id,
@@ -605,46 +584,24 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         s.phone,
         s.class_id,
         c.class_name,
+        fp.remaining_after,
         fp.total_fee,
         fp.paid_fee,
-        fp.remaining_after as remaining_fee,
-        fp.due_date,
-        fp.payment_date as last_payment_date,
-        fp.issue_date
+        fp.due_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
       JOIN fee_payments fp ON s.id = fp.student_id
-      WHERE s.status = 'active'
-        AND fp.due_date IS NOT NULL
-        AND fp.due_date < CURDATE()
-    `;
-    
-    let params = [];
-    
-    if (class_id && class_id !== '') {
-      query += ` AND s.class_id = ?`;
-      params.push(class_id);
-    }
-    
-    if (search && search !== '') {
-      query += ` AND (s.name LIKE ? OR s.student_card_id LIKE ?)`;
-      params.push(`%${search}%`, `%${search}%`);
-    }
-    
-    query += ` ORDER BY fp.due_date ASC`;
-    
-    const [results] = await db.execute(query, params);
-    
-    console.log(`✅ Expired students found: ${results.length}`);
+      WHERE fp.due_date < CURDATE()
+      ORDER BY fp.due_date ASC
+    `);
+
+    console.log("✅ Expired found:", results.length);
     res.json(results);
   } catch (err) {
     console.error("❌ Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
 });
-// 2. دریافت منقضی شده‌ها
-// ====================== API منقضی شده (fee-expired) ======================
-// ====================== API منقضی شده (fee-expired) ======================
 
 // 3. دریافت تاریخچه پرداخت‌ها
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
