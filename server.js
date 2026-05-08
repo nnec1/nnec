@@ -375,26 +375,29 @@ app.get("/api/students", authenticate, async (req, res) => {
 });
 app.get("/api/students/:id", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
              s.status, s.address, s.photo, s.qr_token, s.registration_date,
              c.class_name 
       FROM students s 
       LEFT JOIN classes c ON s.class_id = c.id 
       WHERE s.id = ?
-    `, [req.params.id]);
-    
+    `,
+      [req.params.id],
+    );
+
     if (results.length === 0) {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
-    
+
     const student = results[0];
     if (student.registration_date) {
       const d = new Date(student.registration_date);
       if (!isNaN(d.getTime()))
         student.registration_date = d.toISOString().split("T")[0];
     }
-    
+
     res.json(student);
   } catch (err) {
     console.error("❌ Error in GET /api/students/:id:", err);
@@ -467,12 +470,10 @@ app.put(
   "/api/student/update-profile/:studentId",
   authenticate,
   async (req, res) => {
-    return res
-      .status(403)
-      .json({
-        error:
-          "شاگرد نمی‌تواند پروفایل خود را ویرایش کند. برای تغییر اطلاعات به مدیریت مراجعه کنید.",
-      });
+    return res.status(403).json({
+      error:
+        "شاگرد نمی‌تواند پروفایل خود را ویرایش کند. برای تغییر اطلاعات به مدیریت مراجعه کنید.",
+    });
   },
 );
 
@@ -588,17 +589,32 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 
 // دریافت شاگردان منقضی شده (تاریخ انقضا از امروز گذشته باشد)
 // ====================== API منقضی شده (fee-expired) ======================
+// ====================== API منقضی شده (fee-expired) ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
+    // شاگردانی که تاریخ انقضای آنها از امروز گذشته است
+    // باقی مانده از جدول fee_debtors گرفته می‌شود
     const [results] = await db.execute(`
-      SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
-             s.status, s.remaining_fee, s.due_date, c.class_name
+      SELECT 
+        s.id, 
+        s.student_card_id, 
+        s.name, 
+        s.father_name, 
+        s.phone, 
+        s.class_id, 
+        s.status, 
+        s.due_date, 
+        c.class_name,
+        COALESCE(fd.remaining_fee, 0) as remaining_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      WHERE s.due_date IS NOT NULL AND s.due_date < CURDATE() AND s.status = 'active'
+      LEFT JOIN fee_debtors fd ON s.id = fd.student_id
+      WHERE s.due_date IS NOT NULL 
+        AND s.due_date < CURDATE() 
+        AND s.status = 'active'
       ORDER BY s.due_date ASC
     `);
-    
+
     console.log("✅ /api/fee-expired fetched:", results.length);
     res.json(results);
   } catch (err) {
@@ -607,11 +623,63 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
   }
 });
 
+// ====================== API منقضی شده برای استاد ======================
+app.get(
+  "/api/teacher/expired-students/:teacherId",
+  authenticate,
+  async (req, res) => {
+    try {
+      const [results] = await db.execute(
+        `
+      SELECT 
+        s.id, 
+        s.student_card_id, 
+        s.name, 
+        s.father_name, 
+        s.phone, 
+        s.class_id, 
+        s.status, 
+        s.due_date, 
+        c.class_name,
+        COALESCE(fd.remaining_fee, 0) as remaining_fee
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      LEFT JOIN fee_debtors fd ON s.id = fd.student_id
+      WHERE c.teacher_id = ?
+        AND s.due_date IS NOT NULL 
+        AND s.due_date < CURDATE() 
+        AND s.status = 'active'
+      ORDER BY s.due_date ASC
+    `,
+        [req.params.teacherId],
+      );
+
+      res.json(results);
+    } catch (err) {
+      console.error("Error in /api/teacher/expired-students:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+// ====================== API بدهکاران (fee-debtors) ======================
 // ====================== API بدهکاران (fee-debtors) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
-      SELECT fd.*, s.name, s.father_name, s.student_card_id, s.phone, c.class_name
+      SELECT 
+        fd.id,
+        fd.student_id,
+        fd.total_fee,
+        fd.paid_fee,
+        fd.remaining_fee,
+        fd.notes,
+        fd.created_at,
+        s.name,
+        s.father_name,
+        s.student_card_id,
+        s.phone,
+        s.class_id,
+        c.class_name
       FROM fee_debtors fd
       JOIN students s ON fd.student_id = s.id
       JOIN classes c ON s.class_id = c.id
@@ -638,13 +706,13 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
     WHERE 1=1
   `;
   let params = [];
-  
+
   if (start_date && end_date) {
     query += ` AND fp.payment_date BETWEEN ? AND ?`;
     params.push(start_date, end_date);
   }
   query += ` ORDER BY fp.payment_date DESC`;
-  
+
   try {
     const [results] = await db.execute(query, params);
     console.log("✅ /api/fee-payments-history fetched:", results.length);
