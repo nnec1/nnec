@@ -587,6 +587,7 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 });
 
 // دریافت شاگردان منقضی شده (تاریخ انقضا از امروز گذشته باشد)
+// ====================== API منقضی شده (fee-expired) ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -597,13 +598,62 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
       WHERE s.due_date IS NOT NULL AND s.due_date < CURDATE() AND s.status = 'active'
       ORDER BY s.due_date ASC
     `);
+    
+    console.log("✅ /api/fee-expired fetched:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-expired:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Error in /api/fee-expired:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 
+// ====================== API بدهکاران (fee-debtors) ======================
+app.get("/api/fee-debtors", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT fd.*, s.name, s.father_name, s.student_card_id, s.phone, c.class_name
+      FROM fee_debtors fd
+      JOIN students s ON fd.student_id = s.id
+      JOIN classes c ON s.class_id = c.id
+      WHERE fd.remaining_fee > 0
+      ORDER BY fd.created_at DESC
+    `);
+    
+    console.log("✅ /api/fee-debtors fetched:", results.length);
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in /api/fee-debtors:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+
+// ====================== API تاریخچه پرداخت ======================
+app.get("/api/fee-payments-history", authenticate, async (req, res) => {
+  const { start_date, end_date } = req.query;
+  let query = `
+    SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name
+    FROM fee_payments fp
+    JOIN students s ON fp.student_id = s.id
+    JOIN classes c ON s.class_id = c.id
+    WHERE 1=1
+  `;
+  let params = [];
+  
+  if (start_date && end_date) {
+    query += ` AND fp.payment_date BETWEEN ? AND ?`;
+    params.push(start_date, end_date);
+  }
+  query += ` ORDER BY fp.payment_date DESC`;
+  
+  try {
+    const [results] = await db.execute(query, params);
+    console.log("✅ /api/fee-payments-history fetched:", results.length);
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in /api/fee-payments-history:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
 // دریافت تاریخچه پرداخت‌ها با بازه تاریخ
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
