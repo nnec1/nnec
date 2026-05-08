@@ -19,18 +19,18 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .receipt {
-            width: 200px;
+            width: 300px;
             max-width: 100%;
             background: white;
-            padding: 5px 8px;
+            padding: 15px;
             margin: 0 auto;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             direction: rtl;
-            /* display: flex; */
+            border-radius: 12px;
         }
 
         @media print {
@@ -42,7 +42,7 @@
 
             .receipt {
                 box-shadow: none;
-                padding: 3px 5px;
+                padding: 10px;
                 margin: 0;
                 width: 100%;
             }
@@ -54,12 +54,12 @@
 
         .hr {
             border-top: 1px dashed #aaa;
-            margin: 3px 0;
+            margin: 8px 0;
         }
 
         .hr-double {
             border-top: 2px solid #333;
-            margin: 3px 0;
+            margin: 8px 0;
         }
 
         .text-center {
@@ -71,39 +71,27 @@
         }
 
         .small {
-            font-size: 9px;
-        }
-
-        .normal {
             font-size: 11px;
         }
 
-        .large {
+        .normal {
             font-size: 13px;
         }
 
+        .large {
+            font-size: 15px;
+        }
+
         .xlarge {
-            font-size: 14px;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 3px;
-        }
-
-        .logo-img {
-            width: 35px;
-            height: 35px;
-            object-fit: cover;
-            border-radius: 50%;
+            font-size: 16px;
         }
 
         .row {
             display: flex;
             justify-content: space-between;
-            margin: 2px 0;
-            font-size: 11px;
-            line-height: 1.3;
+            margin: 6px 0;
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .row .label {
@@ -123,120 +111,116 @@
         .warning {
             background: #fef3c7;
             color: #b45309;
-            padding: 2px 3px;
+            padding: 6px;
             text-align: center;
-            font-size: 8px;
-            margin: 4px 0;
-            border-radius: 3px;
+            font-size: 11px;
+            margin: 8px 0;
+            border-radius: 6px;
         }
 
         .contact {
             text-align: center;
-            font-size: 9px;
-            margin-top: 4px;
-        }
-
-        .signature {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-            font-size: 8px;
-            padding-top: 3px;
+            font-size: 11px;
+            margin-top: 8px;
         }
 
         .receipt-title {
             text-align: center;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: bold;
-            margin: 2px 0;
+            margin: 5px 0;
         }
 
         .date-line {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
-            margin: 2px 0;
+            font-size: 11px;
+            margin: 5px 0;
         }
 
         .inst-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .fee-status {
             font-size: 13px;
             font-weight: bold;
-            margin: 2px 0;
+            text-align: center;
+            margin: 8px 0;
+        }
+
+        .status-paid {
+            color: #15803d;
+        }
+
+        .status-debtor {
+            color: #dc2626;
         }
     </style>
 </head>
 
 <body>
-    <div class="receipt">
-        <!-- لوگو -->
-        <!-- <div class="logo">
-            <img id="logoImg" src="/default-logo.png" class="logo-img"
-                onerror="this.src='https://placehold.co/35x35?text=logo'">
-        </div> -->
-
+    <div class="receipt" id="receipt">
         <!-- نام آموزشگاه -->
         <div class="text-center bold xlarge" id="instName">آموزشگاه نوی نور</div>
-        <div class="receipt-title">رسید فیس شاگرد</div>
+        <div class="receipt-title">رسید پرداخت فیس</div>
         <div class="hr"></div>
 
         <!-- تاریخ صدور و شماره رسید -->
         <div class="date-line">
-            <span style="font-weight: bolder; font-size: 13px;">صدور: <span id="issueDate">-</span></span>
-            <span>شماره: <span id="receiptNumber">-</span></span>
+            <span><strong>تاریخ صدور:</strong> <span id="issueDate">-</span></span>
+            <span><strong>شماره:</strong> <span id="receiptNumber">-</span></span>
         </div>
         <div class="hr"></div>
 
         <!-- اطلاعات شاگرد -->
-        <div class="row" style="font-size: 14px;"><span class="label">نام:</span><span id="studentName">-</span></div>
-        <div class="row" style="font-size: 14px;"><span class="label">پدر:</span><span id="studentFather">-</span></div>
-        <div class="row" style="font-size: 14px;"><span class="label">صنف:</span><span id="studentClass">-</span></div>
+        <div class="row"><span class="label">نام شاگرد:</span><span id="studentName">-</span></div>
+        <div class="row"><span class="label">نام پدر:</span><span id="studentFather">-</span></div>
+        <div class="row"><span class="label">صنف:</span><span id="studentClass">-</span></div>
+        <div class="row"><span class="label">آیدی کارت:</span><span id="studentCardId">-</span></div>
         <div class="hr"></div>
 
         <!-- اطلاعات مالی -->
-        <div class="row" style="font-size: 14px;"><span class="label">فیس کل:</span><span id="totalFee">0 AFN</span>
+        <div class="row"><span class="label">فیس کل:</span><span id="totalFee">0 AFN</span></div>
+        <div class="row"><span class="label">پرداخت شده (کل):</span><span class="amount-paid" id="paidFee">0 AFN</span>
         </div>
-        <div class="row" style="font-size: 14px;"><span class="label">پرداخت:</span><span class="amount-paid"
-                id="paymentAmount">0 AFN</span>
+        <div class="row"><span class="label">این پرداخت:</span><span class="amount-paid" id="paymentAmount">0 AFN</span>
         </div>
-        <div class="row" style="font-size: 14px;"><span class="label">باقی:</span><span class="amount-remaining"
-                id="remainingFee">0 AFN</span>
-        </div>
+        <div class="row"><span class="label">باقی مانده:</span><span class="amount-remaining" id="remainingFee">0
+                AFN</span></div>
         <div class="hr"></div>
 
         <!-- تاریخ‌ها -->
-        <div class="row" style="font-size: 14px;"><span class="label">پرداخت:</span><span id="paymentDate">-</span>
-        </div>
-        <div class="row" style="font-size: 14px;"><span class="label">انقضا:</span><span id="expiryDate">-</span></div>
+        <div class="row"><span class="label">تاریخ پرداخت:</span><span id="paymentDate">-</span></div>
+        <div class="row"><span class="label">تاریخ انقضا:</span><span id="expiryDate">-</span></div>
         <div class="hr"></div>
+
+        <!-- وضعیت -->
+        <div class="fee-status" id="feeStatus"></div>
 
         <!-- یادداشت -->
         <div id="notesRow" style="display:none;" class="row"><span class="label">یادداشت:</span><span
                 id="notes">-</span></div>
 
         <!-- متن قانونی -->
-        <div class="warning" style="font-weight: bolder; font-size: 12px; color:black; ">⚠️
-            فیس تحویل شده مسترد نمیگردد</div>
+        <div class="warning">⚠️ فیس تحویل شده مسترد نمیگردد</div>
 
         <!-- تماس -->
-        <div class="contact" style="font-weight: bolder; font-size: 14px; ">📞 0781304830</div>
-
-        <!-- امضا -->
-        <!-- <div class="signature">
-            <span>پرداخت‌کننده: ___________</span>
-            <span>مسئول: ___________</span>
-        </div> -->
+        <div class="contact">📞 0781304830</div>
 
         <div class="hr-double"></div>
-        <div class="text-center small" style="font-size: 12px; font-weight: bolder;">با تشکر از اعتماد شما</div>
+        <div class="text-center small">با تشکر از اعتماد شما</div>
     </div>
 
-    <!-- دکمه‌های چاپ و بستن (فقط در صفحه نمایش) -->
+    <!-- دکمه‌های چاپ و بستن -->
     <div class="no-print" style="text-align:center; margin-top:15px;">
         <button onclick="window.print()"
-            style="padding:6px 15px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;">🖨️
+            style="padding:8px 20px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;margin:0 5px;">🖨️
             چاپ</button>
         <button onclick="window.close()"
-            style="padding:6px 15px;background:#94a3b8;color:white;border:none;border-radius:8px;cursor:pointer;margin-right:8px;font-size:12px;">❌
+            style="padding:8px 20px;background:#64748b;color:white;border:none;border-radius:8px;cursor:pointer;margin:0 5px;">❌
             بستن</button>
     </div>
 
@@ -248,27 +232,59 @@
             return Number(num).toLocaleString();
         }
 
-        // تنظیم اطلاعات از پارامترها
-        document.getElementById('studentName').innerText = urlParams.get('student_name') || '-';
-        document.getElementById('studentFather').innerText = urlParams.get('student_father') || '-';
-        document.getElementById('studentClass').innerText = urlParams.get('class_name') || '-';
-        document.getElementById('totalFee').innerHTML = formatNumber(urlParams.get('total_fee')) + ' AFN';
-        document.getElementById('paymentAmount').innerHTML = formatNumber(urlParams.get('payment_amount')) + ' AFN';
-        document.getElementById('remainingFee').innerHTML = formatNumber(urlParams.get('remaining_fee')) + ' AFN';
-        document.getElementById('paymentDate').innerText = urlParams.get('payment_date') || '-';
-        document.getElementById('expiryDate').innerText = urlParams.get('expiry_date') || '-';
-        document.getElementById('receiptNumber').innerText = urlParams.get('receipt_number') || '-';
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                const d = new Date(dateString);
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            } catch (e) {
+                return dateString;
+            }
+        }
 
-        // تاریخ صدور (امروز)
+        // دریافت مقادیر از پارامترها
+        const studentName = urlParams.get('student_name') || '-';
+        const studentFather = urlParams.get('student_father') || '-';
+        const studentCardId = urlParams.get('student_card_id') || '-';
+        const className = urlParams.get('class_name') || '-';
+        const totalFee = parseFloat(urlParams.get('total_fee')) || 0;
+        const paidFee = parseFloat(urlParams.get('paid_fee')) || 0;
+        const remainingFee = parseFloat(urlParams.get('remaining_fee')) || 0;
+        const paymentAmount = parseFloat(urlParams.get('payment_amount')) || 0;
+        const paymentDate = urlParams.get('payment_date') || '-';
+        const expiryDate = urlParams.get('expiry_date') || '-';
+        const receiptNumber = urlParams.get('receipt_number') || '-';
+        const notes = urlParams.get('notes');
+        const studentStatus = urlParams.get('student_status') || '';
+
+        // تنظیم اطلاعات در صفحه
+        document.getElementById('studentName').innerText = studentName;
+        document.getElementById('studentFather').innerText = studentFather;
+        document.getElementById('studentClass').innerText = className;
+        document.getElementById('studentCardId').innerText = studentCardId;
+        document.getElementById('totalFee').innerHTML = formatNumber(totalFee) + ' AFN';
+        document.getElementById('paidFee').innerHTML = formatNumber(paidFee) + ' AFN';
+        document.getElementById('paymentAmount').innerHTML = formatNumber(paymentAmount) + ' AFN';
+        document.getElementById('remainingFee').innerHTML = formatNumber(remainingFee) + ' AFN';
+        document.getElementById('paymentDate').innerText = formatDate(paymentDate);
+        document.getElementById('expiryDate').innerText = formatDate(expiryDate);
+        document.getElementById('receiptNumber').innerText = receiptNumber;
+
+        // تنظیم تاریخ صدور (امروز)
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         document.getElementById('issueDate').innerText = todayStr;
 
-        // // دریافت تاریخ صدور از پارامترها
-        // const issueDate = urlParams.get('issue_date') || todayStr;
-        // document.getElementById('issueDate').innerText = issueDate;
-        // یادداشت
-        const notes = urlParams.get('notes');
+        // تنظیم وضعیت فیس
+        const feeStatusDiv = document.getElementById('feeStatus');
+        if (remainingFee > 0) {
+            feeStatusDiv.innerHTML = '<span class="status-debtor">⚠️ وضعیت: بدهکار - لطفاً باقی مانده را پرداخت کنید</span>';
+        } else {
+            feeStatusDiv.innerHTML = '<span class="status-paid">✅ وضعیت: تسویه شده - با تشکر</span>';
+        }
+
+        // نمایش یادداشت
         if (notes && notes !== 'null' && notes !== '') {
             document.getElementById('notes').innerText = notes;
             document.getElementById('notesRow').style.display = 'flex';
@@ -282,10 +298,12 @@
                 if (settings.institute_name) {
                     document.getElementById('instName').innerText = settings.institute_name;
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.log('Could not load institute settings');
+            }
         }
 
-        // پشتیبان از localStorage
+        // اگر پارامتری وجود نداشت، از localStorage استفاده کن
         if (!urlParams.get('student_name') || urlParams.get('student_name') === '-') {
             const lastReceipt = localStorage.getItem('lastReceipt');
             if (lastReceipt) {
@@ -294,6 +312,7 @@
                 document.getElementById('studentFather').innerText = data.student_father || '-';
                 document.getElementById('studentClass').innerText = data.class_name || '-';
                 document.getElementById('totalFee').innerHTML = formatNumber(data.total_fee) + ' AFN';
+                document.getElementById('paidFee').innerHTML = formatNumber(data.paid_fee) + ' AFN';
                 document.getElementById('paymentAmount').innerHTML = formatNumber(data.payment_amount) + ' AFN';
                 document.getElementById('remainingFee').innerHTML = formatNumber(data.remaining_fee) + ' AFN';
                 document.getElementById('paymentDate').innerText = data.payment_date || '-';
@@ -303,8 +322,16 @@
                     document.getElementById('notes').innerText = data.notes;
                     document.getElementById('notesRow').style.display = 'flex';
                 }
+                if (data.remaining_fee > 0) {
+                    feeStatusDiv.innerHTML = '<span class="status-debtor">⚠️ وضعیت: بدهکار - لطفاً باقی مانده را پرداخت کنید</span>';
+                } else {
+                    feeStatusDiv.innerHTML = '<span class="status-paid">✅ وضعیت: تسویه شده - با تشکر</span>';
+                }
             }
         }
+
+        // چاپ خودکار هنگام بارگذاری (اختیاری)
+        // setTimeout(() => window.print(), 500);
 
         loadInstituteSettings();
     </script>
