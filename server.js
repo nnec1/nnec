@@ -569,25 +569,22 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         s.class_id, 
         s.status,
         c.class_name,
-        MAX(fp.payment_date) as last_payment_date,
-        DATE_ADD(MAX(fp.payment_date), INTERVAL 1 MONTH) as due_date,
-        COALESCE(fd.remaining_fee, 0) as remaining_fee
+        fd.due_date,
+        fd.remaining_fee
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      LEFT JOIN fee_payments fp ON s.id = fp.student_id
-      LEFT JOIN fee_debtors fd ON s.id = fd.student_id
-      WHERE s.status = 'active'
-      GROUP BY s.id
-      HAVING due_date < CURDATE() OR due_date IS NULL
-      ORDER BY due_date ASC
+      JOIN fee_debtors fd ON s.id = fd.student_id
+      WHERE fd.due_date < CURDATE() AND fd.remaining_fee > 0 AND s.status = 'active'
+      ORDER BY fd.due_date ASC
     `);
-    
-    const formatted = results.map(s => ({
+
+    const formatted = results.map((s) => ({
       ...s,
-      due_date: s.due_date ? new Date(s.due_date).toISOString().split('T')[0] : null,
-      last_payment_date: s.last_payment_date ? new Date(s.last_payment_date).toISOString().split('T')[0] : null
+      due_date: s.due_date
+        ? new Date(s.due_date).toISOString().split("T")[0]
+        : null,
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/fee-expired:", err);
@@ -635,6 +632,11 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
   const receipt_number =
     "RCP-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
 
+  // محاسبه تاریخ انقضای جدید (یک ماه بعد از تاریخ پرداخت)
+  const newDueDate = new Date(paymentDate);
+  newDueDate.setMonth(newDueDate.getMonth() + 1);
+  const finalDueDate = newDueDate.toISOString().split("T")[0];
+
   try {
     const [student] = await db.execute(
       `
@@ -650,6 +652,7 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
 
+    // 1. ثبت پرداخت جدید در fee_payments
     await db.execute(
       `
       INSERT INTO fee_payments (student_id, amount, payment_date, issue_date, receipt_number, notes) 
@@ -665,10 +668,39 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       ],
     );
 
-    // تاریخ انقضا فقط برای پاسخ محاسبه می‌شود، در دیتابیس ذخیره نمی‌شود
-    const newDueDate = new Date(paymentDate);
-    newDueDate.setMonth(newDueDate.getMonth() + 1);
-    const finalDueDate = newDueDate.toISOString().split("T")[0];
+    // 2. دریافت مبلغ باقی مانده فعلی از fee_debtors
+    const [debtor] = await db.execute(
+      `
+      SELECT remaining_fee FROM fee_debtors WHERE student_id = ?
+    `,
+      [student_id],
+    );
+
+    let currentRemaining =
+      debtor.length > 0 ? parseFloat(debtor[0].remaining_fee) || 0 : 0;
+    let newRemaining = currentRemaining - paymentAmount;
+    if (newRemaining < 0) newRemaining = 0;
+
+    // 3. بروزرسانی fee_debtors با due_date جدید
+    if (newRemaining > 0) {
+      await db.execute(
+        `
+        INSERT INTO fee_debtors (student_id, remaining_fee, due_date, notes, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, NOW(), NOW()) 
+        ON DUPLICATE KEY UPDATE 
+        remaining_fee = VALUES(remaining_fee), 
+        due_date = VALUES(due_date),
+        notes = VALUES(notes), 
+        updated_at = NOW()
+      `,
+        [student_id, newRemaining, finalDueDate, notes || null],
+      );
+    } else {
+      // اگر بدهی تسویه شده، از fee_debtors حذف کن
+      await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [
+        student_id,
+      ]);
+    }
 
     const [totalPaidResult] = await db.execute(
       `
@@ -693,14 +725,13 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       issue_date: issueDate,
       expiry_date: finalDueDate,
       notes: notes || "",
-      remaining_fee: 0,
+      remaining_fee: newRemaining,
     });
   } catch (err) {
     console.error("❌ Error in /api/collect-fee:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // ====================== API پیام‌ها ======================
 
 app.post("/api/messages", authenticate, async (req, res) => {
