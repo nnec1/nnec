@@ -4522,84 +4522,177 @@ app.get("/api/financial-reports", authenticate, async (req, res) => {
 });
 
 // ====================== آخرین تراکنش‌ها ======================
-app.get("/api/recent-transactions", authenticate, async (req, res) => {
-  const { limit } = req.query;
-  const limitNum = parseInt(limit) || 10;
+// app.get("/api/recent-transactions", authenticate, async (req, res) => {
+//   const { limit } = req.query;
+//   const limitNum = parseInt(limit) || 10;
 
-  try {
-    const [results] = await db.execute(
-      `
-            SELECT fp.*, s.name as student_name, s.student_card_id, c.class_name 
+//   try {
+//     const [results] = await db.execute(
+//       `
+//             SELECT fp.*, s.name as student_name, s.student_card_id, c.class_name 
+//             FROM fee_payments fp 
+//             JOIN students s ON fp.student_id = s.id 
+//             JOIN classes c ON s.class_id = c.id 
+//             ORDER BY fp.payment_date DESC 
+//             LIMIT ?
+//         `,
+//       [limitNum],
+//     );
+
+//     const formatted = results.map((p) => {
+//       if (p.payment_date) {
+//         const d = new Date(p.payment_date);
+//         if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
+//       }
+//       return {
+//         id: p.id,
+//         student_id: p.student_id,
+//         student_name: p.student_name,
+//         student_card_id: p.student_card_id,
+//         class_name: p.class_name,
+//         amount: parseFloat(p.amount) || 0,
+//         payment_date: p.payment_date,
+//         receipt_number: p.receipt_number,
+//         notes: p.notes,
+//       };
+//     });
+
+//     res.json(formatted);
+//   } catch (err) {
+//     console.error("Error in /api/recent-transactions:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ====================== API آخرین تراکنش‌ها ======================
+app.get("/api/recent-transactions", authenticate, async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    try {
+        const [results] = await db.execute(`
+            SELECT 
+                fp.id, 
+                fp.amount, 
+                fp.payment_date, 
+                fp.receipt_number,
+                s.id as student_id, 
+                s.name as student_name, 
+                s.student_card_id,
+                c.class_name
             FROM fee_payments fp 
             JOIN students s ON fp.student_id = s.id 
             JOIN classes c ON s.class_id = c.id 
-            ORDER BY fp.payment_date DESC 
+            ORDER BY fp.payment_date DESC, fp.id DESC 
             LIMIT ?
-        `,
-      [limitNum],
-    );
-
-    const formatted = results.map((p) => {
-      if (p.payment_date) {
-        const d = new Date(p.payment_date);
-        if (!isNaN(d.getTime())) p.payment_date = d.toISOString().split("T")[0];
-      }
-      return {
-        id: p.id,
-        student_id: p.student_id,
-        student_name: p.student_name,
-        student_card_id: p.student_card_id,
-        class_name: p.class_name,
-        amount: parseFloat(p.amount) || 0,
-        payment_date: p.payment_date,
-        receipt_number: p.receipt_number,
-        notes: p.notes,
-      };
-    });
-
-    res.json(formatted);
-  } catch (err) {
-    console.error("Error in /api/recent-transactions:", err);
-    res.status(500).json({ error: err.message });
-  }
+        `, [limit]);
+        
+        const formatted = results.map(p => ({
+            id: p.id,
+            amount: parseFloat(p.amount) || 0,
+            payment_date: p.payment_date ? new Date(p.payment_date).toISOString().split('T')[0] : '-',
+            receipt_number: p.receipt_number || '-',
+            student_id: p.student_id,
+            student_name: p.student_name || '-',
+            student_card_id: p.student_card_id || '-',
+            class_name: p.class_name || '-'
+        }));
+        
+        res.json(formatted);
+    } catch (err) {
+        console.error("Error in /api/recent-transactions:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 // این API مشابه financial-summary است، فقط برای داشبورد
+// app.get("/api/financial-summary", authenticate, async (req, res) => {
+//     const { start_date, end_date, period } = req.query;
+    
+//     try {
+//         let total_income = 0;
+//         let total_expense = 0;
+        
+//         if (period === 'daily') {
+//             const today = new Date().toISOString().split('T')[0];
+//             const [income] = await db.execute(
+//                 `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
+//                 [today]
+//             );
+//             const [expense] = await db.execute(
+//                 `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
+//                 [today]
+//             );
+//             total_income = income[0]?.total || 0;
+//             total_expense = expense[0]?.total || 0;
+//         } else if (start_date && end_date) {
+//             const [income] = await db.execute(
+//                 `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
+//                 [start_date, end_date]
+//             );
+//             const [expense] = await db.execute(
+//                 `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
+//                 [start_date, end_date]
+//             );
+//             total_income = income[0]?.total || 0;
+//             total_expense = expense[0]?.total || 0;
+//         }
+        
+//         res.json({
+//             total_income,
+//             total_expense,
+//             net_profit: total_income - total_expense,
+//             transaction_count: 0
+//         });
+//     } catch (err) {
+//         console.error("Error in /api/financial-summary:", err);
+//         res.status(500).json({ error: err.message });
+//     }
+// });
+// ====================== API خلاصه مالی ======================
 app.get("/api/financial-summary", authenticate, async (req, res) => {
     const { start_date, end_date, period } = req.query;
+    let query = `SELECT COALESCE(SUM(amount), 0) as total_income FROM fee_payments WHERE 1=1`;
+    let params = [];
+    
+    if (start_date && end_date) {
+        query += ` AND payment_date BETWEEN ? AND ?`;
+        params.push(start_date, end_date);
+    } else if (period === 'monthly') {
+        query += ` AND MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`;
+    } else if (period === 'yearly') {
+        query += ` AND YEAR(payment_date) = YEAR(CURDATE())`;
+    } else {
+        query += ` AND payment_date = CURDATE()`;
+    }
     
     try {
-        let total_income = 0;
-        let total_expense = 0;
+        const [incomeResult] = await db.execute(query, params);
         
-        if (period === 'daily') {
-            const today = new Date().toISOString().split('T')[0];
-            const [income] = await db.execute(
-                `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
-                [today]
-            );
-            const [expense] = await db.execute(
-                `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
-                [today]
-            );
-            total_income = income[0]?.total || 0;
-            total_expense = expense[0]?.total || 0;
-        } else if (start_date && end_date) {
-            const [income] = await db.execute(
-                `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
-                [start_date, end_date]
-            );
-            const [expense] = await db.execute(
-                `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
-                [start_date, end_date]
-            );
-            total_income = income[0]?.total || 0;
-            total_expense = expense[0]?.total || 0;
+        // هزینه‌ها (اگر جدول expenses دارید)
+        let expenseQuery = `SELECT COALESCE(SUM(amount), 0) as total_expense FROM expenses WHERE 1=1`;
+        let expenseParams = [];
+        if (start_date && end_date) {
+            expenseQuery += ` AND expense_date BETWEEN ? AND ?`;
+            expenseParams.push(start_date, end_date);
+        } else if (period === 'monthly') {
+            expenseQuery += ` AND MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())`;
+        } else if (period === 'yearly') {
+            expenseQuery += ` AND YEAR(expense_date) = YEAR(CURDATE())`;
+        } else {
+            expenseQuery += ` AND expense_date = CURDATE()`;
+        }
+        
+        let totalExpense = 0;
+        try {
+            const [expenseResult] = await db.execute(expenseQuery, expenseParams);
+            totalExpense = expenseResult[0]?.total_expense || 0;
+        } catch (err) {
+            // اگر جدول expenses وجود ندارد
+            console.log("Expenses table not found, using 0");
         }
         
         res.json({
-            total_income,
-            total_expense,
-            net_profit: total_income - total_expense,
+            total_income: incomeResult[0]?.total_income || 0,
+            total_expense: totalExpense,
             transaction_count: 0
         });
     } catch (err) {
