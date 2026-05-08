@@ -1,134 +1,112 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>گزارش مالی</title>
+    <title>گزارش مالی | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        .stat-card h2 { font-size: 1.8rem; font-weight: 700; margin: 10px 0 0; }
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
+        }
+        .btn-excel { background: linear-gradient(135deg, #1d7e3a, #0f5c2a); border: none; padding: 8px 20px; border-radius: 30px; color: white; font-weight: 500; }
+    </style>
 </head>
-
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                        <i class="bi bi-building fs-1 text-white"></i>
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
-                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
-                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
-                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
-                        استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
-                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
-                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="financial-reports.html" class="nav-link active"><i class="fa-solid fa-coin"></i> گزارش مالی</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
+
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="bi bi-graph-up text-primary me-2"></i> گزارش عواید و مصارف</h3>
+                <h3 class="section-title"><i class="fa-solid fa-coin text-success me-2"></i> گزارش مالی</h3>
 
                 <div class="row g-3 mb-4">
-                    <div class="col-md-3"><select id="periodSelect" class="form-select" onchange="loadReport()">
-                            <option value="daily">روزانه</option>
-                            <option value="monthly">ماهانه</option>
-                            <option value="yearly">سالانه</option>
-                        </select></div>
-                    <div class="col-md-3"><input type="date" id="customStartDate" class="form-control"
-                            placeholder="از تاریخ"></div>
-                    <div class="col-md-3"><input type="date" id="customEndDate" class="form-control"
-                            placeholder="تا تاریخ"></div>
-                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadReport()"><i
-                                class="bi bi-search"></i> نمایش</button></div>
+                    <div class="col-md-3"><input type="date" id="startDate" class="form-control"></div>
+                    <div class="col-md-3"><input type="date" id="endDate" class="form-control"></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadReport()"><i class="fa-solid fa-magnifying-glass"></i> نمایش</button></div>
+                    <div class="col-md-3"><button class="btn-excel w-100" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی Excel</button></div>
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-4">
-                        <div class="stat-card text-center bg-success bg-opacity-10"><i
-                                class="bi bi-cash-stack fs-1 text-success"></i>
-                            <h3 id="totalIncome">0</h3><small>کل درآمد</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="stat-card text-center bg-danger bg-opacity-10"><i
-                                class="bi bi-receipt fs-1 text-danger"></i>
-                            <h3 id="totalExpense">0</h3><small>کل هزینه‌ها</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="stat-card text-center bg-primary bg-opacity-10"><i
-                                class="bi bi-graph-up fs-1 text-primary"></i>
-                            <h3 id="netProfit">0</h3><small>سود خالص</small>
-                        </div>
-                    </div>
+                    <div class="col-md-4"><div class="stat-card"><i class="fa-solid fa-circle-dollar fs-1 text-success"></i><h2 id="totalIncome">0</h2><small>کل درآمد</small></div></div>
+                    <div class="col-md-4"><div class="stat-card"><i class="fa-solid fa-receipt fs-1 text-danger"></i><h2 id="totalExpense">0</h2><small>کل هزینه‌ها</small></div></div>
+                    <div class="col-md-4"><div class="stat-card"><i class="fa-solid fa-chart-line fs-1 text-primary"></i><h2 id="netProfit">0</h2><small>سود خالص</small></div></div>
                 </div>
 
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="financeChart"
-                                height="250"></canvas></div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="table-container">
-                            <h6>جزئیات</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>دوره</th>
-                                            <th>درآمد</th>
-                                            <th>هزینه</th>
-                                            <th>سود</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="detailsTable"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                <div class="chart-card p-3 bg-white rounded-3 shadow-sm mb-4">
+                    <canvas id="financeChart" height="280"></canvas>
                 </div>
 
-                <div class="mt-4">
-                    <h5><i class="bi bi-plus-circle"></i> ثبت هزینه جدید</h5>
-                    <form id="expenseForm" class="row g-3">
-                        <div class="col-md-3"><input type="date" id="expenseDate" class="form-control" required></div>
-                        <div class="col-md-3"><input type="text" id="expenseCategory" class="form-control"
-                                placeholder="دسته‌بندی" required></div>
-                        <div class="col-md-3"><input type="text" id="expenseDesc" class="form-control" placeholder="شرح"
-                                required></div>
-                        <div class="col-md-2"><input type="number" id="expenseAmount" class="form-control"
-                                placeholder="مبلغ" required></div>
-                        <div class="col-md-1"><button type="submit" class="btn btn-danger w-100"><i
-                                    class="bi bi-save"></i> ثبت</button></div>
-                    </form>
+                <div class="table-container">
+                    <h5><i class="fa-solid fa-list"></i> لیست پرداخت‌ها</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr><th>#</th><th>تاریخ</th><th>شاگرد</th><th>صنف</th><th>مبلغ (AFN)</th><th>شماره رسید</th></tr>
+                            </thead>
+                            <tbody id="paymentsTable"><td><td colspan="6" class="text-center py-4 text-muted">لطفاً بازه زمانی را انتخاب کنید</div></div></div></tr></tbody>
+                            <tfoot id="tableFooter" style="display:none;"><tr><td colspan="4" class="text-end fw-bold">مجموع:</td><td class="text-success fw-bold" id="footerTotal">0 AFN</td><td></td></tr></tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -140,44 +118,109 @@
     <script>
         let financeChart = null;
 
-        async function loadReport() {
-            const period = document.getElementById('periodSelect').value;
-            const startDate = document.getElementById('customStartDate').value;
-            const endDate = document.getElementById('customEndDate').value;
-            let url = `/api/financial-reports?period=${period}`;
-            if (startDate && endDate) url = `/api/financial-reports?start_date=${startDate}&end_date=${endDate}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            document.getElementById('totalIncome').innerText = (data.total_income || 0).toLocaleString();
-            document.getElementById('totalExpense').innerText = (data.total_expense || 0).toLocaleString();
-            document.getElementById('netProfit').innerText = (data.net_profit || 0).toLocaleString();
-            const labels = data.incomes.map(i => i.period_date);
-            const incomeValues = data.incomes.map(i => i.total_income);
-            const expenseValues = data.expenses.map(e => e.total_expense);
-            if (financeChart) financeChart.destroy();
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            financeChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'درآمد', data: incomeValues, backgroundColor: '#28a745', borderRadius: 8 }, { label: 'هزینه', data: expenseValues, backgroundColor: '#dc3545', borderRadius: 8 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
-            const allPeriods = [...new Set([...data.incomes.map(i => i.period_date), ...data.expenses.map(e => e.period_date)])];
-            let detailsHtml = '';
-            allPeriods.forEach(period => {
-                const income = data.incomes.find(i => i.period_date === period)?.total_income || 0;
-                const expense = data.expenses.find(e => e.period_date === period)?.total_expense || 0;
-                detailsHtml += `<tr><td class="text-dark">${period}</td><td class="text-success">${income.toLocaleString()}</td><td class="text-danger">${expense.toLocaleString()}</td><td class="${income - expense >= 0 ? 'text-success' : 'text-danger'}">${(income - expense).toLocaleString()}</td></tr>`;
-            });
-            document.getElementById('detailsTable').innerHTML = detailsHtml || '<tr><td colspan="4" class="text-center">هیچ داده‌ای موجود نیست</div></div></div></tr>';
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
-        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = { expense_date: document.getElementById('expenseDate').value, category: document.getElementById('expenseCategory').value, description: document.getElementById('expenseDesc').value, amount: document.getElementById('expenseAmount').value, reference: 'مدیر' };
-            const res = await fetch('/api/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) { alert('هزینه ثبت شد'); document.getElementById('expenseForm').reset(); loadReport(); }
-            else alert('خطا');
-        });
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+            catch (e) { return dateString; }
+        }
 
-        document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-        loadReport();
+        async function loadReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if (!startDate || !endDate) { alert('لطفاً بازه زمانی را انتخاب کنید'); return; }
+            
+            const tbody = document.getElementById('paymentsTable');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></td>';
+            
+            try {
+                const res = await fetch(`/api/fee-payments-history?start_date=${startDate}&end_date=${endDate}`);
+                let payments = await res.json();
+                
+                // محاسبه آمار
+                let totalIncome = 0;
+                payments.forEach(p => { totalIncome += parseFloat(p.amount) || 0; });
+                
+                document.getElementById('totalIncome').innerText = totalIncome.toLocaleString();
+                document.getElementById('totalExpense').innerText = '0';
+                document.getElementById('netProfit').innerText = totalIncome.toLocaleString();
+                
+                if (payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">هیچ پرداختی در این بازه ثبت نشده است</div></div></div></tr>';
+                    document.getElementById('tableFooter').style.display = 'none';
+                    if (financeChart) financeChart.destroy();
+                    return;
+                }
+                
+                // جدول
+                let html = '';
+                payments.forEach((p, index) => {
+                    html += `<tr>
+                        <td class="text-dark">${index + 1}</div></div></div>
+                        <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+                        <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
+                        <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                        <td class="text-success fw-bold">${(parseFloat(p.amount) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                    </div></div></div>`;
+                });
+                tbody.innerHTML = html;
+                document.getElementById('footerTotal').innerHTML = totalIncome.toLocaleString() + ' AFN';
+                document.getElementById('tableFooter').style.display = 'table-row-group';
+                
+                // نمودار
+                const dailyData = {};
+                payments.forEach(p => {
+                    const date = formatDate(p.payment_date);
+                    dailyData[date] = (dailyData[date] || 0) + (parseFloat(p.amount) || 0);
+                });
+                const labels = Object.keys(dailyData).sort();
+                const data = labels.map(l => dailyData[l]);
+                
+                if (financeChart) financeChart.destroy();
+                const ctx = document.getElementById('financeChart').getContext('2d');
+                financeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: 'درآمد روزانه (AFN)', data: data, backgroundColor: '#10b981', borderRadius: 8 }] },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<table><td colspan="6" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات</div></div></div></tr>';
+            }
+        }
+
+        function exportToExcel() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const rows = document.querySelectorAll('#paymentsTable tr');
+            const data = [['#', 'تاریخ', 'شاگرد', 'صنف', 'مبلغ (AFN)', 'شماره رسید']];
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length > 0 && cols[0].innerText !== 'هیچ پرداختی در این بازه ثبت نشده است') {
+                    data.push([cols[0]?.innerText, cols[1]?.innerText, cols[2]?.innerText, cols[3]?.innerText, cols[4]?.innerText, cols[5]?.innerText]);
+                }
+            });
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'گزارش مالی');
+            XLSX.writeFile(wb, `گزارش_مالی_${startDate}_تا_${endDate}.xlsx`);
+        }
+
+        document.getElementById('startDate').value = new Date(new Date().setDate(1)).toISOString().split('T')[0];
+        document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+        setupSidebar();
     </script>
 </body>
-
 </html>
