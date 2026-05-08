@@ -3022,15 +3022,98 @@ app.post("/api/new-payment", authenticate, async (req, res) => {
 // });
 
 // ====================== API آمار روزمره فیس با نمایش تاریخ انقضا ======================
+// app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
+//   const { date } = req.query;
+//   const targetDate = date || new Date().toISOString().split("T")[0];
+
+//   console.log("Fetching daily stats for date:", targetDate);
+
+//   try {
+//     const [payments] = await db.execute(
+//       `
+//             SELECT 
+//                 fp.id, 
+//                 fp.student_id, 
+//                 fp.amount, 
+//                 fp.payment_date, 
+//                 fp.receipt_number, 
+//                 fp.notes,
+//                 s.name as student_name, 
+//                 s.father_name, 
+//                 s.student_card_id, 
+//                 s.due_date as old_expiry_date,
+//                 c.class_name
+//             FROM fee_payments fp 
+//             JOIN students s ON fp.student_id = s.id 
+//             JOIN classes c ON s.class_id = c.id 
+//             WHERE DATE(fp.issue_date) = ?
+//             ORDER BY fp.payment_date DESC
+//         `,
+//       [targetDate],
+//     );
+
+//     console.log("Payments found:", payments.length);
+
+//     const formattedPayments = payments.map((p) => {
+//       let oldExpiryDate = p.old_expiry_date;
+//       if (oldExpiryDate) {
+//         const d = new Date(oldExpiryDate);
+//         if (!isNaN(d.getTime())) {
+//           oldExpiryDate = d.toISOString().split("T")[0];
+//         }
+//       }
+
+//       let paymentDate = p.payment_date;
+//       if (paymentDate) {
+//         const d = new Date(paymentDate);
+//         if (!isNaN(d.getTime())) {
+//           paymentDate = d.toISOString().split("T")[0];
+//         }
+//       }
+
+//       return {
+//         id: p.id,
+//         student_id: p.student_id,
+//         student_name: p.student_name,
+//         father_name: p.father_name,
+//         student_card_id: p.student_card_id,
+//         class_name: p.class_name,
+//         amount: parseFloat(p.amount) || 0,
+//         payment_date: paymentDate,
+//         old_expiry_date: oldExpiryDate,
+//         receipt_number: p.receipt_number,
+//         notes: p.notes,
+//       };
+//     });
+
+//     const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
+//     const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id))
+//       .size;
+
+//     res.json({
+//       success: true,
+//       date: targetDate,
+//       total_amount: totalToday,
+//       student_count: uniqueStudents,
+//       transaction_count: formattedPayments.length,
+//       payments: formattedPayments,
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+// ====================== API آمار روزمره فیس با نمایش تاریخ انقضا ======================
 app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
-  const { date } = req.query;
-  const targetDate = date || new Date().toISOString().split("T")[0];
+    const { date } = req.query;
+    const targetDate = date || new Date().toISOString().split("T")[0];
 
-  console.log("Fetching daily stats for date:", targetDate);
+    console.log("Fetching daily stats for date:", targetDate);
 
-  try {
-    const [payments] = await db.execute(
-      `
+    try {
+        // دریافت تمام پرداخت‌های تاریخ انتخاب شده
+        // تاریخ انقضا: یک ماه بعد از آخرین پرداخت هر شاگرد
+        const [payments] = await db.execute(`
             SELECT 
                 fp.id, 
                 fp.student_id, 
@@ -3040,70 +3123,70 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
                 fp.notes,
                 s.name as student_name, 
                 s.father_name, 
-                s.student_card_id, 
-                s.due_date as old_expiry_date,
-                c.class_name
+                s.student_card_id,
+                c.class_name,
+                (
+                    SELECT MAX(payment_date) 
+                    FROM fee_payments 
+                    WHERE student_id = s.id AND payment_date < fp.payment_date
+                ) as previous_payment_date
             FROM fee_payments fp 
             JOIN students s ON fp.student_id = s.id 
             JOIN classes c ON s.class_id = c.id 
             WHERE DATE(fp.issue_date) = ?
             ORDER BY fp.payment_date DESC
-        `,
-      [targetDate],
-    );
+        `, [targetDate]);
 
-    console.log("Payments found:", payments.length);
+        console.log("Payments found:", payments.length);
 
-    const formattedPayments = payments.map((p) => {
-      let oldExpiryDate = p.old_expiry_date;
-      if (oldExpiryDate) {
-        const d = new Date(oldExpiryDate);
-        if (!isNaN(d.getTime())) {
-          oldExpiryDate = d.toISOString().split("T")[0];
-        }
-      }
+        // محاسبه تاریخ انقضای قبلی برای هر پرداخت (یک ماه بعد از آخرین پرداخت قبلی)
+        const formattedPayments = payments.map((p) => {
+            let oldExpiryDate = null;
+            if (p.previous_payment_date) {
+                const expiryFromPrev = new Date(p.previous_payment_date);
+                expiryFromPrev.setMonth(expiryFromPrev.getMonth() + 1);
+                oldExpiryDate = expiryFromPrev.toISOString().split("T")[0];
+            }
 
-      let paymentDate = p.payment_date;
-      if (paymentDate) {
-        const d = new Date(paymentDate);
-        if (!isNaN(d.getTime())) {
-          paymentDate = d.toISOString().split("T")[0];
-        }
-      }
+            let paymentDate = p.payment_date;
+            if (paymentDate) {
+                const d = new Date(paymentDate);
+                if (!isNaN(d.getTime())) {
+                    paymentDate = d.toISOString().split("T")[0];
+                }
+            }
 
-      return {
-        id: p.id,
-        student_id: p.student_id,
-        student_name: p.student_name,
-        father_name: p.father_name,
-        student_card_id: p.student_card_id,
-        class_name: p.class_name,
-        amount: parseFloat(p.amount) || 0,
-        payment_date: paymentDate,
-        old_expiry_date: oldExpiryDate,
-        receipt_number: p.receipt_number,
-        notes: p.notes,
-      };
-    });
+            return {
+                id: p.id,
+                student_id: p.student_id,
+                student_name: p.student_name,
+                father_name: p.father_name,
+                student_card_id: p.student_card_id,
+                class_name: p.class_name,
+                amount: parseFloat(p.amount) || 0,
+                payment_date: paymentDate,
+                old_expiry_date: oldExpiryDate,
+                receipt_number: p.receipt_number,
+                notes: p.notes,
+            };
+        });
 
-    const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
-    const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id))
-      .size;
+        const totalToday = formattedPayments.reduce((sum, p) => sum + p.amount, 0);
+        const uniqueStudents = new Set(formattedPayments.map((p) => p.student_id)).size;
 
-    res.json({
-      success: true,
-      date: targetDate,
-      total_amount: totalToday,
-      student_count: uniqueStudents,
-      transaction_count: formattedPayments.length,
-      payments: formattedPayments,
-    });
-  } catch (err) {
-    console.error("Error in /api/daily-fee-stats-with-expiry:", err);
-    res.status(500).json({ error: err.message });
-  }
+        res.json({
+            success: true,
+            date: targetDate,
+            total_amount: totalToday,
+            student_count: uniqueStudents,
+            transaction_count: formattedPayments.length,
+            payments: formattedPayments,
+        });
+    } catch (err) {
+        console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
-
 app.put("/api/fee-payment/:id", authenticate, async (req, res) => {
   const { payment_date, notes } = req.body;
   const paymentId = req.params.id;
