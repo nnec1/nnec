@@ -843,9 +843,21 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
   }
 });
 // بروزرسانی یا حذف از fee_debtors
+// محاسبه remaining جدید (باقی مانده بدهی)
+const newRemaining = currentRemaining - paymentAmount;
+if (newRemaining < 0) newRemaining = 0;
+
+// بروزرسانی یا حذف از fee_debtors
 if (newRemaining > 0) {
   await db.execute(
-    `INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee, notes) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE total_fee = VALUES(total_fee), paid_fee = VALUES(paid_fee), remaining_fee = VALUES(remaining_fee), notes = VALUES(notes), updated_at = NOW()`,
+    `INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee, notes) 
+                      VALUES (?, ?, ?, ?, ?) 
+                      ON DUPLICATE KEY UPDATE 
+                      total_fee = VALUES(total_fee), 
+                      paid_fee = VALUES(paid_fee), 
+                      remaining_fee = VALUES(remaining_fee), 
+                      notes = VALUES(notes), 
+                      updated_at = NOW()`,
     [student_id, 0, 0, newRemaining, notes || null],
   );
 } else {
@@ -853,19 +865,6 @@ if (newRemaining > 0) {
     student_id,
   ]);
 }
-res.json({
-  success: true,
-  receipt_number,
-  student_name: student[0].name || "",
-  student_father: student[0].father_name || "",
-  student_card_id: student[0].student_card_id || "",
-  remaining_fee: newRemaining,
-  payment_amount: paymentAmount,
-  payment_date: paymentDate,
-  issue_date: issueDate,
-  expiry_date: finalDueDate,
-  notes: notes || "",
-});
 //   } catch (err) {
 //     console.error("Error in /api/collect-fee:", err);
 //     res.status(500).json({ error: err.message });
