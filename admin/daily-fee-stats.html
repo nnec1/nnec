@@ -365,6 +365,78 @@
                 }
             }
 
+            // async function loadDailyStats() {
+            //     const selectedDate = document.getElementById('issueDateSelect').value;
+            //     if (!selectedDate) {
+            //         alert('❌ لطفاً تاریخ صدور را انتخاب کنید');
+            //         return;
+            //     }
+
+            //     const resultDiv = document.getElementById('paymentsTable');
+            //     resultDiv.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></td>';
+
+            //     try {
+            //         const res = await fetch(`/api/daily-fee-stats-with-expiry?date=${selectedDate}`);
+            //         const data = await res.json();
+
+            //         if (!data.success) {
+            //             throw new Error(data.error || 'خطا در بارگیری');
+            //         }
+
+            //         // نمایش اطلاعات
+            //         document.getElementById('infoAlert').style.display = 'block';
+            //         document.getElementById('selectedDateDisplay').innerHTML = formatDate(data.date);
+            //         document.getElementById('updateTime').innerHTML = formatTime();
+            //         document.getElementById('studentCount').innerHTML = data.student_count || 0;
+            //         document.getElementById('totalAmount').innerHTML = formatNumber(data.total_amount) + ' AFN';
+            //         document.getElementById('transactionCount').innerHTML = (data.transactions?.length || data.payments?.length || 0);
+
+            //         document.getElementById('statsCards').style.display = 'flex';
+
+            //         const payments = data.payments || data.transactions || [];
+
+            //         if (payments.length === 0) {
+            //             resultDiv.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">✅ هیچ پرداختی در این تاریخ ثبت نشده است</div></div></div></tr>';
+            //             document.getElementById('tableFooter').style.display = 'none';
+            //             document.getElementById('tableContainer').style.display = 'block';
+            //             return;
+            //         }
+
+            //         // ساخت جدول
+            //         let html = '';
+            //         payments.forEach((p, index) => {
+            //             const isExpired = p.old_expiry_date && new Date(p.old_expiry_date) < new Date();
+            //             html += `
+            //             <tr>
+            //                 <td class="text-dark">${index + 1}</div></div></div>
+            //                 <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
+            //                 <td class="text-dark">${p.father_name || '-'}</div></div></div>
+            //                 <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
+            //                 <td class="text-dark">${p.class_name || '-'}</div></div></div>
+            //                 <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">
+            //                     ${p.old_expiry_date ? formatDate(p.old_expiry_date) : '-'}
+            //                     ${isExpired ? '<span class="expiry-badge ms-2">منقضی شده بود</span>' : ''}
+            //                 </div></div></div>
+            //                 <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+            //                 <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</div></div></div>
+            //                 <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+            //                 <td class="text-dark">${p.notes || '-'}</div></div></div>
+            //             </div></div></div>
+            //         `;
+            //         });
+
+            //         resultDiv.innerHTML = html;
+            //         document.getElementById('tableFooter').style.display = 'table-row-group';
+            //         document.getElementById('footerTotal').innerHTML = formatNumber(data.total_amount) + ' AFN';
+            //         document.getElementById('tableContainer').style.display = 'block';
+
+            //     } catch (err) {
+            //         console.error(err);
+            //         resultDiv.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات: ${err.message}</div></div></div></tr>`;
+            //         document.getElementById('tableFooter').style.display = 'none';
+            //     }
+            // }
+
             async function loadDailyStats() {
                 const selectedDate = document.getElementById('issueDateSelect').value;
                 if (!selectedDate) {
@@ -373,10 +445,12 @@
                 }
 
                 const resultDiv = document.getElementById('paymentsTable');
-                resultDiv.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></td>';
+                resultDiv.innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div><tr>';
 
                 try {
-                    const res = await fetch(`/api/daily-fee-stats-with-expiry?date=${selectedDate}`);
+                    // ارسال تاریخ بدون زمان (فقط YYYY-MM-DD)
+                    const dateParam = selectedDate.split('T')[0];
+                    const res = await fetch(`/api/daily-fee-stats-with-expiry?date=${dateParam}`);
                     const data = await res.json();
 
                     if (!data.success) {
@@ -389,14 +463,14 @@
                     document.getElementById('updateTime').innerHTML = formatTime();
                     document.getElementById('studentCount').innerHTML = data.student_count || 0;
                     document.getElementById('totalAmount').innerHTML = formatNumber(data.total_amount) + ' AFN';
-                    document.getElementById('transactionCount').innerHTML = (data.transactions?.length || data.payments?.length || 0);
+                    document.getElementById('transactionCount').innerHTML = data.transaction_count || 0;
 
                     document.getElementById('statsCards').style.display = 'flex';
 
-                    const payments = data.payments || data.transactions || [];
+                    const payments = data.payments || [];
 
                     if (payments.length === 0) {
-                        resultDiv.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">✅ هیچ پرداختی در این تاریخ ثبت نشده است</div></div></div></tr>';
+                        resultDiv.innerHTML = '</td><td colspan="10" class="text-center text-muted py-4">✅ هیچ پرداختی در این تاریخ ثبت نشده است</div></div></div></tr>';
                         document.getElementById('tableFooter').style.display = 'none';
                         document.getElementById('tableContainer').style.display = 'block';
                         return;
@@ -407,22 +481,22 @@
                     payments.forEach((p, index) => {
                         const isExpired = p.old_expiry_date && new Date(p.old_expiry_date) < new Date();
                         html += `
-                        <tr>
-                            <td class="text-dark">${index + 1}</div></div></div>
-                            <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
-                            <td class="text-dark">${p.father_name || '-'}</div></div></div>
-                            <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
-                            <td class="text-dark">${p.class_name || '-'}</div></div></div>
-                            <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">
-                                ${p.old_expiry_date ? formatDate(p.old_expiry_date) : '-'}
-                                ${isExpired ? '<span class="expiry-badge ms-2">منقضی شده بود</span>' : ''}
-                            </div></div></div>
-                            <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
-                            <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</div></div></div>
-                            <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
-                            <td class="text-dark">${p.notes || '-'}</div></div></div>
-                        </div></div></div>
-                    `;
+                <tr>
+                    <td class="text-dark">${index + 1}</div></div></div>
+                    <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
+                    <td class="text-dark">${p.father_name || '-'}</div></div></div>
+                    <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
+                    <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                    <td class="${isExpired ? 'text-danger fw-bold' : 'text-dark'}">
+                        ${p.old_expiry_date ? formatDate(p.old_expiry_date) : '-'}
+                        ${isExpired ? '<span class="expiry-badge ms-2">منقضی شده بود</span>' : ''}
+                    </div></div></div>
+                    <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+                    <td class="text-success fw-bold">${formatNumber(p.amount)} AFN</div></div></div>
+                    <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                    <td class="text-dark">${p.notes || '-'}</div></div></div>
+                </div></div></div>
+            `;
                     });
 
                     resultDiv.innerHTML = html;
@@ -436,7 +510,6 @@
                     document.getElementById('tableFooter').style.display = 'none';
                 }
             }
-
             function printReport() {
                 const selectedDate = document.getElementById('issueDateSelect').value;
                 if (!selectedDate) {
