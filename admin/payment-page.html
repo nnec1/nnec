@@ -14,23 +14,16 @@
             padding: 40px 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .payment-container {
-            max-width: 650px;
-            margin: 0 auto;
-        }
+        .payment-container { max-width: 650px; margin: 0 auto; }
         .payment-card {
             background: white;
             border-radius: 28px;
             padding: 30px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-        .logo-area {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .logo-area { text-align: center; margin-bottom: 20px; }
         .logo-circle {
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             background: linear-gradient(135deg, #10b981, #059669);
             border-radius: 50%;
             display: flex;
@@ -39,14 +32,12 @@
             margin: 0 auto 10px;
         }
         .logo-circle i { font-size: 1.8rem; color: white; }
-
         .search-box {
             background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
         }
-
         .student-list {
             max-height: 250px;
             overflow-y: auto;
@@ -61,22 +52,9 @@
             transition: all 0.2s;
             border: 1px solid #e2e8f0;
         }
-        .student-item:hover {
-            background: #e0f2fe;
-            border-color: #10b981;
-        }
-        .student-item.selected {
-            background: #dcfce7;
-            border-color: #10b981;
-            border-width: 2px;
-        }
-
-        .payment-form {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-        }
-
+        .student-item:hover { background: #e0f2fe; border-color: #10b981; }
+        .student-item.selected { background: #dcfce7; border-color: #10b981; border-width: 2px; }
+        .payment-form { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
         .info-box {
             background: #f1f5f9;
             border-radius: 16px;
@@ -90,51 +68,31 @@
             border-bottom: 1px solid #e2e8f0;
         }
         .info-row:last-child { border-bottom: none; }
-
         .reminder-box {
-            background: #fef2f2;
-            border-right: 4px solid #dc2626;
+            background: #fef3c7;
+            border-right: 4px solid #f59e0b;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 20px;
         }
-        .reminder-title {
-            color: #dc2626;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        .reminder-text {
-            color: #991b1b;
-            font-size: 13px;
-        }
-        .reminder-text span { font-weight: bold; }
-
         .new-fee-box {
             background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
         }
-
         .remaining-box {
-            background: #fef3c7;
+            background: #dcfce7;
             border-radius: 12px;
             padding: 12px;
             text-align: center;
             margin: 15px 0;
         }
-
         .form-control, .form-select {
             border-radius: 12px;
             padding: 10px 14px;
             border: 1px solid #e2e8f0;
         }
-        .form-control:focus, .form-select:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
-            outline: none;
-        }
-
         .btn-payment {
             background: linear-gradient(135deg, #10b981, #059669);
             border: none;
@@ -145,21 +103,6 @@
             color: white;
             transition: 0.3s;
         }
-        .btn-payment:hover { transform: translateY(-2px); }
-        
-        .btn-fullpay {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border: none;
-            padding: 12px;
-            border-radius: 14px;
-            font-weight: bold;
-            width: 100%;
-            color: white;
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-        .btn-fullpay:hover { transform: translateY(-2px); }
-        
         .btn-back {
             background: #64748b;
             border: none;
@@ -169,27 +112,9 @@
             color: white;
             margin-top: 15px;
         }
-
-        .debt-amount {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .payment-options {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .payment-options .btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 12px;
-        }
-
         @media (max-width: 480px) {
             .payment-card { padding: 20px; }
             .info-row { flex-direction: column; gap: 5px; }
-            .payment-options { flex-direction: column; }
         }
     </style>
 </head>
@@ -226,7 +151,6 @@
 
             <!-- فرم پرداخت (مخفی در ابتدا) -->
             <div id="paymentForm" class="payment-form" style="display: none;">
-
                 <!-- اطلاعات شاگرد -->
                 <div class="info-box">
                     <h6 class="mb-2"><i class="fa-solid fa-user-circle"></i> اطلاعات شاگرد</h6>
@@ -236,63 +160,41 @@
                     <div class="info-row"><span><i class="fa-solid fa-phone"></i> شماره تماس:</span><span id="studentPhoneDisplay">-</span></div>
                 </div>
 
-                <!-- یادآوری فیس قبلی -->
-                <div id="reminderBox" class="reminder-box">
-                    <div class="reminder-title"><i class="fa-solid fa-bell"></i> یادآوری - فیس قبلی</div>
-                    <div class="reminder-text">
-                        آخرین پرداخت: <span id="lastPaymentInfo">-</span><br>
-                        تاریخ انقضا قبلی: <span id="lastExpiryInfo">-</span><br>
-                        <strong>باقی مانده قبلی: <span id="previousRemaining" class="debt-amount">0 AFN</span></strong>
-                    </div>
-                </div>
-
                 <!-- فرم ثبت فیس جدید -->
                 <div class="new-fee-box">
                     <h6 class="mb-3"><i class="fa-solid fa-plus-circle text-success"></i> ثبت فیس جدید</h6>
 
-                    <!-- دو گزینه پرداخت -->
-                    <div class="payment-options">
-                        <button type="button" id="partialPaymentBtn" class="btn btn-outline-primary active">پرداخت ناقص</button>
-                        <button type="button" id="fullPaymentBtn" class="btn btn-outline-success">پرداخت کامل</button>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> مجموعه فیس (AFN)</label>
+                        <input type="number" id="newTotalFee" class="form-control" placeholder="مثال: 5000">
                     </div>
 
-                    <!-- فرم پرداخت ناقص (پیش‌فرض) -->
-                    <div id="partialPaymentForm">
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> مبلغ پرداختی (AFN)</label>
-                            <input type="number" id="newPayment" class="form-control" placeholder="مبلغ پرداختی را وارد کنید">
-                            <small class="text-muted">فقط این مبلغ از بدهی کسر می‌شود</small>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت (AFN)</label>
+                        <input type="number" id="newPayment" class="form-control" placeholder="مبلغ پرداختی">
                     </div>
 
-                    <!-- فرم پرداخت کامل (مخفی) -->
-                    <div id="fullPaymentForm" style="display: none;">
-                        <div class="alert alert-info">
-                            <i class="fa-solid fa-info-circle"></i> با انتخاب این گزینه، کل مبلغ باقی مانده به طور کامل پرداخت می‌شود.
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> مبلغ قابل پرداخت</label>
-                            <input type="text" id="fullPaymentAmount" class="form-control" readonly style="background:#f1f5f9">
-                        </div>
-                    </div>
-
-                    <!-- باقی مانده پس از پرداخت -->
+                    <!-- باقی مانده -->
                     <div id="remainingBox" class="remaining-box" style="display: none;">
-                        <span class="text-dark">💰 باقی مانده پس از پرداخت:</span>
-                        <h4 class="text-danger mb-0" id="remainingAmount">0 AFN</h4>
-                        <small class="text-muted">این مبلغ باید در آینده پرداخت شود</small>
+                        <span class="text-dark">💰 باقی مانده:</span>
+                        <h3 class="text-danger mb-0" id="remainingAmount">0 AFN</h3>
+                    </div>
+
+                    <!-- یاداشت بدهی -->
+                    <div class="mb-3" id="debtNoteBox" style="display: none;">
+                        <label class="form-label"><i class="fa-solid fa-pen"></i> یاداشت (مثال: باقی مانده تا شنبه آینده)</label>
+                        <textarea id="debtNote" class="form-control" rows="2" placeholder="توضیح در مورد باقی مانده..."></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ پرداخت جدید</label>
+                        <label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ پرداخت</label>
                         <input type="date" id="newDate" class="form-control">
-                        <small class="text-muted">تاریخ صدور رسید همین تاریخ خواهد بود</small>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضای جدید</label>
+                        <label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضا (اختیاری)</label>
                         <input type="date" id="newExpiry" class="form-control">
-                        <small class="text-muted">به طور خودکار یک ماه بعد از تاریخ پرداخت</small>
+                        <small class="text-muted">خالی = یک ماه بعد</small>
                     </div>
 
                     <div class="mb-3">
@@ -317,7 +219,6 @@
     <script>
         let currentStudent = null;
         let allStudents = [];
-        let isFullPayment = false; // وضعیت پرداخت (کامل یا ناقص)
 
         function formatDate(dateString) {
             if (!dateString) return '-';
@@ -335,79 +236,35 @@
             return date.toISOString().split('T')[0];
         }
 
-        function isDateExpired(dateString) {
-            if (!dateString) return false;
-            try {
-                let date = new Date(dateString);
-                let today = new Date();
-                today.setHours(0, 0, 0, 0);
-                return date < today;
-            } catch (e) { return false; }
-        }
-
-        // محاسبه باقی مانده جدید (بر اساس نوع پرداخت)
-        function calculateNewRemaining() {
-            const previousRemainingText = document.getElementById('previousRemaining').innerText;
-            let previousRemaining = parseFloat(previousRemainingText.replace(' AFN', '').replace(/,/g, '')) || 0;
+        // محاسبه باقی مانده
+        function calculateRemaining() {
+            const totalFee = parseFloat(document.getElementById('newTotalFee').value) || 0;
+            const payment = parseFloat(document.getElementById('newPayment').value) || 0;
+            const remaining = totalFee - payment;
             
             const remainingBox = document.getElementById('remainingBox');
             const remainingAmount = document.getElementById('remainingAmount');
+            const debtNoteBox = document.getElementById('debtNoteBox');
             
-            if (isFullPayment) {
-                // پرداخت کامل
-                const newRemaining = 0;
+            if (totalFee > 0) {
                 remainingBox.style.display = 'block';
-                remainingAmount.innerHTML = '0 AFN (پرداخت کامل)';
-                remainingAmount.style.color = '#10b981';
-                document.getElementById('fullPaymentAmount').value = previousRemaining.toLocaleString() + ' AFN';
-            } else {
-                // پرداخت ناقص
-                const payment = parseFloat(document.getElementById('newPayment').value) || 0;
-                const newRemaining = previousRemaining - payment;
-                
-                if (payment > 0) {
-                    remainingBox.style.display = 'block';
-                    if (newRemaining > 0) {
-                        remainingAmount.innerHTML = newRemaining.toLocaleString() + ' AFN';
-                        remainingAmount.style.color = '#dc2626';
-                    } else if (newRemaining === 0) {
-                        remainingAmount.innerHTML = '0 AFN (پرداخت کامل)';
-                        remainingAmount.style.color = '#10b981';
-                    } else {
-                        remainingAmount.innerHTML = '0 AFN (اضافه پرداختی)';
-                        remainingAmount.style.color = '#f59e0b';
-                    }
+                if (remaining > 0) {
+                    remainingAmount.innerHTML = remaining.toLocaleString() + ' AFN';
+                    remainingAmount.style.color = '#dc2626';
+                    debtNoteBox.style.display = 'block';
+                } else if (remaining === 0) {
+                    remainingAmount.innerHTML = '0 AFN (پرداخت کامل)';
+                    remainingAmount.style.color = '#10b981';
+                    debtNoteBox.style.display = 'none';
                 } else {
-                    remainingBox.style.display = 'none';
+                    remainingAmount.innerHTML = '0 AFN (اضافه پرداختی)';
+                    remainingAmount.style.color = '#f59e0b';
+                    debtNoteBox.style.display = 'none';
                 }
-            }
-        }
-
-        // تغییر حالت پرداخت
-        function setPaymentMode(mode) {
-            isFullPayment = (mode === 'full');
-            
-            const partialForm = document.getElementById('partialPaymentForm');
-            const fullForm = document.getElementById('fullPaymentForm');
-            const partialBtn = document.getElementById('partialPaymentBtn');
-            const fullBtn = document.getElementById('fullPaymentBtn');
-            
-            if (isFullPayment) {
-                partialForm.style.display = 'none';
-                fullForm.style.display = 'block';
-                partialBtn.classList.remove('active', 'btn-outline-primary');
-                partialBtn.classList.add('btn-outline-secondary');
-                fullBtn.classList.remove('btn-outline-success');
-                fullBtn.classList.add('active', 'btn-success');
             } else {
-                partialForm.style.display = 'block';
-                fullForm.style.display = 'none';
-                fullBtn.classList.remove('active', 'btn-success');
-                fullBtn.classList.add('btn-outline-success');
-                partialBtn.classList.remove('btn-outline-secondary');
-                partialBtn.classList.add('active', 'btn-outline-primary');
+                remainingBox.style.display = 'none';
+                debtNoteBox.style.display = 'none';
             }
-            calculateNewRemaining();
         }
 
         async function loadClasses() {
@@ -452,9 +309,7 @@
                                 <strong>${s.name}</strong><br>
                                 <small class="text-muted">${s.student_card_id || '-'} | ${s.class_name || '-'}</small>
                             </div>
-                            <div class="text-end">
-                                <small>${s.phone || 'بدون شماره'}</small>
-                            </div>
+                            <div class="text-end"><small>${s.phone || 'بدون شماره'}</small></div>
                         </div>
                     </div>
                 `;
@@ -462,62 +317,30 @@
             document.getElementById('studentList').innerHTML = html;
         }
 
-        async function getStudentRemaining(studentId) {
-            try {
-                const res = await fetch(`/api/student/balance/${studentId}`);
-                const data = await res.json();
-                return data.remaining_fee || 0;
-            } catch(err) {
-                return 0;
-            }
-        }
-
         async function selectStudent(studentId) {
             try {
                 const res = await fetch(`/api/students/${studentId}`);
                 currentStudent = await res.json();
 
-                // نمایش اطلاعات شاگرد
                 document.getElementById('studentName').innerHTML = currentStudent.name || '-';
                 document.getElementById('studentFather').innerHTML = currentStudent.father_name || '-';
                 document.getElementById('studentClass').innerHTML = currentStudent.class_name || '-';
                 document.getElementById('studentPhoneDisplay').innerHTML = currentStudent.phone || '-';
                 document.getElementById('studentPhoneInput').value = currentStudent.phone || '';
 
-                // محاسبه باقی مانده قبلی
-                const previousRemaining = await getStudentRemaining(studentId);
-                
-                // دریافت آخرین پرداخت برای یادآوری
-                const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
-                const payments = await paymentsRes.json();
-                const lastPayment = payments.length > 0 ? payments[0] : null;
-
-                let lastPaymentText = 'اولین پرداخت';
-                let lastExpiryText = 'ثبت نشده';
-
-                if (lastPayment) {
-                    lastPaymentText = `${formatDate(lastPayment.payment_date)} - مبلغ: ${(lastPayment.amount || 0).toLocaleString()} AFN`;
-                    // استخراج تاریخ انقضا از یادداشت
-                    const expiryMatch = lastPayment.notes ? lastPayment.notes.match(/تاریخ انقضا:\s*([0-9-]+)/) : null;
-                    if (expiryMatch) lastExpiryText = expiryMatch[1];
-                }
-
-                document.getElementById('lastPaymentInfo').innerHTML = lastPaymentText;
-                document.getElementById('lastExpiryInfo').innerHTML = lastExpiryText;
-                document.getElementById('previousRemaining').innerHTML = previousRemaining.toLocaleString() + ' AFN';
-
-                // مقداردهی اولیه فرم جدید
+                // مقداردهی اولیه فرم
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('newDate').value = today;
                 document.getElementById('newExpiry').value = calculateExpiryDate(today);
+                document.getElementById('newTotalFee').value = '';
                 document.getElementById('newPayment').value = '';
                 document.getElementById('remainingBox').style.display = 'none';
-                
-                // تنظیم حالت پیش‌فرض (پرداخت ناقص)
-                setPaymentMode('partial');
-                
-                // رویدادهای محاسبه باقی مانده
-                document.getElementById('newPayment').oninput = () => calculateNewRemaining();
+                document.getElementById('debtNoteBox').style.display = 'none';
+                document.getElementById('debtNote').value = '';
+
+                document.getElementById('newTotalFee').oninput = calculateRemaining;
+                document.getElementById('newPayment').oninput = calculateRemaining;
+
                 document.getElementById('newDate').onchange = function() {
                     if (this.value) {
                         document.getElementById('newExpiry').value = calculateExpiryDate(this.value);
@@ -526,56 +349,43 @@
 
                 document.getElementById('paymentForm').style.display = 'block';
                 filterAndDisplay();
-
             } catch (err) {
                 alert('❌ خطا در بارگیری اطلاعات');
             }
         }
 
-        // ثبت پرداخت جدید
+        // ثبت پرداخت
         document.getElementById('submitPayment').addEventListener('click', async () => {
             if (!currentStudent) {
                 alert('لطفاً ابتدا یک شاگرد را انتخاب کنید');
                 return;
             }
 
+            const totalFee = parseFloat(document.getElementById('newTotalFee').value) || 0;
+            const payment = parseFloat(document.getElementById('newPayment').value) || 0;
             const paymentDate = document.getElementById('newDate').value;
             const expiryDate = document.getElementById('newExpiry').value;
             const phone = document.getElementById('studentPhoneInput').value;
-            
-            let finalPayment = 0;
-            let isFullPaid = false;
-            const previousRemainingText = document.getElementById('previousRemaining').innerText;
-            const previousRemaining = parseFloat(previousRemainingText.replace(' AFN', '').replace(/,/g, '')) || 0;
+            const debtNote = document.getElementById('debtNote').value;
 
-            if (isFullPayment) {
-                // پرداخت کامل
-                finalPayment = previousRemaining;
-                isFullPaid = true;
-                if (finalPayment <= 0) {
-                    alert('❌ بدهی این شاگرد صفر است. نیازی به پرداخت نیست');
-                    return;
-                }
-            } else {
-                // پرداخت ناقص
-                finalPayment = parseFloat(document.getElementById('newPayment').value) || 0;
-                if (finalPayment <= 0) {
-                    alert('❌ مبلغ معتبر وارد کنید');
-                    return;
-                }
-                if (finalPayment > previousRemaining) {
-                    alert(`❌ مبلغ پرداختی (${finalPayment.toLocaleString()} AFN) بیشتر از بدهی جاری (${previousRemaining.toLocaleString()} AFN) است`);
-                    return;
-                }
-                isFullPaid = (finalPayment >= previousRemaining);
+            if (totalFee <= 0) {
+                alert('❌ لطفاً مجموعه فیس را وارد کنید');
+                return;
             }
-
+            if (payment <= 0) {
+                alert('❌ لطفاً مبلغ پرداختی را وارد کنید');
+                return;
+            }
             if (!paymentDate) {
                 alert('❌ تاریخ پرداخت را انتخاب کنید');
                 return;
             }
 
-            // اگر شماره تماس تغییر کرده بود، به‌روزرسانی کن
+            const remaining = totalFee - payment;
+            const finalPayment = payment;
+            const finalRemaining = remaining < 0 ? 0 : remaining;
+
+            // به‌روزرسانی شماره تماس
             if (phone !== currentStudent.phone) {
                 await fetch(`/api/students/${currentStudent.id}`, {
                     method: 'PUT',
@@ -584,57 +394,51 @@
                 });
             }
 
-            const finalRemaining = previousRemaining - finalPayment;
-            
-            // ثبت پرداخت جدید
-            const res = await fetch('/api/new-payment', {
+            // ثبت پرداخت
+            const res = await fetch('/api/create-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     student_id: currentStudent.id,
-                    amount: finalPayment,
+                    total_fee: totalFee,
+                    paid_fee: finalPayment,
+                    remaining_fee: finalRemaining,
                     payment_date: paymentDate,
                     due_date: expiryDate,
-                    notes: `مجموعه فیس: ${(previousRemaining + finalPayment).toLocaleString()} AFN - ${isFullPaid ? 'پرداخت کامل' : `پرداخت ${finalPayment.toLocaleString()} AFN - باقی مانده: ${finalRemaining.toLocaleString()} AFN`}`
+                    notes: debtNote || null
                 })
             });
 
             const data = await res.json();
             if (res.ok) {
-                alert(isFullPaid ? '✅ پرداخت کامل با موفقیت ثبت شد' : `✅ پرداخت ${finalPayment.toLocaleString()} AFN با موفقیت ثبت شد`);
-                
+                if (data.has_debt) {
+                    alert(`✅ پرداخت جزئی ثبت شد. باقی مانده: ${finalRemaining.toLocaleString()} AFN`);
+                } else {
+                    alert('✅ پرداخت کامل با موفقیت ثبت شد');
+                }
+
                 // چاپ رسید
                 if (typeof printReceipt === 'function') {
                     printReceipt(
                         data.student_name, data.student_father, data.student_card_id,
-                        previousRemaining + finalPayment, finalPayment, finalRemaining,
-                        finalPayment, data.payment_date, data.due_date,
-                        data.receipt_number,
-                        isFullPaid ? 'پرداخت کامل' : `پرداخت ${finalPayment.toLocaleString()} AFN - باقی مانده: ${finalRemaining.toLocaleString()} AFN`,
+                        totalFee, finalPayment, finalRemaining,
+                        finalPayment, data.payment_date, data.issue_date,
+                        data.receipt_number, debtNote || '',
                         currentStudent.class_name || '',
-                        finalRemaining <= 0 ? 'paid' : 'debtor',
-                        0, false
+                        finalRemaining > 0 ? 'debtor' : 'paid'
                     );
                 }
 
                 // ریست فرم
-                document.getElementById('newPayment').value = '';
-                document.getElementById('remainingBox').style.display = 'none';
                 document.getElementById('paymentForm').style.display = 'none';
                 currentStudent = null;
-
-                // به روزرسانی لیست
                 await loadStudents();
-
-                // اسکرول به بالا
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-
             } else {
                 alert(data.error || '❌ خطا در ثبت پرداخت');
             }
         });
 
-        // رویدادهای جستجو
         document.getElementById('searchInput').addEventListener('input', () => {
             filterAndDisplay();
             document.getElementById('paymentForm').style.display = 'none';
@@ -645,10 +449,6 @@
             document.getElementById('paymentForm').style.display = 'none';
             currentStudent = null;
         });
-        
-        // رویدادهای تغییر حالت پرداخت
-        document.getElementById('partialPaymentBtn').addEventListener('click', () => setPaymentMode('partial'));
-        document.getElementById('fullPaymentBtn').addEventListener('click', () => setPaymentMode('full'));
 
         loadClasses();
         loadStudents();
