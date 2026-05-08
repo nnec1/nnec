@@ -355,90 +355,87 @@
         }
 
         // ثبت پرداخت
-        document.getElementById('submitPayment').addEventListener('click', async () => {
-            if (!currentStudent) {
-                alert('لطفاً ابتدا یک شاگرد را انتخاب کنید');
-                return;
-            }
+        // ثبت پرداخت
+document.getElementById('submitPayment').addEventListener('click', async () => {
+    if (!currentStudent) {
+        alert('لطفاً ابتدا یک شاگرد را انتخاب کنید');
+        return;
+    }
 
-            const totalFee = parseFloat(document.getElementById('newTotalFee').value) || 0;
-            const payment = parseFloat(document.getElementById('newPayment').value) || 0;
-            const paymentDate = document.getElementById('newDate').value;
-            const expiryDate = document.getElementById('newExpiry').value;
-            const phone = document.getElementById('studentPhoneInput').value;
-            const debtNote = document.getElementById('debtNote').value;
+    const totalFee = parseFloat(document.getElementById('newTotalFee').value) || 0;
+    const payment = parseFloat(document.getElementById('newPayment').value) || 0;
+    const paymentDate = document.getElementById('newDate').value;
+    const expiryDate = document.getElementById('newExpiry').value;
+    const phone = document.getElementById('studentPhoneInput').value;
+    const debtNote = document.getElementById('debtNote').value;
 
-            if (totalFee <= 0) {
-                alert('❌ لطفاً مجموعه فیس را وارد کنید');
-                return;
-            }
-            if (payment <= 0) {
-                alert('❌ لطفاً مبلغ پرداختی را وارد کنید');
-                return;
-            }
-            if (!paymentDate) {
-                alert('❌ تاریخ پرداخت را انتخاب کنید');
-                return;
-            }
+    if (payment <= 0) {
+        alert('❌ لطفاً مبلغ پرداختی را وارد کنید');
+        return;
+    }
+    if (!paymentDate) {
+        alert('❌ تاریخ پرداخت را انتخاب کنید');
+        return;
+    }
 
-            const remaining = totalFee - payment;
-            const finalPayment = payment;
-            const finalRemaining = remaining < 0 ? 0 : remaining;
-
-            // به‌روزرسانی شماره تماس
-            if (phone !== currentStudent.phone) {
-                await fetch(`/api/students/${currentStudent.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phone })
-                });
-            }
-
-            // ثبت پرداخت
-            const res = await fetch('/api/create-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    student_id: currentStudent.id,
-                    total_fee: totalFee,
-                    paid_fee: finalPayment,
-                    remaining_fee: finalRemaining,
-                    payment_date: paymentDate,
-                    due_date: expiryDate,
-                    notes: debtNote || null
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                if (data.has_debt) {
-                    alert(`✅ پرداخت جزئی ثبت شد. باقی مانده: ${finalRemaining.toLocaleString()} AFN`);
-                } else {
-                    alert('✅ پرداخت کامل با موفقیت ثبت شد');
-                }
-
-                // چاپ رسید
-                if (typeof printReceipt === 'function') {
-                    printReceipt(
-                        data.student_name, data.student_father, data.student_card_id,
-                        totalFee, finalPayment, finalRemaining,
-                        finalPayment, data.payment_date, data.issue_date,
-                        data.receipt_number, debtNote || '',
-                        currentStudent.class_name || '',
-                        finalRemaining > 0 ? 'debtor' : 'paid'
-                    );
-                }
-
-                // ریست فرم
-                document.getElementById('paymentForm').style.display = 'none';
-                currentStudent = null;
-                await loadStudents();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-                alert(data.error || '❌ خطا در ثبت پرداخت');
-            }
+    // به‌روزرسانی شماره تماس
+    if (phone !== currentStudent.phone) {
+        await fetch(`/api/students/${currentStudent.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: phone })
         });
+    }
 
+    // ثبت پرداخت
+    try {
+        const res = await fetch('/api/collect-fee', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                student_id: currentStudent.id,
+                amount: payment,
+                payment_date: paymentDate,
+                notes: debtNote || null
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('✅ پرداخت با موفقیت ثبت شد');
+            
+            // چاپ رسید
+            if (typeof printReceipt === 'function') {
+                printReceipt(
+                    data.student_name, 
+                    data.student_father, 
+                    data.student_card_id,
+                    totalFee, 
+                    data.total_paid || payment, 
+                    data.remaining_fee || 0,
+                    payment, 
+                    data.payment_date, 
+                    data.expiry_date,
+                    data.receipt_number, 
+                    debtNote || '',
+                    currentStudent.class_name || '',
+                    data.remaining_fee > 0 ? 'debtor' : 'paid'
+                );
+            }
+            
+            // ریست فرم
+            document.getElementById('paymentForm').style.display = 'none';
+            currentStudent = null;
+            await loadStudents();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            alert(data.error || '❌ خطا در ثبت پرداخت');
+        }
+    } catch (err) {
+        alert('❌ خطا در ارتباط با سرور: ' + err.message);
+    }
+});
         document.getElementById('searchInput').addEventListener('input', () => {
             filterAndDisplay();
             document.getElementById('paymentForm').style.display = 'none';

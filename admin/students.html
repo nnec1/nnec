@@ -18,6 +18,8 @@
         .section-title { color: #1e293b; margin-bottom: 25px; border-right: 4px solid #10b981; padding-right: 15px; font-weight: 700; font-size: 1.6rem; }
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); border: none; }
         .btn-primary { background: linear-gradient(135deg, #10b981, #059669); border: none; }
+        .btn-payment { background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; color: white; }
+        .btn-payment:hover { transform: translateY(-2px); }
         .barcode-preview { background: #f8fafc; border-radius: 12px; padding: 10px; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px; margin-top: 5px; }
         .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 1050; background: white; border: none; width: 48px; height: 48px; border-radius: 14px; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; }
         @media (max-width: 768px) {
@@ -27,6 +29,7 @@
             .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
             .overlay.show { display: block; }
+            .btn-payment { padding: 4px 8px; font-size: 10px; }
         }
     </style>
 </head>
@@ -83,7 +86,7 @@
                             <thead class="table-light">
                                 <tr><th>عکس</th><th>آیدی کارت</th><th>نام</th><th>نام پدر</th><th>شماره تماس</th><th>صنف</th><th>تاریخ ثبت</th><th>وضعیت</th><th>عملیات</th></tr>
                             </thead>
-                            <tbody id="studentsList"><tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</td></tr></tbody>
+                            <tbody id="studentsList"><tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></td></tbody>
                         </table>
                     </div>
                 </div>
@@ -158,6 +161,11 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
         }
 
+        // تابع رفتن به صفحه پرداخت فیس
+        function goToPayment(studentId) {
+            window.location.href = `payment-page.html?id=${studentId}`;
+        }
+
         async function loadClasses() {
             try {
                 const res = await fetch('/api/classes');
@@ -180,7 +188,6 @@
                 const res = await fetch('/api/students');
                 let students = await res.json();
                 
-                // اطمینان از اینکه students آرایه است
                 if (!Array.isArray(students)) {
                     console.error('Expected array but got:', students);
                     students = [];
@@ -195,7 +202,7 @@
                 if (search) students = students.filter(s => (s.name && s.name.toLowerCase().includes(search)) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
                 
                 if (!students || students.length === 0) { 
-                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</td></tr>'; 
+                    document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>'; 
                     return; 
                 }
                 
@@ -203,24 +210,25 @@
                     let statusClass = s.status === 'active' ? 'status-active' : (s.status === 'graduated' ? 'status-graduated' : 'status-disabled');
                     let statusText = s.status === 'active' ? 'فعال' : (s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال');
                     return `<tr>
-                        <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></td>
-                        <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></td>
-                        <td class="text-dark">${s.name || '-'}</td>
-                        <td class="text-dark">${s.father_name || '-'}</td>
-                        <td class="text-dark">${s.phone || '-'}</td>
-                        <td class="text-dark">${s.class_name || '-'}</td>
-                        <td class="text-dark">${s.registration_date ? formatDate(s.registration_date) : '-'}</td>
-                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
+                        <td class="text-dark"><strong>${s.student_card_id || '-'}</strong></div></div></div>
+                        <td class="text-dark">${s.name || '-'}</div></div></div>
+                        <td class="text-dark">${s.father_name || '-'}</div></div></div>
+                        <td class="text-dark">${s.phone || '-'}</div></div></div>
+                        <td class="text-dark">${s.class_name || '-'}</div></div></div>
+                        <td class="text-dark">${s.registration_date ? formatDate(s.registration_date) : '-'}</div></div></div>
+                        <td><span class="${statusClass}">${statusText}</span></div></div></div>
                         <td>
                             <button class="btn btn-sm btn-warning me-1" onclick="editStudent(${s.id})"><i class="fa-solid fa-pencil"></i></button>
                             <button class="btn btn-sm btn-danger me-1" onclick="deleteStudent(${s.id})"><i class="fa-solid fa-trash"></i></button>
-                            <button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i></button>
-                        </td>
-                    </tr>`;
+                            <button class="btn btn-sm btn-payment me-1" onclick="goToPayment(${s.id})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت فیس</button>
+                            <button class="btn btn-sm btn-info" onclick="showStudentCard(${s.id})"><i class="fa-solid fa-qrcode"></i> کارت</button>
+                         </div></div></div>
+                    </div></div></div>`;
                 }).join('');
             } catch (err) { 
                 console.error('Error loading students:', err); 
-                document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات: ' + err.message + '</td></tr>'; 
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات: ' + err.message + '</div></div></div></tr>'; 
             }
         }
 
