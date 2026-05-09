@@ -387,26 +387,27 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
         s.phone,
         s.class_id,
         c.class_name,
+        fp.id as payment_id,
         fp.remaining_after,
         fp.total_fee,
         fp.paid_fee,
-        DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date
+        DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date,
+        fp.payment_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      JOIN (
-        SELECT * FROM fee_payments 
-        WHERE id IN (SELECT MAX(id) FROM fee_payments GROUP BY student_id)
-      ) fp ON s.id = fp.student_id
-      WHERE s.status = 'active' AND fp.remaining_after > 0
-      ORDER BY fp.remaining_after DESC
+      JOIN fee_payments fp ON s.id = fp.student_id
+      WHERE s.status = 'active' 
+        AND fp.remaining_after > 0
+      ORDER BY s.id, fp.payment_date DESC
     `);
+    
+    console.log("✅ Debtors found:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-debtors:", err);
+    console.error("❌ Error in /api/fee-debtors:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // منقضی شده
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
@@ -419,29 +420,29 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         s.phone,
         s.class_id,
         c.class_name,
+        fp.id as payment_id,
         fp.remaining_after,
         fp.total_fee,
         fp.paid_fee,
-        DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date
+        DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date,
+        fp.payment_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      JOIN (
-        SELECT * FROM fee_payments 
-        WHERE id IN (SELECT MAX(id) FROM fee_payments GROUP BY student_id)
-      ) fp ON s.id = fp.student_id
+      JOIN fee_payments fp ON s.id = fp.student_id
       WHERE s.status = 'active' 
         AND fp.due_date IS NOT NULL 
         AND fp.due_date < CURDATE()
         AND fp.remaining_after > 0
-      ORDER BY fp.due_date ASC
+      ORDER BY s.id, fp.due_date ASC
     `);
+    
+    console.log("✅ Expired found:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-expired:", err);
+    console.error("❌ Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // تاریخچه پرداخت‌ها
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
