@@ -88,6 +88,8 @@
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="homework.html" class="nav-link active"><i class="fa-solid fa-book-open"></i> تکالیف</a>
+                    <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
+                    <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
                     <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
@@ -114,12 +116,13 @@
         </div>
     </div>
 
+    <!-- مودال تکلیف -->
     <div class="modal fade" id="hwModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title"><i class="fa-solid fa-book-open"></i> تکلیف جدید</h5><button type="button"
-                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title"><i class="fa-solid fa-book-open"></i> تکلیف جدید</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="hwForm"><input type="hidden" id="hwId">
@@ -132,13 +135,10 @@
                                     class="form-select" required>
                                     <option value="">انتخاب صنف...</option>
                                 </select></div>
-                            <div class="col-md-6"><label class="form-label">مضمون</label><select id="hwSubject"
-                                    class="form-select" required>
-                                    <option value="">ابتدا صنف را انتخاب کنید...</option>
-                                </select></div>
                             <div class="col-12"><label class="form-label">متن تکلیف</label><textarea id="hwAssignment"
                                     class="form-control" rows="5" required></textarea></div>
-                        </div><button type="submit" class="btn btn-primary w-100 mt-3"><i class="fa-solid fa-save"></i>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3"><i class="fa-solid fa-save"></i>
                             ذخیره</button>
                     </form>
                 </div>
@@ -160,7 +160,8 @@
             function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
             toggleBtn.addEventListener('click', openSidebar);
             if (overlay) overlay.addEventListener('click', closeSidebar);
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar());
+        }
         }
 
         async function loadClassesForSelect() {
@@ -171,7 +172,6 @@
             const options = classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
             selectClass.innerHTML = '<option value="">انتخاب صنف...</option>' + options;
             filterClass.innerHTML = '<option value="">همه صنف‌ها</option>' + options;
-            selectClass.onchange = async () => { const classId = selectClass.value; if (classId) { const subRes = await fetch(`/api/class-subjects/${classId}`); const subs = await subRes.json(); document.getElementById('hwSubject').innerHTML = '<option value="">انتخاب مضمون...</option>' + subs.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join(''); } };
         }
 
         async function loadHomeworks() {
@@ -181,7 +181,7 @@
             const res = await fetch(url);
             const data = await res.json();
             if (data.length === 0) { document.getElementById('homeworksList').innerHTML = '<div class="alert alert-info text-center">تکلیفی ثبت نشده است</div>'; return; }
-            document.getElementById('homeworksList').innerHTML = data.map(h => `<div class="card mb-3 p-3"><div class="d-flex justify-content-between flex-wrap"><div><h5><i class="fa-solid fa-book-open text-success"></i> ${h.class_name} - ${h.subject_name}</h5><small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${h.homework_date} | <i class="fa-regular fa-calendar-clock"></i> سررسید: ${h.due_date || '-'}</small></div><div><button class="btn btn-sm btn-warning me-1" onclick="editHomework(${h.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteHomework(${h.id})"><i class="fa-solid fa-trash"></i></button></div></div><hr><p>${h.assignment}</p></div>`).join('');
+            document.getElementById('homeworksList').innerHTML = data.map(h => `<div class="card mb-3 p-3"><div class="d-flex justify-content-between flex-wrap"><div><h5><i class="fa-solid fa-book-open text-success"></i> ${h.class_name}</h5><small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${h.homework_date} | <i class="fa-regular fa-calendar-clock"></i> سررسید: ${h.due_date || '-'}</small></div><div><button class="btn btn-sm btn-warning me-1" onclick="editHomework(${h.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteHomework(${h.id})"><i class="fa-solid fa-trash"></i></button></div></div><hr><p>${h.assignment}</p></div>`).join('');
         }
 
         async function editHomework(id) {
@@ -192,9 +192,6 @@
             document.getElementById('dueDate').value = h.due_date || '';
             document.getElementById('hwClass').value = h.class_id;
             document.getElementById('hwAssignment').value = h.assignment;
-            const subRes = await fetch(`/api/class-subjects/${h.class_id}`);
-            const subs = await subRes.json();
-            document.getElementById('hwSubject').innerHTML = subs.map(s => `<option value="${s.subject_id}" ${s.subject_id == h.subject_id ? 'selected' : ''}>${s.subject_name}</option>`).join('');
             new bootstrap.Modal(document.getElementById('hwModal')).show();
         }
 
@@ -203,7 +200,7 @@
         document.getElementById('hwForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('hwId').value;
-            const data = { class_id: document.getElementById('hwClass').value, subject_id: document.getElementById('hwSubject').value, teacher_id: teacherId, homework_date: document.getElementById('hwDate').value, due_date: document.getElementById('dueDate').value, assignment: document.getElementById('hwAssignment').value };
+            const data = { class_id: document.getElementById('hwClass').value, teacher_id: teacherId, homework_date: document.getElementById('hwDate').value, due_date: document.getElementById('dueDate').value, assignment: document.getElementById('hwAssignment').value };
             const url = id ? `/api/homework/${id}` : '/api/homework';
             const method = id ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });

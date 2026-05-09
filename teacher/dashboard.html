@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>پیشخوان شاگرد | آموزشگاه نوی نور</title>
+    <title>پیشخوان استاد | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/style.css">
     <style>
-        .stat-card { background: white; border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            height: 100%;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); }
+        .stat-card h2 { font-size: 1.8rem; font-weight: 700; margin: 10px 0 0; }
+        .stat-card i { font-size: 2rem; }
         .menu-toggle {
             display: none;
             position: fixed;
@@ -28,27 +40,10 @@
         }
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
             .sidebar.show { right: 0; }
             .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
             .overlay.show { display: block; }
         }
     </style>
@@ -61,18 +56,19 @@
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
-                        <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
+                        <i class="fa-solid fa-chalkboard-user fs-1 text-white"></i>
                     </div>
-                    <h5 class="text-white mb-0">پنل شاگرد</h5>
-                    <small class="text-muted" id="studentNameSidebar">نام شاگرد</small>
+                    <h5 class="text-white mb-0">پنل استاد</h5>
+                    <small class="text-muted" id="teacherNameSidebar">نام استاد</small>
                 </div>
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link active"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
-                    <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> فیس</a>
-                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
-                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
+                    <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> تکالیف</a>
+                    <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
+                    <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
                     <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
@@ -80,23 +76,35 @@
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="fa-solid fa-gauge-high text-success me-2"></i> پیشخوان شاگرد</h3>
+                    <h3 class="section-title"><i class="fa-solid fa-chalkboard-user text-success me-2"></i> پیشخوان استاد</h3>
                     <div class="bg-white px-3 py-2 rounded-3 shadow-sm"><i class="fa-regular fa-calendar text-success"></i><span id="currentDate" class="me-2 text-dark"></span></div>
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-id-card fs-1 text-primary"></i><h6>آیدی کارت</h6><h5 id="studentCardId">-</h5></div></div>
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-user fs-1 text-info"></i><h6>نام</h6><h5 id="studentName">-</h5></div></div>
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-users fs-1 text-success"></i><h6>صنف</h6><h5 id="studentClass">-</h5></div></div>
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-star fs-1 text-warning"></i><h6>میانگین نمرات</h6><h2 id="avgGrade">0</h2></div></div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center"><i class="fa-solid fa-users fs-1 text-primary"></i><h2 id="totalStudents">0</h2><small>شاگردان فعال</small></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center"><i class="fa-solid fa-clock fs-1 text-warning"></i><h2 id="totalClasses">0</h2><small>صنف‌های من</small></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center"><i class="fa-solid fa-star fs-1 text-success"></i><h2 id="avgGrade">0</h2><small>میانگین نمرات شاگردان</small></div>
+                    </div>
                 </div>
 
-                <div class="row g-4">
-                    <div class="col-md-6"><div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="attendanceChart" height="250"></canvas></div></div>
-                    <div class="col-md-6"><div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="feeChart" height="250"></canvas></div></div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="attendanceChart" height="250"></canvas></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="gradesChart" height="250"></canvas></div>
+                    </div>
                 </div>
 
-                <div id="feeWarning" class="alert alert-danger mt-4 d-none"></div>
+                <div class="chart-card p-3 bg-white rounded-3 shadow-sm">
+                    <h5><i class="fa-solid fa-book-open text-success me-2"></i> آخرین تکالیف</h5>
+                    <div id="recentHomework" class="mt-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -104,8 +112,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
-        let studentId = localStorage.getItem('studentId') || localStorage.getItem('userId');
-        let attendanceChart = null, feeChart = null;
+        let teacherId = localStorage.getItem('userId') || 3;
+        let attendanceChart = null, gradesChart = null;
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
@@ -119,35 +127,68 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
-        async function loadStudentInfo() {
-            const res = await fetch(`/api/student/info/${studentId}`);
-            const data = await res.json();
-            document.getElementById('studentCardId').innerText = data.student_card_id || '-';
-            document.getElementById('studentName').innerText = data.name || '-';
-            document.getElementById('studentClass').innerText = data.class_name || '-';
-            document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+        async function loadTeacherInfo() {
+            try {
+                const res = await fetch(`/api/teacher/info/${teacherId}`);
+                const data = await res.json();
+                document.getElementById('teacherNameSidebar').innerText = data.name || 'استاد';
+            } catch (err) { console.error(err); }
         }
 
         async function loadStats() {
-            const res = await fetch(`/api/student/stats/${studentId}`);
-            const data = await res.json();
-            document.getElementById('avgGrade').innerText = data.avg_grade || 0;
-            if (attendanceChart) attendanceChart.destroy();
-            attendanceChart = new Chart(document.getElementById('attendanceChart'), { type: 'doughnut', data: { labels: ['حاضر', 'تأخیر', 'غایب'], datasets: [{ data: [data.present_count || 0, data.late_count || 0, data.absent_count || 0], backgroundColor: ['#10b981', '#f59e0b', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+            try {
+                const classesRes = await fetch(`/api/teacher/classes/${teacherId}`);
+                const classes = await classesRes.json();
+                document.getElementById('totalClasses').innerText = classes.length || 0;
+                
+                const studentsRes = await fetch(`/api/teacher/students/${teacherId}`);
+                let students = await studentsRes.json();
+                document.getElementById('totalStudents').innerText = students.length || 0;
+                
+                // میانگین نمرات
+                let totalGrades = 0, gradeCount = 0;
+                for (const s of students) {
+                    const gradesRes = await fetch(`/api/student/grades/${s.id}`);
+                    const grades = await gradesRes.json();
+                    for (const g of grades) {
+                        totalGrades += (g.score / g.max_score) * 100;
+                        gradeCount++;
+                    }
+                }
+                const avg = gradeCount > 0 ? (totalGrades / gradeCount).toFixed(1) : 0;
+                document.getElementById('avgGrade').innerText = avg;
+                
+                // نمودار حاضری
+                let present = 0, absent = 0, late = 0;
+                for (const s of students) {
+                    const attRes = await fetch(`/api/student/attendance/${s.id}?month=${new Date().getMonth()+1}&year=2025`);
+                    const attData = await attRes.json();
+                    present += attData.present || 0;
+                    absent += attData.absent || 0;
+                    late += attData.late || 0;
+                }
+                if (attendanceChart) attendanceChart.destroy();
+                attendanceChart = new Chart(document.getElementById('attendanceChart'), { type: 'doughnut', data: { labels: ['حاضر', 'غایب', 'تأخیر'], datasets: [{ data: [present, absent, late], backgroundColor: ['#10b981', '#dc2626', '#f59e0b'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+                
+                // نمودار توزیع نمرات (مثال)
+                if (gradesChart) gradesChart.destroy();
+                gradesChart = new Chart(document.getElementById('gradesChart'), { type: 'bar', data: { labels: ['عالی (80-100)', 'خوب (60-79)', 'قابل قبول (40-59)', 'ضعیف (0-39)'], datasets: [{ label: 'تعداد شاگردان', data: [0, 0, 0, 0], backgroundColor: '#10b981' }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+            } catch (err) { console.error(err); }
         }
 
-        async function loadFeeStatus() {
-            const res = await fetch(`/api/student/fees/${studentId}`);
-            const data = await res.json();
-            if (feeChart) feeChart.destroy();
-            feeChart = new Chart(document.getElementById('feeChart'), { type: 'pie', data: { labels: ['پرداخت شده', 'باقی مانده'], datasets: [{ data: [data.paid_fee || 0, data.remaining_fee || 0], backgroundColor: ['#10b981', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
-            if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) { document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ هشدار! فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.`; document.getElementById('feeWarning').classList.remove('d-none'); }
+        async function loadRecentHomework() {
+            try {
+                const res = await fetch(`/api/teacher/homework/${teacherId}?limit=3`);
+                const data = await res.json();
+                if (data.length === 0) { document.getElementById('recentHomework').innerHTML = '<div class="alert alert-info text-center">تکلیفی ثبت نشده است</div>'; return; }
+                document.getElementById('recentHomework').innerHTML = data.map(h => `<div class="border-bottom pb-2 mb-2"><div class="d-flex justify-content-between"><strong>${h.class_name} - ${h.subject_name || 'بدون مضمون'}</strong><small class="text-muted">${h.homework_date}</small></div><p class="mb-0 small">${h.assignment.substring(0, 100)}${h.assignment.length > 100 ? '...' : ''}</p></div>`).join('');
+            } catch (err) { console.error(err); }
         }
 
         setupSidebar();
-        loadStudentInfo();
+        loadTeacherInfo();
         loadStats();
-        loadFeeStatus();
+        loadRecentHomework();
     </script>
 </body>
 </html>

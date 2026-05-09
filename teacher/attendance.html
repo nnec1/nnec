@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
     <style>
         .present-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #10b981; }
         .absent-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #dc2626; }
@@ -17,7 +18,8 @@
         .attendance-late-row { background-color: #fef3c7 !important; border-right: 4px solid #f59e0b; }
         .checkbox-group { display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
         .quick-actions { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .fee-warning-badge { background: #dc2626; color: white; font-size: 10px; padding: 2px 6px; border-radius: 20px; margin-right: 8px; }
+        .fee-warning-badge { background: #dc2626; color: white; font-size: 10px; padding: 2px 6px; border-radius: 20px; margin-right: 8px; cursor: pointer; }
+        .fee-warning-badge:hover { background: #b91c1c; }
         .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 1050; background: white; border: none; width: 48px; height: 48px; border-radius: 14px; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; }
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
@@ -46,6 +48,8 @@
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
                     <a href="attendance.html" class="nav-link active"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> تکالیف</a>
+                    <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
                     <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
@@ -73,8 +77,8 @@
                             <thead class="table-light">
                                 <tr><th style="width:50px">#</th><th>عکس</th><th>آیدی کارت</th><th>نام شاگرد</th><th>نام پدر</th><th>وضعیت فیس</th><th style="width:200px">وضعیت حاضری</th><th>یادداشت</th></tr>
                             </thead>
-                            <tbody id="attendanceList"><tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></tr></tbody>
-                        追赶
+                            <tbody id="attendanceList"><tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></table></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -118,7 +122,7 @@
 
         async function loadAttendanceList() {
             const classId = document.getElementById('attendanceClass').value;
-            if (!classId) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></table>'; return; }
+            if (!classId) { document.getElementById('attendanceList').innerHTML = '<table><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></tr>'; return; }
             const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
             try {
                 const res = await fetch(`/api/teacher/students/${teacherId}`);
@@ -138,10 +142,10 @@
                 currentAttendance = students.map(s => ({ student_id: s.id, name: s.name, father_name: s.father_name, student_card_id: s.student_card_id, photo: s.photo, fee_expired: s.due_date && new Date(s.due_date) < new Date(), status: 'present', notes: '' }));
                 await checkExistingAttendance(classId, date);
                 document.getElementById('attendanceList').innerHTML = students.map((s, i) => `<tr id="attendance-row-${i}" class="${currentAttendance[i].status === 'present' ? 'attendance-present-row' : (currentAttendance[i].status === 'absent' ? 'attendance-absent-row' : 'attendance-late-row')}">
-                    <td class="text-center">${i + 1}</td><td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></td>
-                    <td class="text-dark"><strong>${s.student_card_id || '-'}</strong>${currentAttendance[i].fee_expired ? '<span class="fee-warning-badge"><i class="fa-solid fa-circle-exclamation"></i> فیس منقضی</span>' : ''}</td>
-                    <td class="text-dark"><strong>${s.name}</strong></td><td class="text-dark">${s.father_name || '-'}</div></div></div>
-                    <td class="text-dark">${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="fa-regular fa-circle-xmark"></i> منقضی - به دفتر مراجعه کنید</span>' : '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر</span>') : '-'}</td>
+                    <td class="text-center">${i + 1}</div></div></div><td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
+                    <td class="text-dark"><strong>${s.student_card_id || '-'}</strong>${currentAttendance[i].fee_expired ? '<span class="fee-warning-badge" onclick="window.open(\'/admin/fee-management.html\', \'_blank\')"><i class="fa-solid fa-circle-exclamation"></i> فیس منقضی - کلیک کنید</span>' : ''}</div></div></div>
+                    <td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div>
+                    <td class="text-dark">${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="fa-regular fa-circle-xmark"></i> منقضی - به دفتر مراجعه کنید</span>' : '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر</span>') : '-'}</div></div></div>
                     <td class="text-center"><div class="checkbox-group"><label><input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')"> <i class="fa-solid fa-check-circle"></i> حاضر</label><label><input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')"> <i class="fa-solid fa-xmark-circle"></i> غایب</label><label><input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')"> <i class="fa-solid fa-clock"></i> تأخیر</label></div></div></div></div>
                     <td><input type="text" class="form-control form-control-sm" placeholder="یادداشت..." value="${currentAttendance[i].notes || ''}" onchange="currentAttendance[${i}].notes = this.value"></div></div></div>
                 </div></div></div>`).join('');

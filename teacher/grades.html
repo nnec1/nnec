@@ -66,6 +66,11 @@
                 display: block;
             }
         }
+
+        .grade-input {
+            width: 100px;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -87,6 +92,8 @@
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link active"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> تکالیف</a>
+                    <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
                     <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
@@ -99,27 +106,21 @@
                 <h3 class="section-title"><i class="fa-solid fa-chart-line text-success me-2"></i> مدیریت نمرات</h3>
 
                 <div class="row g-3 mb-4">
-                    <div class="col-md-3"><select class="form-select" id="gradeClass" onchange="loadSubjects()">
+                    <div class="col-md-3"><select class="form-select" id="gradeClass" onchange="loadStudents()">
                             <option value="">انتخاب صنف...</option>
-                        </select></div>
-                    <div class="col-md-3"><select class="form-select" id="gradeSubject" onchange="loadStudents()">
-                            <option value="">انتخاب مضمون...</option>
                         </select></div>
                     <div class="col-md-2"><select class="form-select" id="examType">
                             <option value="quiz">Quiz</option>
                             <option value="midterm">Midterm</option>
                             <option value="final">Final</option>
-                            <option value="group_project">پروژه گروهی</option>
                         </select></div>
                     <div class="col-md-2"><input type="number" class="form-control" id="maxScore" value="100"></div>
                     <div class="col-md-2"><button class="btn btn-success w-100" onclick="saveAllGrades()"><i
                                 class="fa-solid fa-save"></i> ذخیره همه</button></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" data-bs-toggle="modal"
+                            data-bs-target="#groupGradeModal"><i class="fa-solid fa-users"></i> نمره گروهی</button>
+                    </div>
                 </div>
-
-                <div class="alert alert-info d-flex justify-content-between align-items-center"><span><i
-                            class="fa-solid fa-users"></i> نمره گروهی: برای کل صنف یک نمره ثبت کنید</span><button
-                        class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#groupGradeModal"><i
-                            class="fa-solid fa-plus-circle"></i> نمره گروهی</button></div>
 
                 <div class="table-container">
                     <div class="table-responsive">
@@ -128,18 +129,20 @@
                                 <tr>
                                     <th>آیدی کارت</th>
                                     <th>نام شاگرد</th>
+                                    <th>نام پدر</th>
                                     <th>نمره (از <span id="maxScoreDisplay">100</span>)</th>
                                     <th>درصد</th>
                                     <th>Grade</th>
+                                    <th>وضعیت</th>
                                 </tr>
                             </thead>
                             <tbody id="gradesStudentsList">
                                 <tr>
-                                    <td colspan="5" class="text-center">لطفاً صنف و مضمون را انتخاب کنید
+                                    <td colspan="7" class="text-center">لطفاً صنف را انتخاب کنید
                     </div>
                 </div>
             </div>
-            </td>
+            </tr>
             </tbody>
             </table>
         </div>
@@ -148,12 +151,13 @@
     </div>
     </div>
 
+    <!-- مودال نمره گروهی -->
     <div class="modal fade" id="groupGradeModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title"><i class="fa-solid fa-users"></i> نمره گروهی</h5><button type="button"
-                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title"><i class="fa-solid fa-users"></i> نمره گروهی</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="groupGradeForm">
@@ -163,11 +167,12 @@
                                 class="form-control" id="groupMaxScore" value="100" required></div>
                         <div class="mb-3"><label class="form-label">نوع امتحان</label><select class="form-select"
                                 id="groupExamType">
-                                <option value="group_project">پروژه گروهی</option>
                                 <option value="quiz">Quiz</option>
                                 <option value="midterm">Midterm</option>
-                            </select></div><button type="submit" class="btn btn-primary w-100"><i
-                                class="fa-solid fa-save"></i> ذخیره برای همه شاگردان</button>
+                                <option value="final">Final</option>
+                            </select></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره برای
+                            همه شاگردان</button>
                     </form>
                 </div>
             </div>
@@ -178,7 +183,6 @@
     <script src="/main.js"></script>
     <script>
         let teacherId = localStorage.getItem('userId') || 3;
-        let currentSubjectId = null;
         let currentClassId = null;
         let allStudents = [];
 
@@ -195,60 +199,93 @@
         }
 
         async function loadClasses() {
-            const res = await fetch(`/api/teacher/classes/${teacherId}`);
-            const classes = await res.json();
-            const select = document.getElementById('gradeClass');
-            select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
-        }
-
-        async function loadSubjects() {
-            currentClassId = document.getElementById('gradeClass').value;
-            if (!currentClassId) { document.getElementById('gradeSubject').innerHTML = '<option value="">انتخاب مضمون...</option>'; return; }
-            const res = await fetch(`/api/class-subjects/${currentClassId}`);
-            const subjects = await res.json();
-            document.getElementById('gradeSubject').innerHTML = '<option value="">انتخاب مضمون...</option>' + subjects.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
+            try {
+                const res = await fetch(`/api/teacher/classes/${teacherId}`);
+                const classes = await res.json();
+                const select = document.getElementById('gradeClass');
+                select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+            } catch (err) { console.error(err); }
         }
 
         async function loadStudents() {
-            currentSubjectId = document.getElementById('gradeSubject').value;
-            if (!currentSubjectId || !currentClassId) return;
+            currentClassId = document.getElementById('gradeClass').value;
+            if (!currentClassId) { document.getElementById('gradesStudentsList').innerHTML = '<tr><td colspan="7" class="text-center">لطفاً صنف را انتخاب کنید</div></div></div></tr>'; return; }
             const res = await fetch('/api/students');
             let students = await res.json();
-            students = students.filter(s => s.class_id == currentClassId);
+            students = students.filter(s => s.class_id == currentClassId && s.status === 'active');
             allStudents = students;
-            if (students.length === 0) { document.getElementById('gradesStudentsList').innerHTML = '<tr><td colspan="5" class="text-center">هیچ شاگردی نیست</div></div></div></td>'; return; }
+            if (students.length === 0) { document.getElementById('gradesStudentsList').innerHTML = '<tr><td colspan="7" class="text-center">هیچ شاگردی در این صنف وجود ندارد</div></div></div></tr>'; return; }
             const maxScore = document.getElementById('maxScore').value;
             document.getElementById('maxScoreDisplay').innerText = maxScore;
-            document.getElementById('gradesStudentsList').innerHTML = students.map(s => `<tr id="grade-row-${s.id}"><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong><br><small>${s.father_name || ''}</small></div></div></div><td class="text-dark"><input type="number" class="form-control grade-input" id="grade_${s.id}" style="width:100px" min="0" max="${maxScore}" step="0.5" onchange="updatePercentage(${s.id})"></div></div></div><td class="text-dark"><span id="percent_${s.id}">-</span>%</div></div></div><td class="text-dark"><span id="grade_letter_${s.id}" class="badge bg-secondary">-</span></div></div></div></tr>`).join('');
-            for (const s of students) { const gradeRes = await fetch(`/api/student/grades/${s.id}`); const grades = await gradeRes.json(); const existing = grades.find(g => g.subject_id == currentSubjectId && g.exam_type === document.getElementById('examType').value); if (existing) { document.getElementById(`grade_${s.id}`).value = existing.score; updatePercentage(s.id); } }
+            let html = '';
+            for (const s of students) {
+                const gradeRes = await fetch(`/api/student/grades/${s.id}`);
+                const grades = await gradeRes.json();
+                const existing = grades.find(g => g.exam_type === document.getElementById('examType').value);
+                const score = existing ? existing.score : '';
+                const percent = score ? ((score / maxScore) * 100).toFixed(1) : '-';
+                let gradeLetter = '-', gradeClass = 'bg-secondary';
+                if (score) {
+                    if (percent >= 90) { gradeLetter = 'A+'; gradeClass = 'bg-success'; }
+                    else if (percent >= 80) { gradeLetter = 'A'; gradeClass = 'bg-success'; }
+                    else if (percent >= 70) { gradeLetter = 'B+'; gradeClass = 'bg-info'; }
+                    else if (percent >= 60) { gradeLetter = 'B'; gradeClass = 'bg-info'; }
+                    else if (percent >= 50) { gradeLetter = 'C'; gradeClass = 'bg-warning'; }
+                    else if (percent >= 40) { gradeLetter = 'D'; gradeClass = 'bg-warning'; }
+                    else { gradeLetter = 'F'; gradeClass = 'bg-danger'; }
+                }
+                html += `<tr id="grade-row-${s.id}"><td class="text-dark">${s.student_card_id || '-'}</div></div></div><td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div><td class="text-dark"><input type="number" class="form-control grade-input" id="grade_${s.id}" style="width:100px" min="0" max="${maxScore}" step="0.5" value="${score}" onchange="updatePercentage(${s.id})"></div></div></div><td class="text-dark"><span id="percent_${s.id}">${percent !== '-' ? percent + '%' : '-'}</span></div></div></div><td class="text-dark"><span class="badge ${gradeClass}" id="grade_letter_${s.id}">${gradeLetter}</span></div></div></div><td class="text-dark">${existing ? new Date(existing.exam_date).toLocaleDateString('fa-IR') : '-'}</div></div></div></tr>`;
+            }
+            document.getElementById('gradesStudentsList').innerHTML = html;
         }
 
         function updatePercentage(studentId) {
             const score = parseFloat(document.getElementById(`grade_${studentId}`).value) || 0;
             const maxScore = parseFloat(document.getElementById('maxScore').value) || 100;
             const percent = ((score / maxScore) * 100).toFixed(1);
-            document.getElementById(`percent_${studentId}`).innerText = percent;
-            let gradeLetter = percent >= 90 ? 'A+' : percent >= 80 ? 'A' : percent >= 70 ? 'B+' : percent >= 60 ? 'B' : percent >= 50 ? 'C' : percent >= 40 ? 'D' : 'F';
-            let gradeClass = percent >= 60 ? 'bg-success' : (percent >= 40 ? 'bg-warning' : 'bg-danger');
+            document.getElementById(`percent_${studentId}`).innerText = percent + '%';
+            let gradeLetter = '-', gradeClass = 'bg-secondary';
+            if (percent >= 90) { gradeLetter = 'A+'; gradeClass = 'bg-success'; }
+            else if (percent >= 80) { gradeLetter = 'A'; gradeClass = 'bg-success'; }
+            else if (percent >= 70) { gradeLetter = 'B+'; gradeClass = 'bg-info'; }
+            else if (percent >= 60) { gradeLetter = 'B'; gradeClass = 'bg-info'; }
+            else if (percent >= 50) { gradeLetter = 'C'; gradeClass = 'bg-warning'; }
+            else if (percent >= 40) { gradeLetter = 'D'; gradeClass = 'bg-warning'; }
+            else if (percent > 0) { gradeLetter = 'F'; gradeClass = 'bg-danger'; }
             document.getElementById(`grade_letter_${studentId}`).innerHTML = `<span class="badge ${gradeClass}">${gradeLetter}</span>`;
         }
 
         async function saveAllGrades() {
-            if (!currentSubjectId || !currentClassId) { alert('لطفاً صنف و مضمون را انتخاب کنید'); return; }
+            if (!currentClassId) { alert('لطفاً صنف را انتخاب کنید'); return; }
             const maxScore = parseFloat(document.getElementById('maxScore').value) || 100;
             const examType = document.getElementById('examType').value;
             let saved = 0;
-            for (const s of allStudents) { const scoreInput = document.getElementById(`grade_${s.id}`); if (scoreInput) { const score = parseFloat(scoreInput.value); if (!isNaN(score)) { await fetch('/api/teacher/save-grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ student_id: s.id, class_id: currentClassId, subject_id: currentSubjectId, score, max_score: maxScore, exam_type: examType, teacher_id: teacherId }) }); saved++; } } }
+            for (const s of allStudents) {
+                const scoreInput = document.getElementById(`grade_${s.id}`);
+                if (scoreInput) {
+                    const score = parseFloat(scoreInput.value);
+                    if (!isNaN(score) && score !== '') {
+                        await fetch('/api/teacher/save-grade', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ student_id: s.id, class_id: currentClassId, subject_id: null, score, max_score: maxScore, exam_type: examType, teacher_id: teacherId })
+                        });
+                        saved++;
+                    }
+                }
+            }
             alert(`${saved} نمره با موفقیت ذخیره شد`);
         }
 
         document.getElementById('groupGradeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!currentClassId || !currentSubjectId) { alert('لطفاً صنف و مضمون را انتخاب کنید'); return; }
+            if (!currentClassId) { alert('لطفاً صنف را انتخاب کنید'); return; }
             const score = document.getElementById('groupScore').value;
             const maxScore = document.getElementById('groupMaxScore').value;
             const examType = document.getElementById('groupExamType').value;
-            const res = await fetch('/api/teacher/save-group-grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_id: currentClassId, subject_id: currentSubjectId, score, max_score: maxScore, exam_type: examType, teacher_id: teacherId }) });
+            const res = await fetch('/api/teacher/save-group-grade', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ class_id: currentClassId, subject_id: null, score, max_score: maxScore, exam_type: examType, teacher_id: teacherId })
+            });
             if (res.ok) { alert('نمره گروهی با موفقیت برای همه شاگردان ثبت شد'); bootstrap.Modal.getInstance(document.getElementById('groupGradeModal')).hide(); loadStudents(); }
             else alert('خطا');
         });
