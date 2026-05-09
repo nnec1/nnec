@@ -295,7 +295,13 @@
                 const data = await res.json();
                 document.getElementById('totalStudents').innerText = (data.total_students || 0).toLocaleString();
                 document.getElementById('totalTeachers').innerText = (data.total_teachers || 0).toLocaleString();
-            } catch (err) { console.error(err); }
+                document.getElementById('totalDebtors').innerText = (data.total_debtors || 0).toLocaleString();
+                document.getElementById('todayIncome').innerText = (data.today_income || 0).toLocaleString();
+                document.getElementById('monthlyIncome').innerText = (data.monthly_income || 0).toLocaleString();
+                document.getElementById('yearlyIncome').innerText = (data.yearly_income || 0).toLocaleString();
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         async function loadDailyStats() {
