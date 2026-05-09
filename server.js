@@ -347,14 +347,14 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
 
 
 // ====================== API صنف‌های بدون استاد ======================
+// ====================== API صنف‌های بدون استاد ======================
 app.get("/api/classes-without-teacher", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
-      SELECT c.*, 
-        (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) as teacher_count
+      SELECT c.id, c.class_name, c.start_time
       FROM classes c
       WHERE c.is_active = 1
-        AND (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) = 0
+        AND NOT EXISTS (SELECT 1 FROM teacher_classes tc WHERE tc.class_id = c.id)
       ORDER BY c.class_name
     `);
     res.json(results);
@@ -368,7 +368,7 @@ app.get("/api/classes-without-teacher", authenticate, async (req, res) => {
 app.get("/api/active-classes", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
-      SELECT c.*, 
+      SELECT c.id, c.class_name, c.start_time,
         (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) as teacher_count,
         (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
       FROM classes c
@@ -386,14 +386,12 @@ app.get("/api/active-classes", authenticate, async (req, res) => {
 app.get("/api/teacher-classes", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
-      SELECT tc.*, 
+      SELECT tc.id, tc.class_id, tc.teacher_id, tc.is_main_teacher,
         e.name as teacher_name, 
-        c.class_name,
-        s.subject_name
+        c.class_name
       FROM teacher_classes tc
       JOIN employees e ON tc.teacher_id = e.id
       JOIN classes c ON tc.class_id = c.id
-      LEFT JOIN subjects s ON tc.subject_id = s.id
       ORDER BY c.class_name, e.name
     `);
     res.json(results);
@@ -403,7 +401,7 @@ app.get("/api/teacher-classes", authenticate, async (req, res) => {
   }
 });
 
-// ====================== API حذف تخصیص ======================
+// ===== حذف تخصیص =====
 app.delete("/api/teacher-classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
   try {
     await db.execute("DELETE FROM teacher_classes WHERE id = ?", [req.params.id]);
@@ -414,18 +412,7 @@ app.delete("/api/teacher-classes/:id", authenticate, isAdminOrCEO, async (req, r
   }
 });
 
-// ====================== API دروس (موضوعات) ======================
-app.get("/api/subjects", authenticate, async (req, res) => {
-  try {
-    const [results] = await db.execute("SELECT * FROM subjects WHERE is_active = 1 ORDER BY subject_name");
-    res.json(results);
-  } catch (err) {
-    console.error("Error in /api/subjects:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ====================== API تخصیص استاد به صنف ======================
+// ===== تخصیص استاد به صنف =====
 app.post("/api/assign-teacher-to-class", authenticate, isAdminOrCEO, async (req, res) => {
   const { teacher_id, class_id, subject_id, academic_year, is_main_teacher } = req.body;
   
@@ -455,6 +442,7 @@ app.post("/api/assign-teacher-to-class", authenticate, isAdminOrCEO, async (req,
     res.status(500).json({ error: err.message });
   }
 });
+
 // ====================== API شاگردان ======================
 
 app.get("/api/students", authenticate, async (req, res) => {
