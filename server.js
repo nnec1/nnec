@@ -640,10 +640,29 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 //   }
 // });
 
+// ====================== بدهکاران (ماه جاری - مستقل) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
-    const currentMonth = getCurrentPersianMonth();
-    const currentYear = new Date().getFullYear().toString();
+    // دریافت ماه و سال جاری شمسی
+    const now = new Date();
+    const persianMonths = [
+      "فروردین",
+      "اردیبهشت",
+      "خرداد",
+      "تیر",
+      "مرداد",
+      "شهریور",
+      "مهر",
+      "آبان",
+      "آذر",
+      "دی",
+      "بهمن",
+      "اسفند",
+    ];
+    const currentMonth = persianMonths[now.getMonth()];
+    const currentYear = now.getFullYear().toString();
+
+    console.log("Fetching debtors for month:", currentMonth, currentYear);
 
     const [results] = await db.execute(
       `
@@ -673,10 +692,11 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
       [currentMonth, currentYear],
     );
 
+    console.log("✅ Debtors found:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-debtors:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Error in /api/fee-debtors:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 // ====================== منقضی شده (ساده شده) ======================
@@ -747,6 +767,7 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 //   }
 // });
 
+// ====================== منقضی شده ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -774,10 +795,11 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
       ORDER BY fp.due_date ASC
     `);
 
+    console.log("✅ Expired found:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-expired:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Error in /api/fee-expired:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 // 3. دریافت تاریخچه پرداخت‌ها
@@ -804,10 +826,16 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
 //   }
 // });
 
+// ====================== تاریخچه پرداخت‌ها ======================
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
-  const { start_date, end_date, month, academic_year } = req.query;
+  const { start_date, end_date, class_id } = req.query;
   let query = `
-    SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name
+    SELECT 
+      fp.*, 
+      s.name as student_name, 
+      s.father_name, 
+      s.student_card_id, 
+      c.class_name
     FROM fee_payments fp
     JOIN students s ON fp.student_id = s.id
     JOIN classes c ON s.class_id = c.id
@@ -816,28 +844,40 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   let params = [];
 
   if (start_date && end_date) {
-    query += ` AND fp.payment_date BETWEEN ? AND ?`;
+    query += ` AND DATE(fp.payment_date) BETWEEN ? AND ?`;
     params.push(start_date, end_date);
   }
-  if (month) {
-    query += ` AND fp.month = ?`;
-    params.push(month);
-  }
-  if (academic_year) {
-    query += ` AND fp.academic_year = ?`;
-    params.push(academic_year);
+  if (class_id && class_id !== "") {
+    query += ` AND s.class_id = ?`;
+    params.push(class_id);
   }
 
   query += ` ORDER BY fp.payment_date DESC`;
 
   try {
     const [results] = await db.execute(query, params);
-    res.json(results);
+
+    // فرمت کردن تاریخ‌ها
+    const formatted = results.map((p) => ({
+      ...p,
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+      due_date: p.due_date
+        ? new Date(p.due_date).toISOString().split("T")[0]
+        : null,
+      issue_date: p.issue_date
+        ? new Date(p.issue_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    console.log("✅ Payment history found:", formatted.length);
+    res.json(formatted);
   } catch (err) {
+    console.error("❌ Error in /api/fee-payments-history:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // 4. جمع‌آوری فیس
 // ====================== جمع‌آوری فیس ======================
 // ====================== جمع‌آوری فیس ======================
