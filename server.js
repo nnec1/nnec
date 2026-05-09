@@ -1538,6 +1538,108 @@ app.post("/api/change-password", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ====================== دریافت لیست تاریخ‌های صدور موجود ======================
+app.get("/api/issue-dates", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT DISTINCT DATE(payment_date) as issue_date 
+      FROM fee_payments 
+      WHERE payment_date IS NOT NULL 
+      ORDER BY payment_date DESC
+    `);
+
+    const dates = results.map((r) => r.issue_date).filter((d) => d);
+
+    res.json({
+      success: true,
+      dates: dates,
+    });
+  } catch (err) {
+    console.error("Error in GET /api/issue-dates:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// ====================== آمار روزمره فیس با نمایش تاریخ انقضا ======================
+app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
+  const { date } = req.query;
+  const targetDate = date || new Date().toISOString().split("T")[0];
+
+  try {
+    // دریافت تمام پرداخت‌های تاریخ انتخاب شده
+    const [payments] = await db.execute(
+      `
+      SELECT 
+        fp.id,
+        fp.student_id,
+        fp.amount,
+        fp.total_fee,
+        fp.paid_fee,
+        fp.remaining_after,
+        fp.payment_date,
+        fp.due_date,
+        fp.receipt_number,
+        fp.notes,
+        s.name as student_name,
+        s.father_name,
+        s.student_card_id,
+        c.class_name,
+        (
+          SELECT MAX(fp2.due_date) 
+          FROM fee_payments fp2 
+          WHERE fp2.student_id = s.id AND fp2.id < fp.id
+        ) as old_expiry_date
+      FROM fee_payments fp
+      JOIN students s ON fp.student_id = s.id
+      JOIN classes c ON s.class_id = c.id
+      WHERE DATE(fp.payment_date) = ?
+      ORDER BY fp.payment_date DESC
+    `,
+      [targetDate],
+    );
+
+    const totalToday = payments.reduce(
+      (sum, p) => sum + (parseFloat(p.amount) || 0),
+      0,
+    );
+    const uniqueStudents = new Set(payments.map((p) => p.student_id)).size;
+
+    const formattedPayments = payments.map((p) => ({
+      id: p.id,
+      student_id: p.student_id,
+      student_name: p.student_name,
+      father_name: p.father_name,
+      student_card_id: p.student_card_id,
+      class_name: p.class_name,
+      amount: parseFloat(p.amount) || 0,
+      total_fee: parseFloat(p.total_fee) || 0,
+      paid_fee: parseFloat(p.paid_fee) || 0,
+      remaining_after: parseFloat(p.remaining_after) || 0,
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+      due_date: p.due_date
+        ? new Date(p.due_date).toISOString().split("T")[0]
+        : null,
+      old_expiry_date: p.old_expiry_date
+        ? new Date(p.old_expiry_date).toISOString().split("T")[0]
+        : null,
+      receipt_number: p.receipt_number,
+      notes: p.notes,
+    }));
+
+    res.json({
+      success: true,
+      date: targetDate,
+      total_amount: totalToday,
+      student_count: uniqueStudents,
+      transaction_count: formattedPayments.length,
+      payments: formattedPayments,
+    });
+  } catch (err) {
+    console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ====================== صفحات ======================
 
