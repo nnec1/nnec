@@ -297,6 +297,7 @@
                 document.getElementById('studentsList').innerHTML = '<table><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div><table>';
             }
         }
+
         async function openEditModal(studentId, paymentId) {
             try {
                 const studentRes = await fetch(`/api/students/${studentId}`);
@@ -315,14 +316,31 @@
                     }
                 }
 
+                // مقداردهی فیلدها
                 document.getElementById('editStudentId').value = studentId;
                 document.getElementById('editPaymentId').value = lastPayment ? lastPayment.id : '';
                 document.getElementById('editStudentName').value = student.name || '';
                 document.getElementById('editTotalFee').value = lastPayment ? (lastPayment.total_fee || 0) : 0;
                 document.getElementById('editPaidFee').value = lastPayment ? (lastPayment.paid_fee || 0) : 0;
-                document.getElementById('editRemainingFee').value = lastPayment ? ((lastPayment.total_fee || 0) - (lastPayment.paid_fee || 0)) : 0;
+
+                const remaining = (lastPayment ? (lastPayment.total_fee || 0) : 0) - (lastPayment ? (lastPayment.paid_fee || 0) : 0);
+                document.getElementById('editRemainingFee').value = remaining > 0 ? remaining : 0;
                 document.getElementById('editDueDate').value = lastPayment && lastPayment.due_date ? formatDate(lastPayment.due_date) : '';
                 document.getElementById('editNotes').value = lastPayment ? (lastPayment.notes || '') : '';
+
+                // اضافه کردن رویداد محاسبه خودکار باقی مانده
+                const totalFeeInput = document.getElementById('editTotalFee');
+                const paidFeeInput = document.getElementById('editPaidFee');
+
+                const updateRemaining = () => {
+                    const total = parseFloat(totalFeeInput.value) || 0;
+                    const paid = parseFloat(paidFeeInput.value) || 0;
+                    const remaining = total - paid;
+                    document.getElementById('editRemainingFee').value = remaining > 0 ? remaining : 0;
+                };
+
+                totalFeeInput.oninput = updateRemaining;
+                paidFeeInput.oninput = updateRemaining;
 
                 if (editFeeModal) editFeeModal.show();
             } catch (err) {
