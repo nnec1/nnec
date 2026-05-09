@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -15,27 +14,16 @@
             padding: 40px 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .payment-container {
-            max-width: 650px;
-            margin: 0 auto;
-        }
-
+        .payment-container { max-width: 650px; margin: 0 auto; }
         .payment-card {
             background: white;
             border-radius: 28px;
             padding: 30px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-
-        .logo-area {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
+        .logo-area { text-align: center; margin-bottom: 20px; }
         .logo-circle {
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             background: linear-gradient(135deg, #10b981, #059669);
             border-radius: 50%;
             display: flex;
@@ -43,25 +31,18 @@
             justify-content: center;
             margin: 0 auto 10px;
         }
-
-        .logo-circle i {
-            font-size: 1.8rem;
-            color: white;
-        }
-
+        .logo-circle i { font-size: 1.8rem; color: white; }
         .search-box {
             background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
         }
-
         .student-list {
             max-height: 250px;
             overflow-y: auto;
             margin-bottom: 20px;
         }
-
         .student-item {
             background: #f8fafc;
             border-radius: 12px;
@@ -71,42 +52,22 @@
             transition: all 0.2s;
             border: 1px solid #e2e8f0;
         }
-
-        .student-item:hover {
-            background: #e0f2fe;
-            border-color: #10b981;
-        }
-
-        .student-item.selected {
-            background: #dcfce7;
-            border-color: #10b981;
-            border-width: 2px;
-        }
-
-        .payment-form {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-        }
-
+        .student-item:hover { background: #e0f2fe; border-color: #10b981; }
+        .student-item.selected { background: #dcfce7; border-color: #10b981; border-width: 2px; }
+        .payment-form { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
         .info-box {
             background: #f1f5f9;
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
         }
-
         .info-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px solid #e2e8f0;
         }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
+        .info-row:last-child { border-bottom: none; }
         .remaining-box {
             background: #dcfce7;
             border-radius: 12px;
@@ -114,14 +75,11 @@
             text-align: center;
             margin: 15px 0;
         }
-
-        .form-control,
-        .form-select {
+        .form-control, .form-select {
             border-radius: 12px;
             padding: 10px 14px;
             border: 1px solid #e2e8f0;
         }
-
         .btn-payment {
             background: linear-gradient(135deg, #10b981, #059669);
             border: none;
@@ -132,11 +90,7 @@
             color: white;
             transition: 0.3s;
         }
-
-        .btn-payment:hover {
-            transform: translateY(-2px);
-        }
-
+        .btn-payment:hover { transform: translateY(-2px); }
         .btn-back {
             background: #64748b;
             border: none;
@@ -146,20 +100,12 @@
             color: white;
             margin-top: 15px;
         }
-
         @media (max-width: 480px) {
-            .payment-card {
-                padding: 20px;
-            }
-
-            .info-row {
-                flex-direction: column;
-                gap: 5px;
-            }
+            .payment-card { padding: 20px; }
+            .info-row { flex-direction: column; gap: 5px; }
         }
     </style>
 </head>
-
 <body>
     <div class="payment-container">
         <div class="payment-card">
@@ -175,65 +121,44 @@
                         <input type="text" id="searchInput" class="form-control" placeholder="جستجوی نام شاگرد...">
                     </div>
                     <div class="col-4">
-                        <select id="classFilter" class="form-select">
-                            <option value="">همه صنف‌ها</option>
-                        </select>
+                        <select id="classFilter" class="form-select"><option value="">همه صنف‌ها</option></select>
                     </div>
                 </div>
             </div>
 
             <div id="studentList" class="student-list">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-success spinner-border-sm"></div>
-                    <p class="text-muted small mt-2">در حال بارگیری...</p>
-                </div>
+                <div class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div><p class="text-muted small mt-2">در حال بارگیری...</p></div>
             </div>
 
             <div id="paymentForm" class="payment-form" style="display: none;">
                 <div class="info-box">
                     <h6 class="mb-2"><i class="fa-solid fa-user-circle"></i> اطلاعات شاگرد</h6>
-                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام شاگرد:</span><span id="studentName"
-                            class="fw-bold">-</span></div>
-                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام پدر:</span><span
-                            id="studentFather">-</span></div>
-                    <div class="info-row"><span><i class="fa-solid fa-table-cells-large"></i> صنف:</span><span
-                            id="studentClass">-</span></div>
-                    <div class="info-row"><span><i class="fa-solid fa-phone"></i> شماره تماس:</span><span
-                            id="studentPhoneDisplay">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام شاگرد:</span><span id="studentName" class="fw-bold">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام پدر:</span><span id="studentFather">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-table-cells-large"></i> صنف:</span><span id="studentClass">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-phone"></i> شماره تماس:</span><span id="studentPhoneDisplay">-</span></div>
                 </div>
 
                 <div class="new-fee-box">
                     <h6 class="mb-3"><i class="fa-solid fa-plus-circle text-success"></i> ثبت فیس جدید</h6>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> فیس کل
-                            (AFN)</label><input type="number" id="newTotalFee" class="form-control"
-                            placeholder="مثال: 5000" required></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> مبلغ
-                            پرداختی (AFN)</label><input type="number" id="newPayment" class="form-control"
-                            placeholder="مبلغ پرداختی" required></div>
-
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> فیس کل (AFN)</label><input type="number" id="newTotalFee" class="form-control" placeholder="مثال: 5000" required></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> مبلغ پرداختی (AFN)</label><input type="number" id="newPayment" class="form-control" placeholder="مبلغ پرداختی" required></div>
+                    
                     <div id="remainingBox" class="remaining-box" style="display: none;">
                         <span class="text-dark">💰 باقی مانده:</span>
                         <h3 class="text-danger mb-0" id="remainingAmount">0 AFN</h3>
                     </div>
 
-                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ
-                            پرداخت</label><input type="date" id="newDate" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضا
-                            (اختیاری)</label><input type="date" id="newExpiry" class="form-control"><small
-                            class="text-muted">خالی = یک ماه بعد</small></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-phone"></i> شماره تماس (قابل
-                            ویرایش)</label><input type="text" id="studentPhoneInput" class="form-control"
-                            placeholder="شماره تماس شاگرد"></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت</label><textarea
-                            id="debtNote" class="form-control" rows="2" placeholder="توضیحات..."></textarea></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ پرداخت</label><input type="date" id="newDate" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضا (اختیاری)</label><input type="date" id="newExpiry" class="form-control"><small class="text-muted">خالی = یک ماه بعد</small></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-phone"></i> شماره تماس (قابل ویرایش)</label><input type="text" id="studentPhoneInput" class="form-control" placeholder="شماره تماس شاگرد"></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت</label><textarea id="debtNote" class="form-control" rows="2" placeholder="توضیحات..."></textarea></div>
 
-                    <button type="button" id="submitPayment" class="btn-payment mt-2"><i class="fa-solid fa-print"></i>
-                        ثبت پرداخت و چاپ رسید</button>
+                    <button type="button" id="submitPayment" class="btn-payment mt-2"><i class="fa-solid fa-print"></i> ثبت پرداخت و چاپ رسید</button>
                 </div>
             </div>
 
-            <button class="btn-back" onclick="window.location.href='fee-management.html'"><i
-                    class="fa-solid fa-arrow-right"></i> بازگشت</button>
+            <button class="btn-back" onclick="window.location.href='fee-management.html'"><i class="fa-solid fa-arrow-right"></i> بازگشت</button>
         </div>
     </div>
 
@@ -253,10 +178,10 @@
             const totalFee = parseFloat(document.getElementById('newTotalFee').value) || 0;
             const payment = parseFloat(document.getElementById('newPayment').value) || 0;
             const remaining = totalFee - payment;
-
+            
             const remainingBox = document.getElementById('remainingBox');
             const remainingAmount = document.getElementById('remainingAmount');
-
+            
             if (totalFee > 0) {
                 remainingBox.style.display = 'block';
                 if (remaining > 0) {
@@ -345,18 +270,18 @@
             if (totalFee <= 0) { alert('❌ لطفاً فیس کل را وارد کنید'); return; }
             if (payment <= 0) { alert('❌ لطفاً مبلغ پرداختی را وارد کنید'); return; }
             if (!paymentDate) { alert('❌ تاریخ پرداخت را انتخاب کنید'); return; }
-
+            
             if (phone !== currentStudent.phone) {
                 await fetch(`/api/students/${currentStudent.id}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone: phone })
                 });
             }
-
+            
             const submitBtn = document.getElementById('submitPayment');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
-
+            
             try {
                 const res = await fetch('/api/collect-fee', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -392,5 +317,4 @@
         loadStudents();
     </script>
 </body>
-
 </html>
