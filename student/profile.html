@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -10,11 +11,37 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
     <link rel="stylesheet" href="/style.css">
     <style>
-        .info-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
-        .info-label { width: 120px; font-weight: 600; color: #475569; }
-        .info-value { flex: 1; color: #1e293b; }
-        .alert-warning { background: #fef3c7; color: #b45309; border-right: 4px solid #f59e0b; }
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-label {
+            width: 120px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #1e293b;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #b45309;
+            border-right: 4px solid #f59e0b;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -30,16 +57,50 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
-            .overlay.show { display: block; }
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -47,7 +108,8 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل شاگرد</h5>
@@ -61,7 +123,8 @@
                     <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
                     <a href="profile.html" class="nav-link active"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
@@ -69,34 +132,61 @@
                 <h3 class="section-title"><i class="fa-solid fa-user-circle text-success me-2"></i> پروفایل من</h3>
 
                 <div class="alert alert-warning mb-4">
-                    <i class="fa-solid fa-info-circle"></i> 
-                    <strong>توجه:</strong> ویرایش اطلاعات شخصی فقط توسط مدیریت امکان‌پذیر است. برای تغییر اطلاعات خود با مدیریت آموزشگاه تماس بگیرید.
+                    <i class="fa-solid fa-info-circle"></i>
+                    <strong>توجه:</strong> ویرایش اطلاعات شخصی فقط توسط مدیریت امکان‌پذیر است. برای تغییر اطلاعات خود با
+                    مدیریت آموزشگاه تماس بگیرید.
                 </div>
 
                 <div class="row">
                     <div class="col-md-5">
                         <div class="info-card text-center">
-                            <img id="profilePhoto" src="/default-avatar.png" class="rounded-circle mb-3" style="width:150px;height:150px;object-fit:cover;border:3px solid #10b981;">
+                            <img id="profilePhoto" src="/default-avatar.png" class="rounded-circle mb-3"
+                                style="width:150px;height:150px;object-fit:cover;border:3px solid #10b981;">
                             <div id="profileQr" class="d-flex justify-content-center mt-2"></div>
-                            <p class="text-muted mt-2 small"><i class="fa-solid fa-qrcode"></i> اسکن QR برای ورود سریع</p>
+                            <p class="text-muted mt-2 small"><i class="fa-solid fa-qrcode"></i> اسکن QR برای ورود سریع
+                            </p>
                             <hr>
-                            <p><i class="fa-solid fa-id-card text-primary me-2"></i> آیدی کارت: <strong id="studentCardId">-</strong></p>
+                            <p><i class="fa-solid fa-id-card text-primary me-2"></i> آیدی کارت: <strong
+                                    id="studentCardId">-</strong></p>
                             <div class="mt-3">
-                                <button class="btn btn-primary btn-sm" onclick="showStudentCard()"><i class="fa-solid fa-qrcode"></i> کارت شناسایی</button>
-                                <button class="btn btn-secondary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> چاپ پروفایل</button>
+                                <button class="btn btn-primary btn-sm" onclick="showStudentCard()"><i
+                                        class="fa-solid fa-qrcode"></i> کارت شناسایی</button>
+                                <button class="btn btn-secondary btn-sm" onclick="window.print()"><i
+                                        class="fa-solid fa-print"></i> چاپ پروفایل</button>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-7">
                         <div class="info-card">
                             <h5><i class="fa-solid fa-user-circle text-success me-2"></i> اطلاعات شخصی</h5>
-                            <div class="info-row"><div class="info-label">نام کامل:</div><div class="info-value" id="profileName">-</div></div>
-                            <div class="info-row"><div class="info-label">نام پدر:</div><div class="info-value" id="profileFather">-</div></div>
-                            <div class="info-row"><div class="info-label">نام مادر:</div><div class="info-value" id="profileMother">-</div></div>
-                            <div class="info-row"><div class="info-label">شماره تماس:</div><div class="info-value" id="profilePhone">-</div></div>
-                            <div class="info-row"><div class="info-label">صنف:</div><div class="info-value" id="profileClass">-</div></div>
-                            <div class="info-row"><div class="info-label">آدرس:</div><div class="info-value" id="profileAddress">-</div></div>
-                            <div class="info-row"><div class="info-label">تاریخ ثبت:</div><div class="info-value" id="profileRegDate">-</div></div>
+                            <div class="info-row">
+                                <div class="info-label">نام کامل:</div>
+                                <div class="info-value" id="profileName">-</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">نام پدر:</div>
+                                <div class="info-value" id="profileFather">-</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">نام مادر:</div>
+                                <div class="info-value" id="profileMother">-</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">شماره تماس:</div>
+                                <div class="info-value" id="profilePhone">-</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">صنف:</div>
+                                <div class="info-value" id="profileClass">-</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">آدرس:</div>
+                                <div class="info-value" id="profileAddress">-</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">تاریخ ثبت:</div>
+                                <div class="info-value" id="profileRegDate">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -159,4 +249,5 @@
         loadProfile();
     </script>
 </body>
+
 </html>

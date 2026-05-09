@@ -16,12 +16,6 @@
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .complaint-card:hover {
-            transform: translateX(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
 
         .complaint-pending {
@@ -165,107 +159,37 @@
             function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
             toggleBtn.addEventListener('click', openSidebar);
             if (overlay) overlay.addEventListener('click', closeSidebar);
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar());
         }
-
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            try {
-                const d = new Date(dateString);
-                if (isNaN(d.getTime())) return dateString;
-                return d.toLocaleDateString('fa-IR');
-            } catch (e) {
-                return dateString;
-            }
         }
 
         async function loadComplaints() {
-            try {
-                const res = await fetch('/api/complaints');
-                let complaints = await res.json();
-
-                if (!Array.isArray(complaints)) {
-                    complaints = [];
-                }
-
-                complaints = complaints.filter(c => c.student_id == studentId);
-
-                if (complaints.length === 0) {
-                    document.getElementById('complaintsList').innerHTML = '<div class="alert alert-info text-center">هیچ شکایتی ثبت نشده است</div>';
-                    return;
-                }
-
-                document.getElementById('complaintsList').innerHTML = complaints.map(c => `
-                    <div class="complaint-card ${c.status === 'resolved' ? 'complaint-resolved' : 'complaint-pending'}">
-                        <div class="d-flex justify-content-between flex-wrap">
-                            <div>
-                                <h6><i class="fa-solid fa-message text-success"></i> ${escapeHtml(c.subject)}</h6>
-                                <small>${formatDate(c.created_at)}</small>
-                            </div>
-                            <div>
-                                <span class="badge ${c.status === 'pending' ? 'bg-warning' : 'bg-success'}">
-                                    ${c.status === 'pending' ? 'در انتظار پاسخ' : 'پاسخ داده شد'}
-                                </span>
-                            </div>
-                        </div>
-                        <hr>
-                        <p>${escapeHtml(c.message)}</p>
-                        ${c.response ? `<div class="alert alert-success mt-2"><strong><i class="fa-solid fa-reply"></i> پاسخ مدیر:</strong><br>${escapeHtml(c.response)}</div>` : ''}
+            const res = await fetch('/api/complaints');
+            let complaints = await res.json();
+            complaints = complaints.filter(c => c.student_id == studentId);
+            if (complaints.length === 0) { document.getElementById('complaintsList').innerHTML = '<div class="alert alert-info text-center">هیچ شکایتی ثبت نشده است</div>'; return; }
+            document.getElementById('complaintsList').innerHTML = complaints.map(c => `
+                <div class="complaint-card ${c.status === 'resolved' ? 'complaint-resolved' : 'complaint-pending'}">
+                    <div class="d-flex justify-content-between flex-wrap">
+                        <div><h6><i class="fa-solid fa-message text-success"></i> ${c.subject}</h6><small>${new Date(c.created_at).toLocaleDateString('fa-IR')}</small></div>
+                        <div><span class="badge ${c.status === 'pending' ? 'bg-warning' : 'bg-success'}">${c.status === 'pending' ? 'در انتظار پاسخ' : 'پاسخ داده شد'}</span></div>
                     </div>
-                `).join('');
-            } catch (err) {
-                console.error('Error loading complaints:', err);
-                document.getElementById('complaintsList').innerHTML = '<div class="alert alert-danger text-center">خطا در بارگیری شکایات</div>';
-            }
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
+                    <hr><p>${c.message}</p>
+                    ${c.response ? `<div class="alert alert-success mt-2"><strong>پاسخ مدیر:</strong><br>${c.response}</div>` : ''}
+                </div>
+            `).join('');
         }
 
         document.getElementById('complaintForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-
-            if (!subject || !message) {
-                alert('لطفاً موضوع و شرح شکایت را وارد کنید');
-                return;
-            }
-
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ارسال...';
-
-            try {
-                const data = { student_id: studentId, subject: subject, message: message };
-                const res = await fetch('/api/complaints', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (res.ok) {
-                    alert('شکایت شما با موفقیت ثبت شد');
-                    bootstrap.Modal.getInstance(document.getElementById('complaintModal')).hide();
-                    loadComplaints();
-                    document.getElementById('complaintForm').reset();
-                } else {
-                    const error = await res.json();
-                    alert('خطا: ' + (error.error || 'مشخص نیست'));
-                }
-            } catch (err) {
-                alert('خطا در ارتباط با سرور: ' + err.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ارسال شکایت';
-            }
+            const data = { student_id: studentId, subject: document.getElementById('subject').value, message: document.getElementById('message').value };
+            const res = await fetch('/api/complaints', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) {
+                alert('شکایت شما با موفقیت ثبت شد');
+                bootstrap.Modal.getInstance(document.getElementById('complaintModal')).hide();
+                loadComplaints();
+                document.getElementById('complaintForm').reset();
+            } else alert('خطا');
         });
 
         setupSidebar();
