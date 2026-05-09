@@ -1330,24 +1330,30 @@ app.get("/api/dashboard-stats", authenticate, async (req, res) => {
 app.get("/api/recent-transactions", authenticate, async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   try {
-    const [results] = await db.execute(
-      `
-      SELECT fp.id, fp.amount, fp.payment_date, fp.receipt_number, s.id as student_id, s.name as student_name, s.student_card_id, c.class_name
+    const [results] = await db.execute(`
+      SELECT 
+        fp.id, 
+        fp.amount, 
+        fp.payment_date, 
+        fp.receipt_number, 
+        fp.issue_date,
+        s.id as student_id, 
+        s.name as student_name, 
+        s.student_card_id, 
+        c.class_name
       FROM fee_payments fp 
       JOIN students s ON fp.student_id = s.id 
       JOIN classes c ON s.class_id = c.id 
-      ORDER BY fp.payment_date DESC, fp.id DESC 
+      ORDER BY fp.issue_date DESC, fp.id DESC 
       LIMIT ?
-    `,
-      [limit],
-    );
+    `, [limit]);
+    
     res.json(results);
   } catch (err) {
     console.error("Error in /api/recent-transactions:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // ====================== خلاصه مالی (بر اساس issue_date) ======================
 app.get("/api/financial-summary", authenticate, async (req, res) => {
   const { start_date, end_date, period } = req.query;
