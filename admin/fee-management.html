@@ -400,61 +400,103 @@
             }
 
             // ========== بدهکاران با سرچ تاریخ ==========
-            async function loadDebtors() {
-                const classId = document.getElementById('debtorClassFilter').value;
-                const search = document.getElementById('debtorSearch').value;
-                const startDate = document.getElementById('debtorStartDate').value;
-                const endDate = document.getElementById('debtorEndDate').value;
+            // async function loadDebtors() {
+            //     const classId = document.getElementById('debtorClassFilter').value;
+            //     const search = document.getElementById('debtorSearch').value;
+            //     const startDate = document.getElementById('debtorStartDate').value;
+            //     const endDate = document.getElementById('debtorEndDate').value;
 
-                let url = `/api/fee-debtors?`;
-                if (classId) url += `class_id=${classId}&`;
-                if (search) url += `search=${encodeURIComponent(search)}&`;
-                if (startDate) url += `start_date=${startDate}&`;
-                if (endDate) url += `end_date=${endDate}`;
+            //     let url = `/api/fee-debtors?`;
+            //     if (classId) url += `class_id=${classId}&`;
+            //     if (search) url += `search=${encodeURIComponent(search)}&`;
+            //     if (startDate) url += `start_date=${startDate}&`;
+            //     if (endDate) url += `end_date=${endDate}`;
 
-                try {
-                    const res = await fetch(url);
-                    const data = await res.json();
+            //     try {
+            //         const res = await fetch(url);
+            //         const data = await res.json();
 
-                    if (!Array.isArray(data)) {
-                        document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا در دریافت اطلاعات</div></div>';
-                        return;
-                    }
+            //         if (!Array.isArray(data)) {
+            //             document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا در دریافت اطلاعات</div></div>';
+            //             return;
+            //         }
 
-                    if (data.length === 0) {
-                        document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
-                        return;
-                    }
+            //         if (data.length === 0) {
+            //             document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
+            //             return;
+            //         }
 
-                    let html = '';
-                    for (let i = 0; i < data.length; i++) {
-                        const d = data[i];
-                        if (d.remaining_after && parseFloat(d.remaining_after) > 0) {
-                            html += `<div class="col-md-6 col-lg-4 mb-3"><div class="debtor-card">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
-                                <span class="badge-debtor"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار: ${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span>
-                            </div>
-                            <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
-                            <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
-                            <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
-                            <hr>
-                            <div class="d-flex justify-content-between mb-2"><span><strong>فیس کل:</strong></span><span>${(parseFloat(d.total_fee) || 0).toLocaleString()} AFN</span></div>
-                            <div class="d-flex justify-content-between mb-2"><span><strong>پرداخت شده:</strong></span><span class="text-success">${(parseFloat(d.paid_fee) || 0).toLocaleString()} AFN</span></div>
-                            <div class="d-flex justify-content-between mb-2"><span><strong>باقی مانده:</strong></span><span class="text-danger fw-bold">${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span></div>
-                            <div class="d-flex justify-content-between mb-3"><span><strong>تاریخ انقضا:</strong></span><span>${formatDate(d.due_date)}</span></div>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button class="btn btn-sm btn-payment" onclick="openPaymentModal(${d.id}, ${parseFloat(d.total_fee) || 0})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
-                            </div>
-                        </div></div>`;
-                        }
-                    }
-                    document.getElementById('debtorsList').innerHTML = html || '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
-                } catch (err) {
-                    console.error(err);
-                    document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
-                }
-            }
+            //         let html = '';
+            //         for (let i = 0; i < data.length; i++) {
+            //             const d = data[i];
+            //             if (d.remaining_after && parseFloat(d.remaining_after) > 0) {
+            //                 html += `<div class="col-md-6 col-lg-4 mb-3"><div class="debtor-card">
+            //                 <div class="d-flex justify-content-between align-items-start mb-2">
+            //                     <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
+            //                     <span class="badge-debtor"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار: ${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span>
+            //                 </div>
+            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
+            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+            //                 <hr>
+            //                 <div class="d-flex justify-content-between mb-2"><span><strong>فیس کل:</strong></span><span>${(parseFloat(d.total_fee) || 0).toLocaleString()} AFN</span></div>
+            //                 <div class="d-flex justify-content-between mb-2"><span><strong>پرداخت شده:</strong></span><span class="text-success">${(parseFloat(d.paid_fee) || 0).toLocaleString()} AFN</span></div>
+            //                 <div class="d-flex justify-content-between mb-2"><span><strong>باقی مانده:</strong></span><span class="text-danger fw-bold">${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span></div>
+            //                 <div class="d-flex justify-content-between mb-3"><span><strong>تاریخ انقضا:</strong></span><span>${formatDate(d.due_date)}</span></div>
+            //                 <div class="d-flex gap-2 flex-wrap">
+            //                     <button class="btn btn-sm btn-payment" onclick="openPaymentModal(${d.id}, ${parseFloat(d.total_fee) || 0})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
+            //                 </div>
+            //             </div></div>`;
+            //             }
+            //         }
+            //         document.getElementById('debtorsList').innerHTML = html || '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
+            //     } catch (err) {
+            //         console.error(err);
+            //         document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
+            //     }
+            // }
+
+                // بارگذاری بدهکاران
+async function loadDebtors() {
+    try {
+        const res = await fetch('/api/fee-debtors');
+        const data = await res.json();
+        
+        if (!Array.isArray(data)) {
+            document.getElementById('debtorsList').innerHTML = '<div class="alert alert-danger">❌ خطا در دریافت اطلاعات</div>';
+            return;
+        }
+        
+        if (data.length === 0) { 
+            document.getElementById('debtorsList').innerHTML = '<div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div>'; 
+            return; 
+        }
+        
+        let html = '';
+        for (const d of data) {
+            html += `<div class="col-md-6 col-lg-4 mb-3"><div class="debtor-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
+                    <span class="badge-debtor">بدهکار: ${(d.remaining_after || 0).toLocaleString()} AFN</span>
+                </div>
+                <p class="mb-1"><i class="fa-solid fa-id-card"></i> آیدی: ${d.student_card_id || '-'}</p>
+                <p class="mb-1"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
+                <p class="mb-1"><i class="fa-solid fa-user"></i> پدر: ${d.father_name || '-'}</p>
+                <hr>
+                <div class="d-flex justify-content-between mb-2"><span>فیس کل:</span><span>${(d.total_fee || 0).toLocaleString()} AFN</span></div>
+                <div class="d-flex justify-content-between mb-2"><span>پرداخت شده:</span><span class="text-success">${(d.paid_fee || 0).toLocaleString()} AFN</span></div>
+                <div class="d-flex justify-content-between mb-2"><span>باقی مانده:</span><span class="text-danger fw-bold">${(d.remaining_after || 0).toLocaleString()} AFN</span></div>
+                <div class="d-flex justify-content-between mb-3"><span>تاریخ انقضا:</span><span>${d.due_date || '-'}</span></div>
+                <button class="btn btn-sm btn-payment w-100" onclick="openPaymentModal(${d.id}, ${d.total_fee || 0})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
+            </div></div>`;
+        }
+        document.getElementById('debtorsList').innerHTML = html;
+    } catch (err) { 
+        console.error(err); 
+        document.getElementById('debtorsList').innerHTML = '<div class="alert alert-danger">❌ خطا: ' + err.message + '</div>';
+    }
+}
+
 
             // ========== منقضی شده با سرچ تاریخ ==========
             async function loadExpired() {
