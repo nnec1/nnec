@@ -742,24 +742,39 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 });
 
 // ویرایش فیس (فقط ریس)
+// app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
+//   const { total_fee, paid_fee, remaining_after, due_date, notes } = req.body;
+//   try {
+//     await db.execute(
+//       `
+//       UPDATE fee_payments 
+//       SET total_fee = ?, paid_fee = ?, remaining_after = ?, due_date = ?, notes = ?
+//       WHERE id = ?
+//     `,
+//       [
+//         total_fee,
+//         paid_fee,
+//         remaining_after,
+//         due_date,
+//         notes || null,
+//         req.params.id,
+//       ],
+//     );
+//     res.json({ success: true, message: "اطلاعات فیس با موفقیت به‌روز شد" });
+//   } catch (err) {
+//     console.error("Error in PUT /api/fee-payments/:id:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
   const { total_fee, paid_fee, remaining_after, due_date, notes } = req.body;
   try {
-    await db.execute(
-      `
+    await db.execute(`
       UPDATE fee_payments 
       SET total_fee = ?, paid_fee = ?, remaining_after = ?, due_date = ?, notes = ?
       WHERE id = ?
-    `,
-      [
-        total_fee,
-        paid_fee,
-        remaining_after,
-        due_date,
-        notes || null,
-        req.params.id,
-      ],
-    );
+    `, [total_fee, paid_fee, remaining_after, due_date, notes || null, req.params.id]);
     res.json({ success: true, message: "اطلاعات فیس با موفقیت به‌روز شد" });
   } catch (err) {
     console.error("Error in PUT /api/fee-payments/:id:", err);
