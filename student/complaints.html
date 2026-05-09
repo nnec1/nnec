@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -10,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
+        .complaint-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .complaint-pending { border-right: 4px solid #f59e0b; }
+        .complaint-resolved { border-right: 4px solid #10b981; }
         .menu-toggle {
             display: none;
             position: fixed;
@@ -25,66 +27,16 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
-
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 15px 25px 15px;
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
-
-            .overlay.show {
-                display: block;
-            }
-        }
-
-        .complaint-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .complaint-pending {
-            border-right: 4px solid #f59e0b;
-        }
-
-        .complaint-resolved {
-            border-right: 4px solid #10b981;
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
         }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -92,8 +44,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل شاگرد</h5>
@@ -107,18 +58,16 @@
                     <a href="complaints.html" class="nav-link active"><i class="fa-solid fa-message"></i> شکایات</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
                     <h3 class="section-title"><i class="fa-solid fa-message text-success me-2"></i> شکایات من</h3>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintModal"><i
-                            class="fa-solid fa-plus-circle"></i> شکایت جدید</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintModal"><i class="fa-solid fa-plus-circle"></i> شکایت جدید</button>
                 </div>
-                <div id="complaintsList"></div>
+                <div id="complaintsList" class="mt-3"></div>
             </div>
         </div>
     </div>
@@ -133,12 +82,9 @@
                 </div>
                 <div class="modal-body">
                     <form id="complaintForm">
-                        <div class="mb-3"><label class="form-label">موضوع</label><input type="text" class="form-control"
-                                id="subject" required></div>
-                        <div class="mb-3"><label class="form-label">شرح شکایت</label><textarea class="form-control"
-                                rows="5" id="message" required></textarea></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-paper-plane"></i>
-                            ارسال شکایت</button>
+                        <div class="mb-3"><label class="form-label">موضوع</label><input type="text" class="form-control" id="subject" required></div>
+                        <div class="mb-3"><label class="form-label">شرح شکایت</label><textarea class="form-control" rows="5" id="message" required></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-paper-plane"></i> ارسال شکایت</button>
                     </form>
                 </div>
             </div>
@@ -159,7 +105,7 @@
             function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
             toggleBtn.addEventListener('click', openSidebar);
             if (overlay) overlay.addEventListener('click', closeSidebar);
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar()); }
         }
 
         async function loadComplaints() {
@@ -174,7 +120,7 @@
                         <div><span class="badge ${c.status === 'pending' ? 'bg-warning' : 'bg-success'}">${c.status === 'pending' ? 'در انتظار پاسخ' : 'پاسخ داده شد'}</span></div>
                     </div>
                     <hr><p>${c.message}</p>
-                    ${c.response ? `<div class="alert alert-success mt-2"><strong><i class="fa-solid fa-reply"></i> پاسخ مدیر:</strong><br>${c.response}</div>` : ''}
+                    ${c.response ? `<div class="alert alert-success mt-2"><strong>پاسخ مدیر:</strong><br>${c.response}</div>` : ''}
                 </div>
             `).join('');
         }
@@ -195,5 +141,4 @@
         loadComplaints();
     </script>
 </body>
-
 </html>
