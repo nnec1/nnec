@@ -1702,7 +1702,222 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
     console.error("❌ Error in /api/daily-fee-stats-with-expiry:", err);
     res.status(500).json({ error: err.message });
   }
-}); // ====================== صفحات ======================
+});
+// ====================== API گزارش مالی (financial-reports) ======================
+app.get("/api/financial-reports", authenticate, async (req, res) => {
+  const { period, start_date, end_date } = req.query;
+  let periods = [],
+    incomes = [],
+    expenses = [];
+
+  try {
+    if (period === "daily") {
+      // 7 روز اخیر بر اساس issue_date
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split("T")[0];
+        periods.push(dateStr);
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE DATE(issue_date) = ?`,
+          [dateStr],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(0);
+      }
+    } else if (period === "monthly") {
+      // 12 ماه اخیر بر اساس issue_date
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        periods.push(monthStr);
+
+        const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+          .toISOString()
+          .split("T")[0];
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE DATE(issue_date) BETWEEN ? AND ?`,
+          [startDate, endDate],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(0);
+      }
+    } else if (period === "yearly") {
+      // 5 سال اخیر بر اساس issue_date
+      const currentYear = new Date().getFullYear();
+      for (let i = 4; i >= 0; i--) {
+        const year = currentYear - i;
+        periods.push(year.toString());
+
+        const startDate = `${year}-01-01`;
+        const endDate = `${year}-12-31`;
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE DATE(issue_date) BETWEEN ? AND ?`,
+          [startDate, endDate],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(0);
+      }
+    } else if (start_date && end_date) {
+      // بازه دلخواه
+      let current = new Date(start_date);
+      const end = new Date(end_date);
+      while (current <= end) {
+        const dateStr = current.toISOString().split("T")[0];
+        periods.push(dateStr);
+
+        const [income] = await db.execute(
+          `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE DATE(issue_date) = ?`,
+          [dateStr],
+        );
+        incomes.push(income[0]?.total || 0);
+        expenses.push(0);
+
+        current.setDate(current.getDate() + 1);
+      }
+    }
+
+    const total_income = incomes.reduce((a, b) => a + b, 0);
+    const total_expense = expenses.reduce((a, b) => a + b, 0);
+
+    res.json({
+      periods,
+      incomes,
+      expenses,
+      total_income,
+      total_expense,
+      net_profit: total_income - total_expense,
+    });
+  } catch (err) {
+    console.error("Error in /api/financial-reports:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API شکایات (complaints) ======================
+app.get("/api/complaints", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT c.*, s.name as student_name 
+      FROM complaints c
+      LEFT JOIN students s ON c.student_id = s.id
+      ORDER BY c.created_at DESC
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error("Error in /api/complaints:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/complaints", authenticate, async (req, res) => {
+  const { student_id, subject, message } = req.body;
+  try {
+    const [result] = await db.execute(
+      `
+      INSERT INTO complaints (student_id, subject, message, status, created_at)
+      VALUES (?, ?, ?, 'pending', NOW())
+    `,
+      [student_id, subject, message],
+    );
+    res.json({ success: true, id: result.insertId });
+  } catch (err) {
+    console.error("Error in POST /api/complaints:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/complaints/:id", authenticate, async (req, res) => {
+  const { response } = req.body;
+  try {
+    await db.execute(
+      `
+      UPDATE complaints SET response = ?, status = 'resolved', resolved_at = NOW()
+      WHERE id = ?
+    `,
+      [response, req.params.id],
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error in PUT /api/complaints/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API آمار داشبورد مدیر ======================
+app.get("/api/dashboard-stats", authenticate, async (req, res) => {
+  try {
+    const [students] = await db.execute(
+      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+    );
+    const [teachers] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+
+    // بدهکاران
+    const [debtors] = await db.execute(`
+      SELECT COUNT(*) as total FROM (
+        SELECT s.id, fp.remaining_after
+        FROM students s
+        JOIN fee_payments fp ON s.id = fp.student_id
+        WHERE s.status = 'active' AND fp.remaining_after > 0
+        GROUP BY s.id
+      ) as debtors_list
+    `);
+
+    // درآمد امروز بر اساس issue_date
+    const today = new Date().toISOString().split("T")[0];
+    const [revenue] = await db.execute(
+      `
+      SELECT COALESCE(SUM(amount), 0) as total 
+      FROM fee_payments 
+      WHERE DATE(issue_date) = ?
+    `,
+      [today],
+    );
+
+    res.json({
+      total_students: students[0]?.total || 0,
+      total_teachers: teachers[0]?.total || 0,
+      total_debtors: debtors[0]?.total || 0,
+      today_income: revenue[0]?.total || 0,
+    });
+  } catch (err) {
+    console.error("Error in /api/dashboard-stats:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API آخرین تراکنش‌ها ======================
+app.get("/api/recent-transactions", authenticate, async (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  try {
+    const [results] = await db.execute(
+      `
+      SELECT fp.id, fp.amount, fp.payment_date, fp.receipt_number, 
+             s.id as student_id, s.name as student_name, s.student_card_id, 
+             c.class_name
+      FROM fee_payments fp 
+      JOIN students s ON fp.student_id = s.id 
+      JOIN classes c ON s.class_id = c.id 
+      ORDER BY fp.issue_date DESC, fp.id DESC 
+      LIMIT ?
+    `,
+      [limit],
+    );
+    res.json(results);
+  } catch (err) {
+    console.error("Error in /api/recent-transactions:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== صفحات ======================
 
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "404.html"));
