@@ -8,82 +8,131 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#667eea,#764ba2)">
-                        <i class="bi bi-building fs-1 text-white"></i>
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
                     <small class="text-muted" id="adminName">مدیر سیستم</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> داشبورد</a>
-                    <a href="students.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="bi bi-mortarboard-fill"></i> فارغ التحصیلان</a>
-                    <a href="employees.html" class="nav-link"><i class="bi bi-people-fill"></i> کارمندان</a>
-                    <a href="classes.html" class="nav-link"><i class="bi bi-grid-3x3-gap-fill"></i> صنف‌ها</a>
-                    <a href="assign-teacher.html" class="nav-link"><i class="bi bi-person-plus-fill"></i> تخصیص
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="graduates.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> فارغ
+                        التحصیلان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="assign-teacher.html" class="nav-link active"><i class="fa-solid fa-user-plus"></i> تخصیص
                         استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="bi bi-cash-stack"></i> مدیریت حساب ها</a>
-                    <a href="attendance.html" class="nav-link"><i class="bi bi-calendar-check-fill"></i> حاضری</a>
-                    <a href="grades.html" class="nav-link"><i class="bi bi-bar-chart-steps"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link "><i class="bi bi-file-text-fill"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link "><i class="bi bi-coin"></i>گزارشات
-                        مالی</a>
-                    <a href="announcements.html" class="nav-link "><i class="bi bi-megaphone"></i>مدیریت
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
+                        فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارشات مالی</a>
+                    <a href="announcements.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> مدیریت
                         اعلانات</a>
-                    <a href="complaints.html" class="nav-link "><i class="bi bi-building-fill-x"></i>
-                        مدیریت شکایات</a>
-                    <a href="subjects.html" class="nav-link "><i class="bi bi-book"></i>
-                        مدیریت دروس</a>
-                    <a href="settings.html" class="nav-link "><i class="bi bi-gear"></i>
-                        تنظیمات</a>
+                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-building-circle-xmark"></i> مدیریت
+                        شکایات</a>
+                    <a href="subjects.html" class="nav-link"><i class="fa-solid fa-book"></i> مدیریت دروس</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
                         خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="bi bi-person-plus-fill text-primary me-2"></i> تخصیص استاد به صنف
-                </h3>
+                <h3 class="section-title"><i class="fa-solid fa-person-circle-plus text-primary me-2"></i> تخصیص استاد
+                    به صنف</h3>
 
                 <div class="alert alert-info">
-                    <i class="bi bi-info-circle-fill"></i>
+                    <i class="fa-solid fa-info-circle-fill"></i>
                     <strong>ترتیب صحیح:</strong> ابتدا صنف ایجاد کنید → سپس استاد تخصیص دهید → سپس شاگرد ثبت نام کنید
                 </div>
 
                 <div class="row g-4">
                     <div class="col-md-5">
                         <div class="card p-4 shadow-sm">
-                            <h5><i class="bi bi-person-badge text-primary me-2"></i> تخصیص جدید</h5>
+                            <h5><i class="fa-solid fa-person-badge text-primary me-2"></i> تخصیص جدید</h5>
                             <form id="assignForm">
                                 <div class="mb-3">
                                     <label class="form-label">انتخاب صنف <span class="text-danger">*</span></label>
                                     <select class="form-select" id="classId" required>
                                         <option value="">انتخاب صنف...</option>
                                     </select>
-                                    <small class="text-muted" id="classStatus"></small>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">انتخاب استاد <span class="text-danger">*</span></label>
                                     <select class="form-select" id="teacherId" required>
                                         <option value="">انتخاب استاد...</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">مضمون تدریس (اختیاری)</label>
-                                    <select class="form-select" id="subjectId">
-                                        <option value="">انتخاب مضمون...</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -94,113 +143,178 @@
                                         </label>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> تخصیص
-                                    استاد</button>
+                                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i>
+                                    تخصیص استاد</button>
                             </form>
                         </div>
                     </div>
                     <div class="col-md-7">
                         <div class="card p-4 shadow-sm">
-                            <h5><i class="bi bi-table text-primary me-2"></i> لیست تخصیص‌های فعلی</h5>
+                            <h5><i class="fa-solid fa-table text-primary me-2"></i> لیست تخصیص‌های فعلی</h5>
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
                                         <tr>
                                             <th>صنف</th>
                                             <th>استاد</th>
-                                            <th>مضمون</th>
                                             <th>نقش</th>
                                             <th>عملیات</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="assignmentsList"></tbody>
-                                </table>
+                                    <tbody id="assignmentsList">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">در حال بارگیری...
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="card p-4 shadow-sm mt-4">
-                    <h5><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> صنف‌های بدون استاد</h5>
-                    <div id="classesWithoutTeacher" class="row g-3"></div>
+                    </tr>
+                    </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="card p-4 shadow-sm mt-4">
+        <h5><i class="fa-solid fa-exclamation-triangle-fill text-warning me-2"></i> صنف‌های بدون استاد</h5>
+        <div id="classesWithoutTeacher" class="row g-3"></div>
+    </div>
+    </div>
+    </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
         async function loadClassesWithoutTeacher() {
-            const res = await fetch('/api/classes-without-teacher');
-            const classes = await res.json();
-            const container = document.getElementById('classesWithoutTeacher');
-            if (classes.length === 0) {
-                container.innerHTML = '<div class="alert alert-success">✅ همه صنف‌ها استاد دارند!</div>';
-            } else {
-                container.innerHTML = classes.map(c => `
-                    <div class="col-md-4">
-                        <div class="border rounded-3 p-3 bg-light">
-                            <h6><i class="bi bi-grid-3x3-gap-fill text-primary"></i> ${c.class_name}</h6>
-                            <p class="mb-1"><small>کد: ${c.class_code || '-'}</small></p>
-                            <p class="mb-0"><small>فیس: ${c.monthly_fee.toLocaleString()} AFN</small></p>
-                            <button class="btn btn-sm btn-warning mt-2" onclick="selectClassForAssign(${c.id})">تخصیص استاد</button>
+            try {
+                const res = await fetch('/api/classes-without-teacher');
+                let classes = await res.json();
+
+                if (!Array.isArray(classes)) {
+                    classes = [];
+                }
+
+                const container = document.getElementById('classesWithoutTeacher');
+                if (classes.length === 0) {
+                    container.innerHTML = '<div class="col-12"><div class="alert alert-success">✅ همه صنف‌ها استاد دارند!</div></div>';
+                } else {
+                    container.innerHTML = classes.map(c => `
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 bg-light">
+                                <h6><i class="fa-solid fa-grid-2 text-primary"></i> ${c.class_name || '-'}</h6>
+                                <p class="mb-1"><small>کد: ${c.id || '-'}</small></p>
+                                <button class="btn btn-sm btn-warning mt-2" onclick="selectClassForAssign(${c.id})">تخصیص استاد</button>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading classes without teacher:', err);
+                document.getElementById('classesWithoutTeacher').innerHTML = '<div class="col-12"><div class="alert alert-danger">خطا در بارگیری</div></div>';
             }
         }
 
         async function loadClassesForSelect() {
-            const res = await fetch('/api/active-classes');
-            const classes = await res.json();
-            const select = document.getElementById('classId');
-            select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}" data-teacher-count="${c.teacher_count}" data-student-count="${c.student_count}">${c.class_name} (${c.teacher_count} استاد / ${c.student_count} شاگرد)</option>`).join('');
+            try {
+                const res = await fetch('/api/active-classes');
+                let classes = await res.json();
 
-            select.onchange = function () {
-                const selected = select.options[select.selectedIndex];
-                const teacherCount = selected.dataset.teacherCount || 0;
-                const studentCount = selected.dataset.studentCount || 0;
-                document.getElementById('classStatus').innerHTML = `<i class="bi bi-info-circle"></i> این صنف دارای ${teacherCount} استاد و ${studentCount} شاگرد است.`;
-            };
+                if (!Array.isArray(classes)) {
+                    classes = [];
+                }
+
+                const select = document.getElementById('classId');
+                if (classes.length === 0) {
+                    select.innerHTML = '<option value="">هیچ صنفی موجود نیست</option>';
+                } else {
+                    select.innerHTML = '<option value="">انتخاب صنف...</option>' +
+                        classes.map(c => `<option value="${c.id}">${c.class_name || '-'} (${c.teacher_count || 0} استاد / ${c.student_count || 0} شاگرد)</option>`).join('');
+                }
+            } catch (err) {
+                console.error('Error loading classes:', err);
+                document.getElementById('classId').innerHTML = '<option value="">خطا در بارگیری</option>';
+            }
         }
 
         async function loadTeachers() {
-            const res = await fetch('/api/teachers');
-            const teachers = await res.json();
-            document.getElementById('teacherId').innerHTML = '<option value="">انتخاب استاد...</option>' + teachers.map(t => `<option value="${t.id}">${t.name} (${t.email})</option>`).join('');
-        }
+            try {
+                const res = await fetch('/api/teachers');
+                let teachers = await res.json();
 
-        async function loadSubjects() {
-            const res = await fetch('/api/subjects');
-            const subjects = await res.json();
-            document.getElementById('subjectId').innerHTML = '<option value="">انتخاب مضمون...</option>' + subjects.map(s => `<option value="${s.id}">${s.subject_name}</option>`).join('');
+                if (!Array.isArray(teachers)) {
+                    teachers = [];
+                }
+
+                const select = document.getElementById('teacherId');
+                if (teachers.length === 0) {
+                    select.innerHTML = '<option value="">هیچ استادی یافت نشد</option>';
+                } else {
+                    select.innerHTML = '<option value="">انتخاب استاد...</option>' +
+                        teachers.map(t => `<option value="${t.id}">${t.name || '-'} (${t.email || '-'})</option>`).join('');
+                }
+            } catch (err) {
+                console.error('Error loading teachers:', err);
+                document.getElementById('teacherId').innerHTML = '<option value="">خطا در بارگیری</option>';
+            }
         }
 
         async function loadAssignments() {
-            const res = await fetch('/api/teacher-classes');
-            const data = await res.json();
-            if (data.length === 0) {
-                document.getElementById('assignmentsList').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">هیچ تخصیصی ثبت نشده است</div></div></div></td>';
-                return;
+            try {
+                const res = await fetch('/api/teacher-classes');
+                let data = await res.json();
+
+                if (!Array.isArray(data)) {
+                    data = [];
+                }
+
+                const tbody = document.getElementById('assignmentsList');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">هیچ تخصیصی ثبت نشده است</div></div></div></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(a => `
+                    <tr>
+                        <td class="text-dark"><strong>${a.class_name || '-'}</strong></td>
+                        <td class="text-dark">${a.teacher_name || '-'}</td>
+                        <td class="text-dark">${a.is_main_teacher ? '<span class="badge bg-primary">استاد اصلی</span>' : '<span class="badge bg-secondary">استاد عادی</span>'}</td>
+                        <td class="text-dark"><button class="btn btn-sm btn-danger" onclick="deleteAssignment(${a.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading assignments:', err);
+                document.getElementById('assignmentsList').innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">خطا در بارگیری</div></div></div></tr>';
             }
-            document.getElementById('assignmentsList').innerHTML = data.map(a => `
-                <tr>
-                    <td class="text-dark"><strong>${a.class_name}</strong></div></div></div>
-                    <td class="text-dark">${a.teacher_name}</div></div></div>
-                    <td class="text-dark">${a.subject_name || '-'}</div></div></div>
-                    <td class="text-dark">${a.is_main_teacher ? '<span class="badge bg-primary">استاد اصلی</span>' : '<span class="badge bg-secondary">استاد عادی</span>'}</div></div></div>
-                    <td class="text-dark"><button class="btn btn-sm btn-danger" onclick="deleteAssignment(${a.id})"><i class="bi bi-trash"></i></button></div></div></div>
-                </tr>
-            `).join('');
         }
 
         async function deleteAssignment(id) {
             if (confirm('آیا از حذف این تخصیص اطمینان دارید؟')) {
-                await fetch(`/api/teacher-classes/${id}`, { method: 'DELETE' });
-                loadAssignments();
-                loadClassesWithoutTeacher();
-                loadClassesForSelect();
+                try {
+                    const res = await fetch(`/api/teacher-classes/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        alert('تخصیص با موفقیت حذف شد');
+                        loadAssignments();
+                        loadClassesWithoutTeacher();
+                        loadClassesForSelect();
+                    } else {
+                        alert('خطا در حذف تخصیص');
+                    }
+                } catch (err) {
+                    alert('خطا در ارتباط با سرور');
+                }
             }
         }
 
@@ -211,38 +325,60 @@
 
         document.getElementById('assignForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const teacherId = document.getElementById('teacherId').value;
+            const classId = document.getElementById('classId').value;
+
+            if (!teacherId) {
+                alert('❌ لطفاً استاد را انتخاب کنید');
+                return;
+            }
+            if (!classId) {
+                alert('❌ لطفاً صنف را انتخاب کنید');
+                return;
+            }
+
             const data = {
-                teacher_id: document.getElementById('teacherId').value,
-                class_id: document.getElementById('classId').value,
-                subject_id: document.getElementById('subjectId').value || null,
+                teacher_id: teacherId,
+                class_id: classId,
+                subject_id: null,
                 is_main_teacher: document.getElementById('isMainTeacher').checked,
                 academic_year: '1404'
             };
-            if (!data.teacher_id || !data.class_id) {
-                alert('لطفاً صنف و استاد را انتخاب کنید');
-                return;
-            }
-            const res = await fetch('/api/assign-teacher-to-class', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (res.ok) {
-                alert('استاد با موفقیت به صنف تخصیص داده شد');
-                document.getElementById('assignForm').reset();
-                loadAssignments();
-                loadClassesWithoutTeacher();
-                loadClassesForSelect();
-            } else {
-                const err = await res.json();
-                alert(err.error || 'خطا در تخصیص استاد');
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
+
+            try {
+                const res = await fetch('/api/assign-teacher-to-class', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    alert('✅ استاد با موفقیت به صنف تخصیص داده شد');
+                    document.getElementById('assignForm').reset();
+                    loadAssignments();
+                    loadClassesWithoutTeacher();
+                    loadClassesForSelect();
+                } else {
+                    const err = await res.json();
+                    alert('❌ خطا: ' + (err.error || 'مشخص نیست'));
+                }
+            } catch (err) {
+                alert('❌ خطا در ارتباط با سرور');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-save"></i> تخصیص استاد';
             }
         });
 
+        setupSidebar();
         loadClassesForSelect();
         loadClassesWithoutTeacher();
         loadTeachers();
-        loadSubjects();
         loadAssignments();
     </script>
 </body>
