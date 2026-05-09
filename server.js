@@ -383,23 +383,7 @@ app.get("/api/active-classes", authenticate, async (req, res) => {
 });
 
 // ====================== API تخصیص‌های استاد به صنف ======================
-app.get("/api/teacher-classes", authenticate, async (req, res) => {
-  try {
-    const [results] = await db.execute(`
-      SELECT tc.id, tc.class_id, tc.teacher_id, tc.is_main_teacher,
-        e.name as teacher_name, 
-        c.class_name
-      FROM teacher_classes tc
-      JOIN employees e ON tc.teacher_id = e.id
-      JOIN classes c ON tc.class_id = c.id
-      ORDER BY c.class_name, e.name
-    `);
-    res.json(results);
-  } catch (err) {
-    console.error("Error in /api/teacher-classes:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+
 
 // ===== حذف تخصیص =====
 app.delete("/api/teacher-classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
@@ -413,36 +397,43 @@ app.delete("/api/teacher-classes/:id", authenticate, isAdminOrCEO, async (req, r
 });
 
 // ===== تخصیص استاد به صنف =====
+// اطمینان از وجود مسیر درست برای دریافت لیست تخصیص‌ها
+app.get("/api/teacher-classes", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT tc.*, 
+             e.name as teacher_name, 
+             c.class_name
+      FROM teacher_classes tc
+      JOIN employees e ON tc.teacher_id = e.id
+      JOIN classes c ON tc.class_id = c.id
+      ORDER BY c.class_name
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error("Error in GET /api/teacher-classes:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// اطمینان از وجود مسیر درست برای ثبت تخصیص جدید
 app.post("/api/assign-teacher-to-class", authenticate, isAdminOrCEO, async (req, res) => {
   const { teacher_id, class_id, subject_id, academic_year, is_main_teacher } = req.body;
-  
   if (!teacher_id || !class_id) {
     return res.status(400).json({ error: "استاد و صنف الزامی است" });
   }
-  
   try {
-    const [existing] = await db.execute(
-      "SELECT id FROM teacher_classes WHERE teacher_id = ? AND class_id = ?",
-      [teacher_id, class_id]
-    );
-    
-    if (existing.length > 0) {
-      return res.status(400).json({ error: "این استاد قبلاً به این صنف تخصیص داده شده است" });
-    }
-    
     const [result] = await db.execute(
       `INSERT INTO teacher_classes (teacher_id, class_id, subject_id, academic_year, is_main_teacher) 
        VALUES (?, ?, ?, ?, ?)`,
       [teacher_id, class_id, subject_id || null, academic_year || "1404", is_main_teacher || false]
     );
-    
-    res.json({ success: true, id: result.insertId, message: "استاد با موفقیت تخصیص داده شد" });
+    res.json({ success: true, id: result.insertId });
   } catch (err) {
     console.error("Error in POST /api/assign-teacher-to-class:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // ====================== API شاگردان ======================
 
 app.get("/api/students", authenticate, async (req, res) => {
