@@ -100,6 +100,14 @@
             color: white;
             margin-top: 15px;
         }
+        .month-badge {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            display: inline-block;
+        }
         @media (max-width: 480px) {
             .payment-card { padding: 20px; }
             .info-row { flex-direction: column; gap: 5px; }
@@ -141,11 +149,18 @@
 
                 <div class="new-fee-box">
                     <h6 class="mb-3"><i class="fa-solid fa-plus-circle text-success"></i> ثبت فیس جدید</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fa-regular fa-calendar"></i> ماه جاری</label>
+                        <div class="form-control" id="currentMonthDisplay" style="background:#f1f5f9"></div>
+                        <small class="text-muted">فیس هر ماه به صورت مستقل محاسبه می‌شود</small>
+                    </div>
+                    
                     <div class="mb-3"><label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> فیس کل (AFN)</label><input type="number" id="newTotalFee" class="form-control" placeholder="مثال: 5000" required></div>
                     <div class="mb-3"><label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> مبلغ پرداختی (AFN)</label><input type="number" id="newPayment" class="form-control" placeholder="مبلغ پرداختی" required></div>
                     
                     <div id="remainingBox" class="remaining-box" style="display: none;">
-                        <span class="text-dark">💰 باقی مانده:</span>
+                        <span class="text-dark">💰 باقی مانده این ماه:</span>
                         <h3 class="text-danger mb-0" id="remainingAmount">0 AFN</h3>
                     </div>
 
@@ -167,6 +182,14 @@
     <script>
         let currentStudent = null;
         let allStudents = [];
+
+        // تابع تبدیل ماه شمسی
+        function getPersianMonth() {
+            const date = new Date();
+            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 
+                            'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            return months[date.getMonth()];
+        }
 
         function formatDate(dateString) {
             if (!dateString) return '-';
@@ -198,6 +221,9 @@
                 remainingBox.style.display = 'none';
             }
         }
+
+        // تنظیم ماه جاری
+        document.getElementById('currentMonthDisplay').innerHTML = `<i class="fa-regular fa-calendar"></i> ${getPersianMonth()} ${new Date().getFullYear()}`;
 
         async function loadClasses() {
             try {
@@ -267,6 +293,9 @@
             const expiryDate = document.getElementById('newExpiry').value;
             const phone = document.getElementById('studentPhoneInput').value;
             const debtNote = document.getElementById('debtNote').value;
+            const currentMonth = getPersianMonth();
+            const currentYear = new Date().getFullYear().toString();
+            
             if (totalFee <= 0) { alert('❌ لطفاً فیس کل را وارد کنید'); return; }
             if (payment <= 0) { alert('❌ لطفاً مبلغ پرداختی را وارد کنید'); return; }
             if (!paymentDate) { alert('❌ تاریخ پرداخت را انتخاب کنید'); return; }
@@ -286,13 +315,19 @@
                 const res = await fetch('/api/collect-fee', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        student_id: currentStudent.id, amount: payment, total_fee: totalFee,
-                        payment_date: paymentDate, due_date: expiryDate, notes: debtNote || null
+                        student_id: currentStudent.id,
+                        amount: payment,
+                        total_fee: totalFee,
+                        payment_date: paymentDate,
+                        due_date: expiryDate,
+                        month: currentMonth,
+                        academic_year: currentYear,
+                        notes: debtNote || null
                     })
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    alert('✅ پرداخت با موفقیت ثبت شد');
+                    alert(`✅ پرداخت با موفقیت ثبت شد (ماه ${currentMonth})`);
                     if (typeof printReceipt === 'function') {
                         printReceipt(data.student_name, data.student_father, data.student_card_id,
                             data.total_fee, data.paid_fee, data.remaining_fee,
