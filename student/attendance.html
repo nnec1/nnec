@@ -31,6 +31,14 @@
             border-radius: 30px;
         }
 
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -173,12 +181,19 @@
                                     <th>یادداشت</th>
                                 </tr>
                             </thead>
-                            <tbody id="attendanceList"></tbody>
-                        </table>
+                            <tbody id="attendanceList">
+                                <td>
+                                <td colspan="3" class="text-center py-4 text-muted">لطفاً ماه و سال را انتخاب کنید
                     </div>
                 </div>
             </div>
+            </tr>
+            </tbody>
+            </table>
         </div>
+    </div>
+    </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -212,8 +227,17 @@
             document.getElementById('totalPresent').innerText = data.present || 0;
             document.getElementById('totalLate').innerText = data.late || 0;
             document.getElementById('totalAbsent').innerText = data.absent || 0;
-            if (data.details && data.details.length > 0) { document.getElementById('attendanceList').innerHTML = data.details.map(d => { let badgeClass = '', statusText = ''; if (d.status === 'present') { badgeClass = 'badge-present'; statusText = 'حاضر'; } else if (d.status === 'absent') { badgeClass = 'badge-absent'; statusText = 'غایب'; } else { badgeClass = 'badge-late'; statusText = 'تأخیر'; } return `<td><td class="text-dark">${formatDate(d.date)}</div></div></div><td class="text-dark"><span class="${badgeClass}">${statusText}</span></div></div></div><td class="text-dark">${d.notes || '-'}</div></div></div>`; }).join(''); }
-            else { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="3" class="text-center">هیچ حاضری ثبت نشده است</div></div></div></tr>'; }
+            if (data.details && data.details.length > 0) {
+                document.getElementById('attendanceList').innerHTML = data.details.map(d => {
+                    let badgeClass = '', statusText = '';
+                    if (d.status === 'present') { badgeClass = 'badge-present'; statusText = 'حاضر'; }
+                    else if (d.status === 'absent') { badgeClass = 'badge-absent'; statusText = 'غایب'; }
+                    else { badgeClass = 'badge-late'; statusText = 'تأخیر'; }
+                    return `<tr><td class="text-dark">${formatDate(d.date)}</div></div></div><td class="text-dark"><span class="${badgeClass}">${statusText}</span></div></div></div><td class="text-dark">${d.notes || '-'}</div></div></div></tr>`;
+                }).join('');
+            } else {
+                document.getElementById('attendanceList').innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">هیچ حاضری ثبت نشده است</div></div></div></tr>';
+            }
         }
 
         function printReport() {
