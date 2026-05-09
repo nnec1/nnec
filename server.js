@@ -1539,27 +1539,37 @@ app.post("/api/change-password", authenticate, async (req, res) => {
   }
 });
 // ====================== دریافت لیست تاریخ‌های صدور موجود ======================
+// ====================== دریافت لیست تاریخ‌های صدور موجود ======================
 app.get("/api/issue-dates", authenticate, async (req, res) => {
   try {
+    // ساده ترین کوئری ممکن
     const [results] = await db.execute(`
       SELECT DISTINCT DATE(payment_date) as issue_date 
       FROM fee_payments 
-      WHERE payment_date IS NOT NULL 
+      WHERE payment_date IS NOT NULL
       ORDER BY payment_date DESC
     `);
 
-    const dates = results.map((r) => r.issue_date).filter((d) => d);
+    console.log("✅ Issue dates found:", results.length);
+
+    const dates = [];
+    for (const row of results) {
+      if (row.issue_date) {
+        dates.push(row.issue_date);
+      }
+    }
 
     res.json({
       success: true,
       dates: dates,
     });
   } catch (err) {
-    console.error("Error in GET /api/issue-dates:", err);
+    console.error("❌ Error in /api/issue-dates:", err);
     res.status(500).json({ error: err.message });
   }
 });
 // ====================== آمار روزمره فیس با نمایش تاریخ انقضا ======================
+// ====================== آمار روزمره فیس ======================
 app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
   const { date } = req.query;
   const targetDate = date || new Date().toISOString().split("T")[0];
@@ -1582,12 +1592,7 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
         s.name as student_name,
         s.father_name,
         s.student_card_id,
-        c.class_name,
-        (
-          SELECT MAX(fp2.due_date) 
-          FROM fee_payments fp2 
-          WHERE fp2.student_id = s.id AND fp2.id < fp.id
-        ) as old_expiry_date
+        c.class_name
       FROM fee_payments fp
       JOIN students s ON fp.student_id = s.id
       JOIN classes c ON s.class_id = c.id
@@ -1596,6 +1601,8 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
     `,
       [targetDate],
     );
+
+    console.log("✅ Daily stats found for", targetDate, ":", payments.length);
 
     const totalToday = payments.reduce(
       (sum, p) => sum + (parseFloat(p.amount) || 0),
@@ -1620,9 +1627,6 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
       due_date: p.due_date
         ? new Date(p.due_date).toISOString().split("T")[0]
         : null,
-      old_expiry_date: p.old_expiry_date
-        ? new Date(p.old_expiry_date).toISOString().split("T")[0]
-        : null,
       receipt_number: p.receipt_number,
       notes: p.notes,
     }));
@@ -1636,11 +1640,10 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
       payments: formattedPayments,
     });
   } catch (err) {
-    console.error("Error in /api/daily-fee-stats-with-expiry:", err);
+    console.error("❌ Error in /api/daily-fee-stats-with-expiry:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // ====================== صفحات ======================
 
 app.use((req, res) => {
