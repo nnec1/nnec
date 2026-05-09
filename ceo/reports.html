@@ -38,27 +38,10 @@
         }
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
             .sidebar.show { right: 0; }
             .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
             .overlay.show { display: block; }
         }
     </style>
@@ -79,6 +62,7 @@
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
                     <a href="admins.html" class="nav-link"><i class="fa-solid fa-shield-haltered"></i> مدیریت مدیران</a>
+                    <a href="fee-edit.html" class="nav-link"><i class="fa-solid fa-pen"></i> ویرایش فیس</a>
                     <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> گزارش مالی</a>
                     <a href="reports.html" class="nav-link active"><i class="fa-solid fa-file-alt"></i> گزارشات کلان</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات سیستم</a>
@@ -91,30 +75,15 @@
                 <h3 class="section-title"><i class="fa-solid fa-file-alt text-success me-2"></i> گزارشات کلان</h3>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-3"><div class="report-card" onclick="showReport('financial')"><i class="fa-solid fa-money-bill-wave fs-1 text-success"></i><h6 class="mt-2">خلاصه مالی</h6><small>درآمد، هزینه، سود</small></div></div>
-                    <div class="col-md-3"><div class="report-card" onclick="showReport('students')"><i class="fa-solid fa-chart-line fs-1 text-primary"></i><h6 class="mt-2">رشد شاگردان</h6><small>نمودار رشد ماهانه</small></div></div>
-                    <div class="col-md-3"><div class="report-card" onclick="showReport('attendance')"><i class="fa-solid fa-calendar-check fs-1 text-warning"></i><h6 class="mt-2">خلاصه حاضری</h6><small>آمار حضور و غیبت</small></div></div>
-                    <div class="col-md-3"><div class="report-card" onclick="showReport('fees')"><i class="fa-solid fa-receipt fs-1 text-danger"></i><h6 class="mt-2">وصول فیس</h6><small>گزارش وصول ماهانه</small></div></div>
-                    <div class="col-md-3"><div class="report-card" onclick="showReport('teachers')"><i class="fa-solid fa-chalkboard-user fs-1 text-info"></i><h6 class="mt-2">عملکرد استادان</h6><small>امتیازات و عملکرد</small></div></div>
-                    <div class="col-md-3"><div class="report-card" onclick="showReport('classes')"><i class="fa-solid fa-table-cells-large fs-1 text-secondary"></i><h6 class="mt-2">آمار صنف‌ها</h6><small>تعداد شاگردان هر صنف</small></div></div>
+                    <div class="col-md-4"><div class="report-card" onclick="window.location.href='financial-reports.html'"><i class="fa-solid fa-money-bill-wave fs-1 text-success"></i><h6 class="mt-2">گزارش مالی</h6><small>درآمد، هزینه، سود</small></div></div>
+                    <div class="col-md-4"><div class="report-card" onclick="showReport('students')"><i class="fa-solid fa-graduation-cap fs-1 text-primary"></i><h6 class="mt-2">رشد شاگردان</h6><small>نمودار رشد ماهانه</small></div></div>
+                    <div class="col-md-4"><div class="report-card" onclick="showReport('attendance')"><i class="fa-solid fa-calendar-check fs-1 text-warning"></i><h6 class="mt-2">خلاصه حاضری</h6><small>آمار حضور و غیاب</small></div></div>
+                    <div class="col-md-4"><div class="report-card" onclick="showReport('fees')"><i class="fa-solid fa-receipt fs-1 text-danger"></i><h6 class="mt-2">وصول فیس</h6><small>گزارش وصول ماهانه</small></div></div>
+                    <div class="col-md-4"><div class="report-card" onclick="showReport('teachers')"><i class="fa-solid fa-chalkboard-user fs-1 text-info"></i><h6 class="mt-2">عملکرد استادان</h6><small>امتیازات و عملکرد</small></div></div>
+                    <div class="col-md-4"><div class="report-card" onclick="showReport('debtors')"><i class="fa-solid fa-triangle-exclamation fs-1 text-warning"></i><h6 class="mt-2">گزارش بدهکاران</h6><small>شاگردان بدهکار</small></div></div>
                 </div>
 
                 <div id="reportResult" class="table-container"><div class="text-center py-5 text-muted">لطفاً یکی از گزارشات را انتخاب کنید</div></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="dateModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title">انتخاب بازه زمانی</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">تاریخ شروع</label><input type="date" class="form-control" id="startDate"></div>
-                    <div class="mb-3"><label class="form-label">تاریخ پایان</label><input type="date" class="form-control" id="endDate"></div>
-                    <button class="btn btn-primary w-100" onclick="generateDateReport()"><i class="fa-solid fa-magnifying-glass"></i> دریافت گزارش</button>
-                </div>
             </div>
         </div>
     </div>
@@ -139,37 +108,18 @@
 
         function formatDate(dateString) {
             if (!dateString) return '-';
-            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
             catch(e) { return dateString; }
         }
 
-        function showReport(type) {
-            currentReport = type;
-            if (type === 'financial') generateFinancialReport();
-            else if (type === 'students') generateStudentsReport();
+        function showReport(type) { currentReport = type; generateReport(type); }
+
+        async function generateReport(type) {
+            if (type === 'students') await generateStudentsReport();
             else if (type === 'attendance') generateAttendanceReport();
-            else if (type === 'fees') new bootstrap.Modal(document.getElementById('dateModal')).show();
+            else if (type === 'fees') await generateFeeReport();
             else if (type === 'teachers') generateTeachersReport();
-            else if (type === 'classes') generateClassesReport();
-        }
-
-        async function generateDateReport() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            if (!startDate || !endDate) { alert('لطفاً بازه زمانی را انتخاب کنید'); return; }
-            bootstrap.Modal.getInstance(document.getElementById('dateModal')).hide();
-            if (currentReport === 'fees') await generateFeeReport(startDate, endDate);
-        }
-
-        async function generateFinancialReport() {
-            const incomes = await fetch('/api/incomes').then(r => r.json());
-            const expenses = await fetch('/api/expenses').then(r => r.json());
-            const totalIncome = incomes.reduce((a, b) => a + b.amount, 0);
-            const totalExpense = expenses.reduce((a, b) => a + b.amount, 0);
-            const netProfit = totalIncome - totalExpense;
-            document.getElementById('reportResult').innerHTML = `<div class="row g-4"><div class="col-md-4"><div class="bg-success bg-opacity-10 p-4 rounded-3 text-center"><h4 class="text-success">${totalIncome.toLocaleString()} AFN</h4><small>کل درآمد</small></div></div><div class="col-md-4"><div class="bg-danger bg-opacity-10 p-4 rounded-3 text-center"><h4 class="text-danger">${totalExpense.toLocaleString()} AFN</h4><small>کل هزینه</small></div></div><div class="col-md-4"><div class="bg-primary bg-opacity-10 p-4 rounded-3 text-center"><h4 class="text-primary">${netProfit.toLocaleString()} AFN</h4><small>سود خالص</small></div></div></div><canvas id="financeChart" height="250" class="mt-4"></canvas>`;
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            new Chart(ctx, { type: 'bar', data: { labels: ['درآمد', 'هزینه'], datasets: [{ label: 'مبلغ (AFN)', data: [totalIncome, totalExpense], backgroundColor: ['#10b981', '#dc2626'], borderRadius: 10 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+            else if (type === 'debtors') await generateDebtorsReport();
         }
 
         async function generateStudentsReport() {
@@ -189,26 +139,28 @@
             new Chart(ctx, { type: 'pie', data: { labels: ['حاضر', 'تأخیر', 'غایب'], datasets: [{ data: [85, 10, 5], backgroundColor: ['#10b981', '#f59e0b', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
         }
 
-        async function generateFeeReport(startDate, endDate) {
+        async function generateFeeReport() {
             const payments = await fetch('/api/fee-payments-history').then(r => r.json());
-            let filtered = payments;
-            if (startDate && endDate) filtered = payments.filter(p => p.payment_date >= startDate && p.payment_date <= endDate);
-            const total = filtered.reduce((a, b) => a + b.amount, 0);
-            document.getElementById('reportResult').innerHTML = `<div class="text-center mb-4"><h3 class="text-success">${total.toLocaleString()} AFN</h3><p>مجموع وصولی فیس</p></div><div class="table-responsive"><table class="table"><thead><tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>تاریخ</th><th>رسید</th></tr></thead><tbody>${filtered.map(p => `<tr><td class="text-dark">${p.student_name}</div></div></div><td class="text-dark">${p.class_name}</div></div></div><td class="text-success">${p.amount.toLocaleString()} AFN</div></div></div><td class="text-dark">${formatDate(p.payment_date)}</div></div></div><td class="text-dark">${p.receipt_number}</div></div></div></tr>`).join('')}</tbody></table></div>`;
+            const total = payments.reduce((a, b) => a + b.amount, 0);
+            document.getElementById('reportResult').innerHTML = `<div class="text-center mb-4"><h3 class="text-success">${total.toLocaleString()} AFN</h3><p>مجموع وصولی فیس</p></div><div class="table-responsive"><table class="table"><thead><tr><th>شاگرد</th><th>صنف</th><th>مبلغ</th><th>تاریخ</th><th>رسید</th></tr></thead><tbody>${payments.map(p => `<td><td class="text-dark">${p.student_name}</div></div></div><td class="text-dark">${p.class_name}</div></div></div><td class="text-success">${p.amount.toLocaleString()} AFN</div></div></div><td class="text-dark">${formatDate(p.payment_date)}</div></div></div><td class="text-dark">${p.receipt_number}</div></div></div></tr>`).join('')}</tbody></table></div>`;
         }
 
         function generateTeachersReport() {
             document.getElementById('reportResult').innerHTML = `<div class="table-responsive"><table class="table"><thead class="table-light"><tr><th>نام استاد</th><th>شاگردان</th><th>میانگین نمرات</th><th>حضور</th><th>امتیاز</th></tr></thead><tbody><tr><td class="text-dark">احمد رضایی</div></div></div><td class="text-dark">45</div></div></div><td class="text-dark">78%</div></div></div><td class="text-dark">92%</div></div></div><td class="text-dark">★★★★☆</div></div></div></tr>><tr><td class="text-dark">سارا حسینی</div></div></div><td class="text-dark">38</div></div></div><td class="text-dark">82%</div></div></div><td class="text-dark">88%</div></div></div><td class="text-dark">★★★★★</div></div></div></tr>></tbody></table></div>`;
         }
 
-        async function generateClassesReport() {
-            const classes = await fetch('/api/classes').then(r => r.json());
-            const students = await fetch('/api/students').then(r => r.json());
-            const classCount = {};
-            students.forEach(s => { classCount[s.class_name] = (classCount[s.class_name] || 0) + 1; });
-            document.getElementById('reportResult').innerHTML = `<canvas id="classesChart" height="300"></canvas>`;
-            const ctx = document.getElementById('classesChart').getContext('2d');
-            new Chart(ctx, { type: 'bar', data: { labels: classes.map(c => c.class_name), datasets: [{ label: 'تعداد شاگردان', data: classes.map(c => classCount[c.class_name] || 0), backgroundColor: '#10b981', borderRadius: 10 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+        async function generateDebtorsReport() {
+            const res = await fetch('/api/fee-debtors');
+            let data = await res.json();
+            if (!Array.isArray(data)) data = [];
+            const totalDebt = data.reduce((a, b) => a + (parseFloat(b.remaining_after) || 0), 0);
+            document.getElementById('reportResult').innerHTML = `
+                <div class="text-center mb-4"><h3 class="text-danger">${totalDebt.toLocaleString()} AFN</h3><p>مجموع بدهکاری شاگردان</p></div>
+                <div class="table-responsive"><table class="table"><thead class="table-light"><tr><th>شاگرد</th><th>صنف</th><th>فیس کل</th><th>پرداخت شده</th><th>بدهی</th><th>تاریخ انقضا</th></tr></thead><tbody>
+                ${data.map(d => `<tr><td class="text-dark">${d.name}</div></div></div><td class="text-dark">${d.class_name}</div></div></div><td class="text-dark">${(d.total_fee || 0).toLocaleString()} AFN</div></div></div>
+                <td class="text-success">${(d.paid_fee || 0).toLocaleString()} AFN</div></div></div><td class="text-danger">${(d.remaining_after || 0).toLocaleString()} AFN</div></div></div>
+                <td class="text-dark">${d.due_date || '-'}</div></div></div></td>`).join('')}
+                </tbody></table></div>`;
         }
 
         setupSidebar();

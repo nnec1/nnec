@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -9,7 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        .stat-card { background: white; border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -25,16 +33,50 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
-            .overlay.show { display: block; }
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -42,7 +84,8 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل شاگرد</h5>
@@ -56,18 +99,38 @@
                     <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> وضعیت فیس من</h3>
+                <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> وضعیت فیس من
+                </h3>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-receipt fs-1 text-primary"></i><h3 id="feeMain">0</h3><small>فیس کل</small></div></div>
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-circle-check fs-1 text-success"></i><h3 id="feePaid">0</h3><small>پرداخت شده</small></div></div>
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-solid fa-triangle-exclamation fs-1 text-danger"></i><h3 id="feeRemaining">0</h3><small>باقی مانده</small></div></div>
-                    <div class="col-md-3"><div class="stat-card text-center"><i class="fa-regular fa-calendar-circle-exclamation fs-1 text-warning"></i><h4 id="feeExpiry">-</h4><small>تاریخ انقضا</small></div></div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center"><i class="fa-solid fa-receipt fs-1 text-primary"></i>
+                            <h3 id="feeMain">0</h3><small>فیس کل</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center"><i class="fa-solid fa-circle-check fs-1 text-success"></i>
+                            <h3 id="feePaid">0</h3><small>پرداخت شده</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center"><i
+                                class="fa-solid fa-triangle-exclamation fs-1 text-danger"></i>
+                            <h3 id="feeRemaining">0</h3><small>باقی مانده</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center"><i
+                                class="fa-regular fa-calendar-circle-exclamation fs-1 text-warning"></i>
+                            <h4 id="feeExpiry">-</h4><small>تاریخ انقضا</small>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="overdueWarning" class="alert alert-danger d-none"></div>
@@ -76,7 +139,18 @@
                     <h5><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</h5>
                     <div class="table-responsive">
                         <table class="table">
-                            <thead class="table-light"><tr><th>تاریخ</th><th>مبلغ</th><th>فیس کل</th><th>پرداخت شده (کل)</th><th>باقی مانده</th><th>تاریخ انقضا</th><th>شماره رسید</th><th>یادداشت</th></tr></thead>
+                            <thead class="table-light">
+                                <tr>
+                                    <th>تاریخ</th>
+                                    <th>مبلغ</th>
+                                    <th>فیس کل</th>
+                                    <th>پرداخت شده (کل)</th>
+                                    <th>باقی مانده</th>
+                                    <th>تاریخ انقضا</th>
+                                    <th>شماره رسید</th>
+                                    <th>یادداشت</th>
+                                </tr>
+                            </thead>
                             <tbody id="paymentHistory"></tbody>
                         </table>
                     </div>
@@ -138,4 +212,5 @@
         setInterval(loadFeeStatus, 30000);
     </script>
 </body>
+
 </html>
