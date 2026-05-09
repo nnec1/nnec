@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -10,6 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
+        .employee-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
         .menu-toggle {
             display: none;
             position: fixed;
@@ -25,50 +30,16 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
-
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 15px 25px 15px;
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
-
-            .overlay.show {
-                display: block;
-            }
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
         }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -76,8 +47,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
@@ -86,67 +56,41 @@
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
-                    <a href="graduates.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> فارغ
-                        التحصیلان</a>
                     <a href="employees.html" class="nav-link active"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
                     <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
-                    <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
-                    <a href="accounts.html" class="nav-link"><i class="fa-solid fa-cash-stack"></i> مدیریت حساب ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
-                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارشات مالی</a>
-                    <a href="announcements.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> مدیریت
-                        اعلانات</a>
-                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-building-circle-xmark"></i> مدیریت
-                        شکایات</a>
-                    <a href="subjects.html" class="nav-link"><i class="fa-solid fa-book"></i> مدیریت دروس</a>
+                    <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارش مالی</a>
+                    <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
                     <h3 class="section-title"><i class="fa-solid fa-users text-success me-2"></i> مدیریت کارمندان</h3>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#employeeModal"
-                        onclick="resetEmployeeForm()">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#employeeModal" onclick="resetEmployeeForm()">
                         <i class="fa-solid fa-plus-circle"></i> کارمند جدید
                     </button>
                 </div>
 
                 <div class="row g-3 mb-4">
-                    <div class="col-md-3"><select class="form-select" id="filterRole">
-                            <option value="">همه نقش‌ها</option>
-                            <option value="admin">مدیر</option>
-                            <option value="teacher">استاد</option>
-                            <option value="accountant">حسابدار</option>
-                        </select></div>
-                    <div class="col-md-3"><input type="text" class="form-control" id="searchEmp"
-                            placeholder="جستجوی نام..."></div>
-                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadEmployees()"><i
-                                class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                    <div class="col-md-3"><select class="form-select" id="filterRole"><option value="">همه نقش‌ها</option><option value="admin">مدیر</option><option value="teacher">استاد</option><option value="accountant">حسابدار</option></select></div>
+                    <div class="col-md-3"><input type="text" class="form-control" id="searchEmp" placeholder="جستجوی نام..."></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadEmployees()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
                 </div>
 
                 <div class="table-container">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>نام</th>
-                                    <th>نام پدر</th>
-                                    <th>شماره تماس</th>
-                                    <th>ایمیل</th>
-                                    <th>نقش</th>
-                                    <th>معاش</th>
-                                    <th>وضعیت</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="employeesList"></tbody>
+                            <thead class="table-light"><tr><th>نام</th><th>نام پدر</th><th>شماره تماس</th><th>ایمیل</th><th>نقش</th><th>معاش</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                            <tbody id="employeesList"><tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -154,49 +98,30 @@
         </div>
     </div>
 
+    <!-- مودال کارمند -->
     <div class="modal fade" id="employeeModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title" id="employeeModalLabel"><i class="fa-solid fa-user-plus"></i> کارمند جدید
-                    </h5>
+                    <h5 class="modal-title" id="employeeModalLabel"><i class="fa-solid fa-user-plus"></i> کارمند جدید</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="employeeForm" enctype="multipart/form-data">
                         <input type="hidden" id="empId">
                         <div class="row g-3">
-                            <div class="col-md-6"><label class="form-label">نام کامل</label><input type="text"
-                                    class="form-control" id="empName" required></div>
-                            <div class="col-md-6"><label class="form-label">نام پدر</label><input type="text"
-                                    class="form-control" id="empFather"></div>
-                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text"
-                                    class="form-control" id="empPhone"></div>
-                            <div class="col-md-6"><label class="form-label">ایمیل</label><input type="email"
-                                    class="form-control" id="empEmail" required></div>
-                            <div class="col-md-6"><label class="form-label">نقش</label><select class="form-select"
-                                    id="empPosition">
-                                    <option value="admin">مدیر</option>
-                                    <option value="teacher">استاد</option>
-                                    <option value="accountant">حسابدار</option>
-                                </select></div>
-                            <div class="col-md-6"><label class="form-label">معاش (AFN)</label><input type="number"
-                                    class="form-control" id="empSalary"></div>
-                            <div class="col-md-6"><label class="form-label">تاریخ استخدام</label><input type="date"
-                                    class="form-control" id="empHireDate"></div>
-                            <div class="col-12"><label class="form-label">عکس</label><input type="file"
-                                    class="form-control" id="empPhoto" accept="image/*"></div>
-                            <div class="col-md-6"><label class="form-label">رمز عبور جدید</label><input type="password"
-                                    class="form-control" id="empPassword" placeholder="در صورت ویرایش خالی بگذارید">
-                            </div>
-                            <div class="col-md-6"><label class="form-label">وضعیت</label><select class="form-select"
-                                    id="empStatus">
-                                    <option value="active">فعال</option>
-                                    <option value="inactive">غیرفعال</option>
-                                </select></div>
+                            <div class="col-md-6"><label class="form-label">نام کامل</label><input type="text" class="form-control" id="empName" required></div>
+                            <div class="col-md-6"><label class="form-label">نام پدر</label><input type="text" class="form-control" id="empFather"></div>
+                            <div class="col-md-6"><label class="form-label">شماره تماس</label><input type="text" class="form-control" id="empPhone"></div>
+                            <div class="col-md-6"><label class="form-label">ایمیل</label><input type="email" class="form-control" id="empEmail" required></div>
+                            <div class="col-md-6"><label class="form-label">نقش</label><select class="form-select" id="empPosition"><option value="admin">مدیر</option><option value="teacher">استاد</option><option value="accountant">حسابدار</option></select></div>
+                            <div class="col-md-6"><label class="form-label">معاش (AFN)</label><input type="number" class="form-control" id="empSalary"></div>
+                            <div class="col-md-6"><label class="form-label">تاریخ استخدام</label><input type="date" class="form-control" id="empHireDate"></div>
+                            <div class="col-12"><label class="form-label">عکس</label><input type="file" class="form-control" id="empPhoto" accept="image/*"></div>
+                            <div class="col-md-6"><label class="form-label">رمز عبور جدید</label><input type="password" class="form-control" id="empPassword" placeholder="در صورت ویرایش خالی بگذارید"></div>
+                            <div class="col-md-6"><label class="form-label">وضعیت</label><select class="form-select" id="empStatus"><option value="active">فعال</option><option value="inactive">غیرفعال</option></select></div>
                         </div>
-                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i
-                                    class="fa-solid fa-save"></i> ذخیره</button></div>
+                        <div class="mt-4"><button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره</button></div>
                     </form>
                 </div>
             </div>
@@ -221,21 +146,33 @@
         }
 
         async function loadEmployees() {
-            const res = await fetch('/api/employees');
-            let emps = await res.json();
-            const role = document.getElementById('filterRole').value;
-            const search = document.getElementById('searchEmp').value.toLowerCase();
-            if (role) emps = emps.filter(e => e.position === role);
-            if (search) emps = emps.filter(e => e.name.toLowerCase().includes(search));
-            if (emps.length === 0) { document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ کارمندی یافت نشد</div></div></div></tr>'; return; }
-            document.getElementById('employeesList').innerHTML = emps.map(e => `
-                <tr><td class="text-dark"><strong>${e.name}</strong></td><td class="text-dark">${e.father_name || '-'}</td>
-                <td class="text-dark">${e.phone || '-'}</td><td class="text-dark">${e.email || '-'}</td>
-                <td class="text-dark">${e.position === 'admin' ? 'مدیر' : (e.position === 'teacher' ? 'استاد' : 'حسابدار')}</td>
-                <td class="text-dark">${(e.salary || 0).toLocaleString()} AFN</td>
-                <td><span class="badge ${e.status === 'active' ? 'bg-success' : 'bg-danger'}">${e.status === 'active' ? 'فعال' : 'غیرفعال'}</span></td>
-                <td><button class="btn btn-sm btn-warning me-1" onclick="editEmployee(${e.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteEmployee(${e.id})"><i class="fa-solid fa-trash"></i></button></td></tr>
-            `).join('');
+            try {
+                const res = await fetch('/api/employees');
+                if (!res.ok) {
+                    if (res.status === 403) {
+                        document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ شما دسترسی به این بخش ندارید</td></tr>';
+                        return;
+                    }
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                let emps = await res.json();
+                if (!Array.isArray(emps)) emps = [];
+                const role = document.getElementById('filterRole').value;
+                const search = document.getElementById('searchEmp').value.toLowerCase();
+                if (role) emps = emps.filter(e => e.position === role);
+                if (search) emps = emps.filter(e => e.name && e.name.toLowerCase().includes(search));
+                if (emps.length === 0) { document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ کارمندی یافت نشد</td></tr>'; return; }
+                document.getElementById('employeesList').innerHTML = emps.map(e => `<tr>
+                    <td class="text-dark"><strong>${e.name || '-'}</strong></td>
+                    <td class="text-dark">${e.father_name || '-'}</td>
+                    <td class="text-dark">${e.phone || '-'}</td>
+                    <td class="text-dark">${e.email || '-'}</td>
+                    <td class="text-dark">${e.position === 'admin' ? 'مدیر' : (e.position === 'teacher' ? 'استاد' : 'حسابدار')}</td>
+                    <td class="text-dark">${(e.salary || 0).toLocaleString()} AFN</td>
+                    <td class="text-dark"><span class="badge ${e.status === 'active' ? 'bg-success' : 'bg-danger'}">${e.status === 'active' ? 'فعال' : 'غیرفعال'}</span></td>
+                    <td class="text-dark"><button class="btn btn-sm btn-warning me-1" onclick="editEmployee(${e.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteEmployee(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>`).join('');
+            } catch (err) { console.error(err); document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ خطا: ' + err.message + '</td></tr>'; }
         }
 
         async function deleteEmployee(id) { if (confirm('حذف شود؟')) { await fetch(`/api/employees/${id}`, { method: 'DELETE' }); loadEmployees(); } }
@@ -244,14 +181,14 @@
             const res = await fetch(`/api/employees/${id}`);
             const e = await res.json();
             editEmpId = id;
-            document.getElementById('empName').value = e.name;
+            document.getElementById('empName').value = e.name || '';
             document.getElementById('empFather').value = e.father_name || '';
             document.getElementById('empPhone').value = e.phone || '';
-            document.getElementById('empEmail').value = e.email;
-            document.getElementById('empPosition').value = e.position;
+            document.getElementById('empEmail').value = e.email || '';
+            document.getElementById('empPosition').value = e.position || 'teacher';
             document.getElementById('empSalary').value = e.salary || '';
             document.getElementById('empHireDate').value = e.hire_date || '';
-            document.getElementById('empStatus').value = e.status;
+            document.getElementById('empStatus').value = e.status || 'active';
             document.getElementById('employeeModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش کارمند';
             if (employeeModal) employeeModal.show();
         }
@@ -278,12 +215,7 @@
             else alert('خطا');
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            employeeModal = new bootstrap.Modal(document.getElementById('employeeModal'));
-            setupSidebar();
-            loadEmployees();
-        });
+        document.addEventListener('DOMContentLoaded', () => { employeeModal = new bootstrap.Modal(document.getElementById('employeeModal')); setupSidebar(); loadEmployees(); });
     </script>
 </body>
-
 </html>

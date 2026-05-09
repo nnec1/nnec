@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -10,192 +9,57 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        .class-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .class-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-
-        .teacher-badge {
-            background: #e0e7ff;
-            color: #4338ca;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 2px;
-        }
-
-        .time-badge {
-            background: #fef3c7;
-            color: #b45309;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 2px;
-        }
-
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1050;
-            background: white;
-            border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 15px 25px 15px;
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
-
-            .overlay.show {
-                display: block;
-            }
-        }
+        .class-card { transition: all 0.3s ease; cursor: pointer; }
+        .class-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .teacher-badge { background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 11px; display: inline-block; margin: 2px; }
+        .time-badge { background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 20px; font-size: 11px; display: inline-block; margin: 2px; }
+        .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 1050; background: white; border: none; width: 48px; height: 48px; border-radius: 14px; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; }
+        @media (max-width: 768px) { .menu-toggle { display: block; } .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; } .sidebar.show { right: 0; } .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; } .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; } .overlay.show { display: block; } }
     </style>
 </head>
-
 <body>
-    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
-    <div class="overlay" id="overlay"></div>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
-                <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
-                        <i class="fa-solid fa-building fs-1 text-white"></i>
-                    </div>
-                    <h5 class="text-white mb-0">پنل مدیریت</h5>
-                    <small class="text-muted" id="adminName">مدیر سیستم</small>
-                </div>
-                <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
-                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
-                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
-                    <a href="classes.html" class="nav-link active"><i class="fa-solid fa-table-cells-large"></i>
-                        صنف‌ها</a>
-                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
-                        فیس</a>
-                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
-                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
-                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
-                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
-                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
-                    <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
-                </nav>
-            </div>
-
-            <div class="col-md-9 col-lg-10 main-content">
-                <h3 class="section-title"><i class="fa-solid fa-table-cells-large text-success me-2"></i> مدیریت صنف‌ها
-                </h3>
-
-                <div class="card p-4 mb-4">
-                    <h5><i class="fa-solid fa-plus-circle text-success me-2"></i> ایجاد صنف جدید</h5>
-                    <form id="classForm">
-                        <input type="hidden" id="classId">
-                        <div class="row g-4">
-                            <div class="col-md-4"><label class="form-label">نام صنف <span
-                                        class="text-danger">*</span></label><input type="text" id="className"
-                                    class="form-control" placeholder="مثال: صنف 10" required></div>
-                            <div class="col-md-4"><label class="form-label">استاد صنف <span
-                                        class="text-danger">*</span></label><select id="teacherId" class="form-select"
-                                    required>
-                                    <option value="">انتخاب استاد...</option>
-                                </select></div>
-                            <div class="col-md-4"><label class="form-label">زمان شروع درس</label><input type="time"
-                                    id="startTime" class="form-control" value="08:00"></div>
-                            <div class="col-12"><button type="submit" class="btn btn-primary px-4"><i
-                                        class="fa-solid fa-save"></i> ذخیره صنف</button><button type="button"
-                                    class="btn btn-secondary px-4 ms-2" onclick="resetClassForm()"><i
-                                        class="fa-solid fa-arrow-rotate-left"></i> پاک کردن</button></div>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card p-4">
-                    <h5><i class="fa-solid fa-list text-success me-2"></i> لیست صنف‌ها</h5>
-                    <div class="row" id="classesList"></div>
-                </div>
-            </div>
-        </div>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button><div class="overlay" id="overlay"></div>
+    <div class="container-fluid"><div class="row"><div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+        <div class="text-center py-4"><div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)"><i class="fa-solid fa-building fs-1 text-white"></i></div><h5 class="text-white mb-0">پنل مدیریت</h5><small class="text-muted" id="adminName">مدیر سیستم</small></div>
+        <nav class="nav flex-column mt-2">
+            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+            <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+            <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+            <a href="classes.html" class="nav-link active"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+            <a href="assign-teacher.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> تخصیص استاد</a>
+            <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+            <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+            <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+            <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+            <a href="financial-reports.html" class="nav-link"><i class="fa-solid fa-coin"></i> گزارش مالی</a>
+            <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
+            <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
+            <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
+            <hr class="text-secondary mx-3 my-2"><a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+        </nav>
     </div>
 
-    <div class="modal fade" id="editClassModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title"><i class="fa-solid fa-pencil"></i> ویرایش صنف</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editClassForm">
-                        <input type="hidden" id="editClassId">
-                        <div class="mb-3"><label class="form-label">نام صنف</label><input type="text" id="editClassName"
-                                class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">استاد</label><select id="editTeacherId"
-                                class="form-select" required></select></div>
-                        <div class="mb-3"><label class="form-label">زمان شروع درس</label><input type="time"
-                                id="editStartTime" class="form-control"></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره
-                            تغییرات</button>
-                    </form>
-                </div>
-            </div>
+    <div class="col-md-9 col-lg-10 main-content">
+        <h3 class="section-title"><i class="fa-solid fa-table-cells-large text-success me-2"></i> مدیریت صنف‌ها</h3>
+        <div class="card p-4 mb-4"><h5><i class="fa-solid fa-plus-circle text-success me-2"></i> ایجاد صنف جدید</h5>
+            <form id="classForm"><input type="hidden" id="classId">
+                <div class="row g-4"><div class="col-md-4"><label class="form-label">نام صنف <span class="text-danger">*</span></label><input type="text" id="className" class="form-control" placeholder="مثال: صنف 10" required></div>
+                <div class="col-md-4"><label class="form-label">استاد صنف <span class="text-danger">*</span></label><select id="teacherId" class="form-select" required><option value="">انتخاب استاد...</option></select></div>
+                <div class="col-md-4"><label class="form-label">زمان شروع درس</label><input type="time" id="startTime" class="form-control" value="08:00"></div>
+                <div class="col-12"><button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-save"></i> ذخیره صنف</button><button type="button" class="btn btn-secondary px-4 ms-2" onclick="resetClassForm()"><i class="fa-solid fa-arrow-rotate-left"></i> پاک کردن</button></div></div>
+            </form>
         </div>
-    </div>
+        <div class="card p-4"><h5><i class="fa-solid fa-list text-success me-2"></i> لیست صنف‌ها</h5><div class="row" id="classesList"></div></div>
+    </div></div></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/main.js"></script>
+    <div class="modal fade" id="editClassModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+        <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white"><h5 class="modal-title"><i class="fa-solid fa-pencil"></i> ویرایش صنف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="editClassForm"><input type="hidden" id="editClassId"><div class="mb-3"><label class="form-label">نام صنف</label><input type="text" id="editClassName" class="form-control" required></div><div class="mb-3"><label class="form-label">استاد</label><select id="editTeacherId" class="form-select" required></select></div><div class="mb-3"><label class="form-label">زمان شروع درس</label><input type="time" id="editStartTime" class="form-control"></div><button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات</button></form></div>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script><script src="/main.js"></script>
     <script>
         let editModal = null;
-
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
@@ -203,85 +67,32 @@
             if (!toggleBtn) return;
             function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
             function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
-            toggleBtn.addEventListener('click', openSidebar);
-            if (overlay) overlay.addEventListener('click', closeSidebar);
+            toggleBtn.addEventListener('click', openSidebar); if (overlay) overlay.addEventListener('click', closeSidebar);
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
         async function loadTeachers() {
-            try {
-                const res = await fetch('/api/teachers');
-                const teachers = await res.json();
-                const options = '<option value="">انتخاب استاد...</option>' + teachers.map(t => `<option value="${t.id}">${t.name} (${t.email})</option>`).join('');
-                document.getElementById('teacherId').innerHTML = options;
-                document.getElementById('editTeacherId').innerHTML = options;
-            } catch (err) { console.error(err); }
+            try { const res = await fetch('/api/teachers'); const teachers = await res.json(); if (!Array.isArray(teachers)) return; const options = '<option value="">انتخاب استاد...</option>' + teachers.map(t => `<option value="${t.id}">${t.name} (${t.email})</option>`).join('');
+            document.getElementById('teacherId').innerHTML = options; document.getElementById('editTeacherId').innerHTML = options; } catch(err) { console.error(err); }
         }
 
         async function loadClasses() {
-            try {
-                const res = await fetch('/api/classes/all');
-                const classes = await res.json();
-                if (classes.length === 0) { document.getElementById('classesList').innerHTML = '<div class="alert alert-info">هیچ صنفی ثبت نشده است. لطفاً ابتدا صنف ایجاد کنید.</div>'; return; }
-                document.getElementById('classesList').innerHTML = classes.map(c => `
-                    <div class="col-md-4 mb-3"><div class="card p-3 shadow-sm class-card"><div class="d-flex justify-content-between"><h5><i class="fa-solid fa-table-cells-large text-success"></i> ${c.class_name}</h5><span class="badge ${c.is_active == 1 ? 'bg-success' : 'bg-danger'}">${c.is_active == 1 ? 'فعال' : 'غیرفعال'}</span></div>
-                    <p class="mb-1"><i class="fa-solid fa-chalkboard-user"></i> استاد: <span class="teacher-badge"><i class="fa-solid fa-user"></i> ${c.teacher_name || 'تعیین نشده'}</span></p>
-                    <p class="mb-1"><i class="fa-regular fa-clock"></i> زمان شروع: <span class="time-badge">${c.start_time || '08:00'}</span></p>
-                    <div class="mt-2"><button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${c.id})"><i class="fa-solid fa-pencil"></i> ویرایش</button><button class="btn btn-sm btn-danger" onclick="deleteClass(${c.id})"><i class="fa-solid fa-trash"></i> حذف</button></div></div></div>
-                `).join('');
-            } catch (err) { console.error(err); }
+            try { const res = await fetch('/api/classes/all'); let classes = await res.json(); if (!Array.isArray(classes)) classes = [];
+            if (classes.length === 0) { document.getElementById('classesList').innerHTML = '<div class="alert alert-info">هیچ صنفی ثبت نشده است. لطفاً ابتدا صنف ایجاد کنید.</div>'; return; }
+            document.getElementById('classesList').innerHTML = classes.map(c => `<div class="col-md-4 mb-3"><div class="card p-3 shadow-sm class-card"><div class="d-flex justify-content-between"><h5><i class="fa-solid fa-table-cells-large text-success"></i> ${c.class_name}</h5><span class="badge ${c.is_active == 1 ? 'bg-success' : 'bg-danger'}">${c.is_active == 1 ? 'فعال' : 'غیرفعال'}</span></div><p class="mb-1"><i class="fa-solid fa-chalkboard-user"></i> استاد: <span class="teacher-badge"><i class="fa-solid fa-user"></i> ${c.teacher_name || 'تعیین نشده'}</span></p><p class="mb-1"><i class="fa-regular fa-clock"></i> زمان شروع: <span class="time-badge">${c.start_time || '08:00'}</span></p><div class="mt-2"><button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${c.id})"><i class="fa-solid fa-pencil"></i> ویرایش</button><button class="btn btn-sm btn-danger" onclick="deleteClass(${c.id})"><i class="fa-solid fa-trash"></i> حذف</button></div></div></div>`).join(''); } catch(err) { console.error(err); }
         }
 
-        async function deleteClass(id) { if (confirm('⚠️ آیا از حذف این صنف اطمینان دارید؟')) { try { const res = await fetch(`/api/classes/${id}`, { method: 'DELETE' }); if (res.ok) { alert('صنف حذف شد'); loadClasses(); } else alert('خطا'); } catch (err) { alert('خطا'); } } }
+        async function deleteClass(id) { if (confirm('⚠️ آیا از حذف این صنف اطمینان دارید؟')) { try { await fetch(`/api/classes/${id}`, { method: 'DELETE' }); alert('صنف حذف شد'); loadClasses(); } catch(err) { alert('خطا'); } } }
 
-        async function openEditModal(id) {
-            try {
-                const res = await fetch(`/api/classes/${id}`);
-                const c = await res.json();
-                document.getElementById('editClassId').value = c.id;
-                document.getElementById('editClassName').value = c.class_name;
-                document.getElementById('editStartTime').value = c.start_time || '08:00';
-                document.getElementById('editTeacherId').value = c.teacher_id || '';
-                if (editModal) editModal.show();
-            } catch (err) { alert('خطا در بارگیری اطلاعات صنف'); }
-        }
+        async function openEditModal(id) { try { const res = await fetch(`/api/classes/${id}`); const c = await res.json(); document.getElementById('editClassId').value = c.id; document.getElementById('editClassName').value = c.class_name; document.getElementById('editStartTime').value = c.start_time || '08:00'; document.getElementById('editTeacherId').value = c.teacher_id || ''; if (editModal) editModal.show(); } catch(err) { alert('خطا در بارگیری اطلاعات صنف'); } }
 
-        document.getElementById('classForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const className = document.getElementById('className').value;
-            const teacherId = document.getElementById('teacherId').value;
-            const startTime = document.getElementById('startTime').value;
-            if (!className) { alert('لطفاً نام صنف را وارد کنید'); return; }
-            if (!teacherId) { alert('لطفاً استاد را انتخاب کنید'); return; }
-            try {
-                const res = await fetch('/api/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, teacher_id: teacherId, start_time: startTime, is_active: 1 }) });
-                if (res.ok) { alert('✅ صنف با موفقیت ایجاد شد'); resetClassForm(); loadClasses(); }
-                else { const err = await res.json(); alert(err.error || 'خطا'); }
-            } catch (err) { alert('خطا: ' + err.message); }
-        });
+        document.getElementById('classForm').addEventListener('submit', async (e) => { e.preventDefault(); const className = document.getElementById('className').value; const teacherId = document.getElementById('teacherId').value; const startTime = document.getElementById('startTime').value; if (!className) { alert('لطفاً نام صنف را وارد کنید'); return; } if (!teacherId) { alert('لطفاً استاد را انتخاب کنید'); return; } try { const res = await fetch('/api/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, teacher_id: teacherId, start_time: startTime, is_active: 1 }) }); if (res.ok) { alert('✅ صنف با موفقیت ایجاد شد'); resetClassForm(); loadClasses(); } else { const err = await res.json(); alert(err.error || 'خطا'); } } catch(err) { alert('خطا: ' + err.message); } });
 
-        document.getElementById('editClassForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editClassId').value;
-            const className = document.getElementById('editClassName').value;
-            const teacherId = document.getElementById('editTeacherId').value;
-            const startTime = document.getElementById('editStartTime').value;
-            try {
-                const res = await fetch(`/api/classes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, teacher_id: teacherId, start_time: startTime, is_active: 1 }) });
-                if (res.ok) { alert('صنف با موفقیت ویرایش شد'); if (editModal) editModal.hide(); loadClasses(); }
-                else alert('خطا');
-            } catch (err) { alert('خطا: ' + err.message); }
-        });
+        document.getElementById('editClassForm').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('editClassId').value; const className = document.getElementById('editClassName').value; const teacherId = document.getElementById('editTeacherId').value; const startTime = document.getElementById('editStartTime').value; try { const res = await fetch(`/api/classes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ class_name: className, teacher_id: teacherId, start_time: startTime, is_active: 1 }) }); if (res.ok) { alert('صنف با موفقیت ویرایش شد'); if (editModal) editModal.hide(); loadClasses(); } else alert('خطا'); } catch(err) { alert('خطا: ' + err.message); } });
 
         function resetClassForm() { document.getElementById('classForm').reset(); document.getElementById('startTime').value = '08:00'; }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            editModal = new bootstrap.Modal(document.getElementById('editClassModal'));
-            setupSidebar();
-            loadTeachers();
-            loadClasses();
-        });
+        document.addEventListener('DOMContentLoaded', () => { editModal = new bootstrap.Modal(document.getElementById('editClassModal')); setupSidebar(); loadTeachers(); loadClasses(); });
     </script>
 </body>
-
 </html>
