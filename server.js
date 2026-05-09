@@ -606,6 +606,8 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 // });
 
 // ====================== بدهکاران (فقط کسانی که باقی مانده > 0) ======================
+// ====================== بدهکاران (فقط کسانی که باقی مانده > 0) ======================
+// ====================== بدهکاران (فقط کسانی که باقی مانده > 0) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -630,14 +632,13 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
       WHERE s.status = 'active' AND fp.remaining_after > 0
       ORDER BY fp.remaining_after DESC
     `);
-
+    
     res.json(results);
   } catch (err) {
     console.error("Error in /api/fee-debtors:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // ====================== منقضی شده ======================
 // app.get("/api/fee-expired", authenticate, async (req, res) => {
 //   try {
@@ -706,6 +707,8 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
 // });
 
 // ====================== منقضی شده ======================
+// ====================== منقضی شده ======================
+// ====================== منقضی شده ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -733,7 +736,7 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         AND fp.remaining_after > 0
       ORDER BY fp.due_date ASC
     `);
-
+    
     res.json(results);
   } catch (err) {
     console.error("Error in /api/fee-expired:", err);
@@ -764,69 +767,69 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   }
 });
 // ====================== API منقضی شده ======================
-app.get("/api/fee-expired", authenticate, async (req, res) => {
-  try {
-    const [results] = await db.execute(`
-      SELECT 
-        s.id,
-        s.student_card_id,
-        s.name,
-        s.father_name,
-        s.phone,
-        s.class_id,
-        c.class_name,
-        COALESCE(SUM(fp.amount), 0) as total_paid,
-        MAX(fp.payment_date) as last_payment_date,
-        MAX(fp.due_date) as due_date,
-        MAX(fp.total_fee) as total_fee
-      FROM students s
-      JOIN classes c ON s.class_id = c.id
-      LEFT JOIN fee_payments fp ON s.id = fp.student_id
-      WHERE s.status = 'active'
-      GROUP BY s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, c.class_name
-      HAVING (MAX(fp.due_date) < CURDATE() OR MAX(fp.due_date) IS NULL) 
-        AND (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
-      ORDER BY due_date ASC
-    `);
+// app.get("/api/fee-expired", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(`
+//       SELECT 
+//         s.id,
+//         s.student_card_id,
+//         s.name,
+//         s.father_name,
+//         s.phone,
+//         s.class_id,
+//         c.class_name,
+//         COALESCE(SUM(fp.amount), 0) as total_paid,
+//         MAX(fp.payment_date) as last_payment_date,
+//         MAX(fp.due_date) as due_date,
+//         MAX(fp.total_fee) as total_fee
+//       FROM students s
+//       JOIN classes c ON s.class_id = c.id
+//       LEFT JOIN fee_payments fp ON s.id = fp.student_id
+//       WHERE s.status = 'active'
+//       GROUP BY s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, c.class_name
+//       HAVING (MAX(fp.due_date) < CURDATE() OR MAX(fp.due_date) IS NULL) 
+//         AND (MAX(fp.total_fee) - COALESCE(SUM(fp.amount), 0)) > 0
+//       ORDER BY due_date ASC
+//     `);
 
-    const formatted = results.map((s) => {
-      const finalTotalFee = parseFloat(s.total_fee) || 0;
-      const totalPaid = parseFloat(s.total_paid) || 0;
-      const remainingFee = finalTotalFee - totalPaid;
+//     const formatted = results.map((s) => {
+//       const finalTotalFee = parseFloat(s.total_fee) || 0;
+//       const totalPaid = parseFloat(s.total_paid) || 0;
+//       const remainingFee = finalTotalFee - totalPaid;
 
-      let finalDueDate = s.due_date;
-      if (!finalDueDate && s.last_payment_date) {
-        const nextMonth = new Date(s.last_payment_date);
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-        finalDueDate = nextMonth.toISOString().split("T")[0];
-      }
+//       let finalDueDate = s.due_date;
+//       if (!finalDueDate && s.last_payment_date) {
+//         const nextMonth = new Date(s.last_payment_date);
+//         nextMonth.setMonth(nextMonth.getMonth() + 1);
+//         finalDueDate = nextMonth.toISOString().split("T")[0];
+//       }
 
-      return {
-        id: s.id,
-        student_card_id: s.student_card_id,
-        name: s.name,
-        father_name: s.father_name,
-        phone: s.phone,
-        class_id: s.class_id,
-        class_name: s.class_name,
-        total_fee: finalTotalFee,
-        total_paid: totalPaid,
-        remaining_fee: remainingFee,
-        due_date: finalDueDate
-          ? new Date(finalDueDate).toISOString().split("T")[0]
-          : null,
-        last_payment_date: s.last_payment_date
-          ? new Date(s.last_payment_date).toISOString().split("T")[0]
-          : null,
-      };
-    });
+//       return {
+//         id: s.id,
+//         student_card_id: s.student_card_id,
+//         name: s.name,
+//         father_name: s.father_name,
+//         phone: s.phone,
+//         class_id: s.class_id,
+//         class_name: s.class_name,
+//         total_fee: finalTotalFee,
+//         total_paid: totalPaid,
+//         remaining_fee: remainingFee,
+//         due_date: finalDueDate
+//           ? new Date(finalDueDate).toISOString().split("T")[0]
+//           : null,
+//         last_payment_date: s.last_payment_date
+//           ? new Date(s.last_payment_date).toISOString().split("T")[0]
+//           : null,
+//       };
+//     });
 
-    res.json(formatted);
-  } catch (err) {
-    console.error("❌ Error in /api/fee-expired:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.json(formatted);
+//   } catch (err) {
+//     console.error("❌ Error in /api/fee-expired:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 // 4. جمع‌آوری فیس
 // ====================== جمع‌آوری فیس ======================
 // ====================== جمع‌آوری فیس ======================
@@ -971,9 +974,115 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
 
 // ====================== جمع‌آوری فیس ======================
 
+// app.post("/api/collect-fee", authenticate, async (req, res) => {
+//   const { student_id, amount, total_fee, payment_date, due_date, notes } =
+//     req.body;
 
+//   const paymentAmount = parseFloat(amount);
+//   if (isNaN(paymentAmount) || paymentAmount <= 0) {
+//     return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
+//   }
 
+//   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
+//   const issueDate = new Date().toISOString().split("T")[0];
+//   const receipt_number = generateReceiptNumber();
 
+//   let finalDueDate = due_date;
+//   if (!finalDueDate || finalDueDate === "") {
+//     const nextMonth = new Date(paymentDate);
+//     nextMonth.setMonth(nextMonth.getMonth() + 1);
+//     finalDueDate = nextMonth.toISOString().split("T")[0];
+//   }
+
+//   try {
+//     // دریافت آخرین رکورد پرداخت شاگرد
+//     const [lastPayment] = await db.execute(
+//       `
+//       SELECT * FROM fee_payments
+//       WHERE student_id = ?
+//       ORDER BY id DESC
+//       LIMIT 1
+//     `,
+//       [student_id],
+//     );
+
+//     let finalTotalFee = total_fee ? parseFloat(total_fee) : 0;
+//     let previousPaidFee = 0;
+//     let previousRemaining = 0;
+
+//     if (lastPayment.length > 0) {
+//       previousPaidFee = parseFloat(lastPayment[0].paid_fee) || 0;
+//       previousRemaining = parseFloat(lastPayment[0].remaining_after) || 0;
+//       if (!finalTotalFee || finalTotalFee === 0) {
+//         finalTotalFee = parseFloat(lastPayment[0].total_fee) || 0;
+//       }
+//     }
+
+//     // اگر فیس کل مشخص نشده، از مبلغ پرداختی استفاده کن
+//     if (finalTotalFee === 0) {
+//       finalTotalFee = paymentAmount;
+//     }
+
+//     const newPaidFee = previousPaidFee + paymentAmount;
+//     const newRemaining = finalTotalFee - newPaidFee;
+//     const finalRemaining = newRemaining > 0 ? newRemaining : 0;
+
+//     // ثبت پرداخت جدید
+//     await db.execute(
+//       `
+//       INSERT INTO fee_payments
+//       (student_id, amount, total_fee, paid_fee, remaining_after,
+//        payment_date, due_date, issue_date, receipt_number, notes)
+//       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//     `,
+//       [
+//         student_id,
+//         paymentAmount,
+//         finalTotalFee,
+//         newPaidFee,
+//         finalRemaining,
+//         paymentDate,
+//         finalDueDate,
+//         issueDate,
+//         receipt_number,
+//         notes || null,
+//       ],
+//     );
+
+//     // دریافت اطلاعات شاگرد
+//     const [student] = await db.execute(
+//       `
+//       SELECT s.name, s.father_name, s.student_card_id, c.class_name
+//       FROM students s
+//       JOIN classes c ON s.class_id = c.id
+//       WHERE s.id = ?
+//     `,
+//       [student_id],
+//     );
+
+//     res.json({
+//       success: true,
+//       receipt_number: receipt_number,
+//       student_name: student[0]?.name || "",
+//       student_father: student[0]?.father_name || "",
+//       student_card_id: student[0]?.student_card_id || "",
+//       class_name: student[0]?.class_name || "",
+//       total_fee: finalTotalFee,
+//       paid_fee: newPaidFee,
+//       remaining_fee: finalRemaining,
+//       payment_amount: paymentAmount,
+//       payment_date: paymentDate,
+//       issue_date: issueDate,
+//       expiry_date: finalDueDate,
+//       notes: notes || "",
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/collect-fee:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ====================== جمع‌آوری فیس ======================
 // app.post("/api/collect-fee", authenticate, async (req, res) => {
 //   const { student_id, amount, total_fee, payment_date, due_date, notes } =
 //     req.body;
