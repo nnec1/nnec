@@ -539,6 +539,7 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 // 1. دریافت بدهکاران (بر اساس fee_payments)
 // ====================== بدهکاران (بر اساس آخرین پرداخت هر شاگرد) ======================
 // ====================== بدهکاران (فقط کسانی که باقی مانده > 0) ======================
+// ====================== بدهکاران (فقط کسانی که باقی مانده > 0) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -563,14 +564,13 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
       WHERE s.status = 'active' AND fp.remaining_after > 0
       ORDER BY fp.remaining_after DESC
     `);
-
+    
     res.json(results);
   } catch (err) {
     console.error("Error in /api/fee-debtors:", err);
     res.status(500).json({ error: err.message });
   }
 });
-// ====================== منقضی شده ======================
 // ====================== منقضی شده ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
@@ -599,75 +599,49 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         AND fp.remaining_after > 0
       ORDER BY fp.due_date ASC
     `);
-
+    
     res.json(results);
   } catch (err) {
     console.error("Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
-}); // 3. دریافت تاریخچه پرداخت‌ها
-app.get("/api/fee-payments-history", authenticate, async (req, res) => {
-  const { start_date, end_date } = req.query;
-  let query = `
-    SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name
-    FROM fee_payments fp
-    JOIN students s ON fp.student_id = s.id
-    JOIN classes c ON s.class_id = c.id
-    WHERE 1=1
-  `;
-  let params = [];
-  if (start_date && end_date) {
-    query += ` AND fp.payment_date BETWEEN ? AND ?`;
-    params.push(start_date, end_date);
-  }
-  query += ` ORDER BY fp.payment_date DESC`;
-  try {
-    const [results] = await db.execute(query, params);
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
-
 // 4. جمع‌آوری فیس
 // ====================== جمع‌آوری فیس ======================
 // ====================== جمع‌آوری فیس ======================
+// ====================== جمع‌آوری فیس ======================
 app.post("/api/collect-fee", authenticate, async (req, res) => {
-  const { student_id, amount, total_fee, payment_date, due_date, notes } =
-    req.body;
-
+  const { student_id, amount, total_fee, payment_date, due_date, notes } = req.body;
+  
   const paymentAmount = parseFloat(amount);
   if (isNaN(paymentAmount) || paymentAmount <= 0) {
     return res.status(400).json({ error: "مبلغ معتبر وارد کنید" });
   }
-
+  
   const paymentDate = payment_date || new Date().toISOString().split("T")[0];
   const issueDate = new Date().toISOString().split("T")[0];
   const receipt_number = generateReceiptNumber();
-
+  
   let finalDueDate = due_date;
   if (!finalDueDate || finalDueDate === "") {
     const nextMonth = new Date(paymentDate);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     finalDueDate = nextMonth.toISOString().split("T")[0];
   }
-
+  
   try {
     // دریافت آخرین رکورد پرداخت شاگرد
-    const [lastPayment] = await db.execute(
-      `
+    const [lastPayment] = await db.execute(`
       SELECT * FROM fee_payments 
       WHERE student_id = ? 
       ORDER BY id DESC 
       LIMIT 1
-    `,
-      [student_id],
-    );
-
+    `, [student_id]);
+    
     let finalTotalFee = total_fee ? parseFloat(total_fee) : 0;
     let previousPaidFee = 0;
     let previousRemaining = 0;
-
+    
     if (lastPayment.length > 0) {
       previousPaidFee = parseFloat(lastPayment[0].paid_fee) || 0;
       previousRemaining = parseFloat(lastPayment[0].remaining_after) || 0;
@@ -675,49 +649,35 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
         finalTotalFee = parseFloat(lastPayment[0].total_fee) || 0;
       }
     }
-
+    
     // اگر فیس کل مشخص نشده، از مبلغ پرداختی استفاده کن
     if (finalTotalFee === 0) {
       finalTotalFee = paymentAmount;
     }
-
+    
     const newPaidFee = previousPaidFee + paymentAmount;
     const newRemaining = finalTotalFee - newPaidFee;
     const finalRemaining = newRemaining > 0 ? newRemaining : 0;
-
+    
     // ثبت پرداخت جدید
-    await db.execute(
-      `
+    await db.execute(`
       INSERT INTO fee_payments 
       (student_id, amount, total_fee, paid_fee, remaining_after, 
        payment_date, due_date, issue_date, receipt_number, notes) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-      [
-        student_id,
-        paymentAmount,
-        finalTotalFee,
-        newPaidFee,
-        finalRemaining,
-        paymentDate,
-        finalDueDate,
-        issueDate,
-        receipt_number,
-        notes || null,
-      ],
-    );
-
+    `, [
+      student_id, paymentAmount, finalTotalFee, newPaidFee, finalRemaining,
+      paymentDate, finalDueDate, issueDate, receipt_number, notes || null
+    ]);
+    
     // دریافت اطلاعات شاگرد
-    const [student] = await db.execute(
-      `
+    const [student] = await db.execute(`
       SELECT s.name, s.father_name, s.student_card_id, c.class_name 
       FROM students s 
       JOIN classes c ON s.class_id = c.id 
       WHERE s.id = ?
-    `,
-      [student_id],
-    );
-
+    `, [student_id]);
+    
     res.json({
       success: true,
       receipt_number: receipt_number,
@@ -732,8 +692,9 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
       payment_date: paymentDate,
       issue_date: issueDate,
       expiry_date: finalDueDate,
-      notes: notes || "",
+      notes: notes || ""
     });
+    
   } catch (err) {
     console.error("Error in /api/collect-fee:", err);
     res.status(500).json({ error: err.message });
