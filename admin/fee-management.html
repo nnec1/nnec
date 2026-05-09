@@ -11,34 +11,28 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="/style.css">
     <style>
-        .debtor-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-right: 4px solid #f59e0b;
-            transition: all 0.3s ease;
-        }
-
-        .debtor-card:hover {
-            transform: translateX(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
+        .debtor-card,
         .expired-card {
             background: white;
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-right: 4px solid #dc2626;
             transition: all 0.3s ease;
         }
 
+        .debtor-card:hover,
         .expired-card:hover {
             transform: translateX(-5px);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .debtor-card {
+            border-right: 4px solid #f59e0b;
+        }
+
+        .expired-card {
+            border-right: 4px solid #dc2626;
         }
 
         .badge-debtor {
@@ -52,14 +46,6 @@
         .badge-expired {
             background: #fee2e2;
             color: #dc2626;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-        }
-
-        .badge-paid {
-            background: #dcfce7;
-            color: #15803d;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 11px;
@@ -216,7 +202,7 @@
                             class="fa-solid fa-plus-circle"></i> پرداخت جدید</button>
                 </div>
 
-                <ul class="nav nav-tabs mb-4" id="feeTabs">
+                <ul class="nav nav-tabs mb-4">
                     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#debtorsTab"><i
                                 class="fa-solid fa-triangle-exclamation"></i> ⚠️ بدهکاران</a></li>
                     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#expiredTab"><i
@@ -226,33 +212,59 @@
                 </ul>
 
                 <div class="tab-content">
-                    <!-- تب 1: بدهکاران -->
+                    <!-- تب 1: بدهکاران با سرچ پیشرفته -->
                     <div class="tab-pane fade show active" id="debtorsTab">
                         <div class="filter-box">
                             <div class="row g-3">
-                                <div class="col-md-3"><select id="debtorClassFilter" class="form-select">
+                                <div class="col-md-3">
+                                    <select id="debtorClassFilter" class="form-select">
                                         <option value="">همه صنف‌ها</option>
-                                    </select></div>
-                                <div class="col-md-3"><input type="text" id="debtorSearch" class="form-control"
-                                        placeholder="جستجوی نام یا آیدی..."></div>
-                                <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadDebtors()"><i
-                                            class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="debtorSearch" class="form-control"
+                                        placeholder="جستجوی نام یا آیدی...">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="debtorStartDate" class="form-control" placeholder="از تاریخ">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="debtorEndDate" class="form-control" placeholder="تا تاریخ">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" onclick="loadDebtors()"><i
+                                            class="fa-solid fa-magnifying-glass"></i> جستجو</button>
+                                </div>
                             </div>
                         </div>
                         <div id="debtorsList" class="row"></div>
                     </div>
 
-                    <!-- تب 2: منقضی شده -->
+                    <!-- تب 2: منقضی شده با سرچ پیشرفته -->
                     <div class="tab-pane fade" id="expiredTab">
                         <div class="filter-box">
                             <div class="row g-3">
-                                <div class="col-md-3"><select id="expiredClassFilter" class="form-select">
+                                <div class="col-md-3">
+                                    <select id="expiredClassFilter" class="form-select">
                                         <option value="">همه صنف‌ها</option>
-                                    </select></div>
-                                <div class="col-md-3"><input type="text" id="expiredSearch" class="form-control"
-                                        placeholder="جستجوی نام یا آیدی..."></div>
-                                <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadExpired()"><i
-                                            class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="expiredSearch" class="form-control"
+                                        placeholder="جستجوی نام یا آیدی...">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="expiredStartDate" class="form-control"
+                                        placeholder="از تاریخ انقضا">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" id="expiredEndDate" class="form-control"
+                                        placeholder="تا تاریخ انقضا">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" onclick="loadExpired()"><i
+                                            class="fa-solid fa-magnifying-glass"></i> جستجو</button>
+                                </div>
                             </div>
                         </div>
                         <div id="expiredList" class="row"></div>
@@ -304,7 +316,7 @@
                             </div>
                         </div>
                     </div>
-                    </td>
+                    </tr>
                     </tbody>
                     <tfoot id="historyTableFooter" style="display:none;">
                         <tr>
@@ -363,8 +375,17 @@
 
             function formatDate(dateString) {
                 if (!dateString) return '-';
-                try { const d = new Date(dateString); if (isNaN(d.getTime())) return dateString; return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-                catch (e) { return dateString; }
+                try {
+                    let cleanDate = dateString;
+                    if (dateString.includes('T')) {
+                        cleanDate = dateString.split('T')[0];
+                    }
+                    const d = new Date(cleanDate);
+                    if (isNaN(d.getTime())) return cleanDate;
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                } catch (e) {
+                    return dateString;
+                }
             }
 
             async function loadClasses() {
@@ -378,131 +399,25 @@
                 } catch (err) { console.error(err); }
             }
 
-            // ========== بدهکاران ==========
-            // async function loadDebtors() {
-            //     const classId = document.getElementById('debtorClassFilter').value;
-            //     const search = document.getElementById('debtorSearch').value.toLowerCase();
-            //     try {
-            //         const res = await fetch('/api/fee-debtors');
-            //         let data = await res.json();
-
-            //         if (!Array.isArray(data)) {
-            //             console.error('Expected array but got:', data);
-            //             document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا در دریافت اطلاعات</div></div>';
-            //             return;
-            //         }
-
-            //         if (classId) data = data.filter(d => d.class_id == classId);
-            //         if (search) data = data.filter(d => (d.name && d.name.toLowerCase().includes(search)) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
-
-            //         if (!data || data.length === 0) { 
-            //             document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>'; 
-            //             return; 
-            //         }
-
-            //         let html = '';
-            //         for (const d of data) {
-            //             html += `<div class="col-md-6 col-lg-4 mb-3"><div class="debtor-card">
-            //                 <div class="d-flex justify-content-between align-items-start mb-2">
-            //                     <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
-            //                     <span class="badge-debtor"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار</span>
-            //                 </div>
-            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
-            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
-            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
-            //                 <hr>
-            //                 <div class="d-flex justify-content-between mb-2">
-            //                     <span><strong>فیس کل:</strong></span>
-            //                     <span>${(d.total_fee || 0).toLocaleString()} AFN</span>
-            //                 </div>
-            //                 <div class="d-flex justify-content-between mb-2">
-            //                     <span><strong>پرداخت شده:</strong></span>
-            //                     <span class="text-success">${(d.total_paid || 0).toLocaleString()} AFN</span>
-            //                 </div>
-            //                 <div class="d-flex justify-content-between mb-2">
-            //                     <span><strong>باقی مانده:</strong></span>
-            //                     <span class="text-danger fw-bold">${(d.remaining_fee || 0).toLocaleString()} AFN</span>
-            //                 </div>
-            //                 <div class="d-flex justify-content-between mb-3">
-            //                     <span><strong>تاریخ انقضا:</strong></span>
-            //                     <span>${d.due_date || '-'}</span>
-            //                 </div>
-            //                 <div class="d-flex gap-2 flex-wrap">
-            //                     <button class="btn btn-sm btn-payment" onclick="openPaymentModal(${d.id}, ${d.total_fee || 0})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
-            //                 </div>
-            //             </div></div>`;
-            //         }
-            //         document.getElementById('debtorsList').innerHTML = html;
-            //     } catch (err) { 
-            //         console.error(err); 
-            //         document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
-            //     }
-            // }
-
-            // // ========== منقضی شده ==========
-            // async function loadExpired() {
-            //     const classId = document.getElementById('expiredClassFilter').value;
-            //     const search = document.getElementById('expiredSearch').value.toLowerCase();
-            //     try {
-            //         const res = await fetch('/api/fee-expired');
-            //         let data = await res.json();
-
-            //         if (!Array.isArray(data)) {
-            //             console.error('Expected array but got:', data);
-            //             document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا در دریافت اطلاعات</div></div>';
-            //             return;
-            //         }
-
-            //         if (classId) data = data.filter(d => d.class_id == classId);
-            //         if (search) data = data.filter(d => (d.name && d.name.toLowerCase().includes(search)) || (d.student_card_id && d.student_card_id.toLowerCase().includes(search)));
-
-            //         if (!data || data.length === 0) { 
-            //             document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد منقضی شده وجود ندارد</div></div>'; 
-            //             return; 
-            //         }
-
-            //         let html = '';
-            //         for (const d of data) {
-            //             html += `<div class="col-md-6 col-lg-4 mb-3"><div class="expired-card">
-            //                 <div class="d-flex justify-content-between align-items-start mb-2">
-            //                     <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
-            //                     <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
-            //                 </div>
-            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
-            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
-            //                 <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
-            //                 <hr>
-            //                 <div class="d-flex justify-content-between mb-2">
-            //                     <span><strong>باقی مانده:</strong></span>
-            //                     <span class="text-danger fw-bold">${(d.remaining_fee || 0).toLocaleString()} AFN</span>
-            //                 </div>
-            //                 <div class="d-flex justify-content-between mb-3">
-            //                     <span><strong>تاریخ انقضا:</strong></span>
-            //                     <span class="text-danger fw-bold">${d.due_date || '-'}</span>
-            //                 </div>
-            //                 <div class="d-flex gap-2 flex-wrap">
-            //                     <button class="btn btn-sm btn-payment" onclick="openPaymentModal(${d.id}, ${d.total_fee || 0})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت</button>
-            //                 </div>
-            //             </div></div>`;
-            //         }
-            //         document.getElementById('expiredList').innerHTML = html;
-            //     } catch (err) { 
-            //         console.error(err); 
-            //         document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
-            //     }
-            // }
-
-
-            // بارگذاری بدهکاران
+            // ========== بدهکاران با سرچ تاریخ ==========
             async function loadDebtors() {
+                const classId = document.getElementById('debtorClassFilter').value;
+                const search = document.getElementById('debtorSearch').value;
+                const startDate = document.getElementById('debtorStartDate').value;
+                const endDate = document.getElementById('debtorEndDate').value;
+
+                let url = `/api/fee-debtors?`;
+                if (classId) url += `class_id=${classId}&`;
+                if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (startDate) url += `start_date=${startDate}&`;
+                if (endDate) url += `end_date=${endDate}`;
+
                 try {
-                    const res = await fetch('/api/fee-debtors');
+                    const res = await fetch(url);
                     const data = await res.json();
 
-                    console.log('Debtors API response:', data);
-
                     if (!Array.isArray(data)) {
-                        document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا: داده معتبر نیست</div></div>';
+                        document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا در دریافت اطلاعات</div></div>';
                         return;
                     }
 
@@ -512,42 +427,54 @@
                     }
 
                     let html = '';
-                    for (const d of data) {
-                        if (d.remaining_after > 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        const d = data[i];
+                        if (d.remaining_after && parseFloat(d.remaining_after) > 0) {
                             html += `<div class="col-md-6 col-lg-4 mb-3"><div class="debtor-card">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
-                        <span class="badge-debtor">بدهکار: ${(d.remaining_after || 0).toLocaleString()} AFN</span>
-                    </div>
-                    <p class="mb-1"><i class="fa-solid fa-id-card"></i> آیدی: ${d.student_card_id || '-'}</p>
-                    <p class="mb-1"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
-                    <p class="mb-1"><i class="fa-solid fa-user"></i> پدر: ${d.father_name || '-'}</p>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-2"><span>فیس کل:</span><span>${(d.total_fee || 0).toLocaleString()} AFN</span></div>
-                    <div class="d-flex justify-content-between mb-2"><span>پرداخت شده:</span><span class="text-success">${(d.paid_fee || 0).toLocaleString()} AFN</span></div>
-                    <div class="d-flex justify-content-between mb-2"><span>باقی مانده:</span><span class="text-danger fw-bold">${(d.remaining_after || 0).toLocaleString()} AFN</span></div>
-                    <div class="d-flex justify-content-between mb-3"><span>تاریخ انقضا:</span><span>${d.due_date || '-'}</span></div>
-                    <button class="btn btn-sm btn-payment w-100" onclick="openPaymentModal(${d.id}, ${d.total_fee || 0})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
-                </div></div>`;
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
+                                <span class="badge-debtor"><i class="fa-solid fa-triangle-exclamation"></i> بدهکار: ${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span>
+                            </div>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-2"><span><strong>فیس کل:</strong></span><span>${(parseFloat(d.total_fee) || 0).toLocaleString()} AFN</span></div>
+                            <div class="d-flex justify-content-between mb-2"><span><strong>پرداخت شده:</strong></span><span class="text-success">${(parseFloat(d.paid_fee) || 0).toLocaleString()} AFN</span></div>
+                            <div class="d-flex justify-content-between mb-2"><span><strong>باقی مانده:</strong></span><span class="text-danger fw-bold">${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span></div>
+                            <div class="d-flex justify-content-between mb-3"><span><strong>تاریخ انقضا:</strong></span><span>${formatDate(d.due_date)}</span></div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-sm btn-payment" onclick="openPaymentModal(${d.id}, ${parseFloat(d.total_fee) || 0})"><i class="fa-solid fa-hand-holding-dollar"></i> پرداخت</button>
+                            </div>
+                        </div></div>`;
                         }
                     }
                     document.getElementById('debtorsList').innerHTML = html || '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ بدهکاری وجود ندارد</div></div>';
                 } catch (err) {
-                    console.error('Error in loadDebtors:', err);
+                    console.error(err);
                     document.getElementById('debtorsList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
                 }
             }
 
-            // بارگذاری منقضی شده
+            // ========== منقضی شده با سرچ تاریخ ==========
             async function loadExpired() {
+                const classId = document.getElementById('expiredClassFilter').value;
+                const search = document.getElementById('expiredSearch').value;
+                const startDate = document.getElementById('expiredStartDate').value;
+                const endDate = document.getElementById('expiredEndDate').value;
+
+                let url = `/api/fee-expired?`;
+                if (classId) url += `class_id=${classId}&`;
+                if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (startDate) url += `start_date=${startDate}&`;
+                if (endDate) url += `end_date=${endDate}`;
+
                 try {
-                    const res = await fetch('/api/fee-expired');
+                    const res = await fetch(url);
                     const data = await res.json();
 
-                    console.log('Expired API response:', data);
-
                     if (!Array.isArray(data)) {
-                        document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا: داده معتبر نیست</div></div>';
+                        document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">❌ خطا در دریافت اطلاعات</div></div>';
                         return;
                     }
 
@@ -556,27 +483,32 @@
                         return;
                     }
 
+                    const today = new Date().toISOString().split('T')[0];
                     let html = '';
-                    for (const d of data) {
-                        if (d.due_date && d.due_date < new Date().toISOString().split('T')[0]) {
+                    for (let i = 0; i < data.length; i++) {
+                        const d = data[i];
+                        const dueDateFormatted = formatDate(d.due_date);
+                        if (dueDateFormatted && dueDateFormatted < today && parseFloat(d.remaining_after) > 0) {
                             html += `<div class="col-md-6 col-lg-4 mb-3"><div class="expired-card">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
-                        <span class="badge-expired">منقضی شده</span>
-                    </div>
-                    <p class="mb-1"><i class="fa-solid fa-id-card"></i> آیدی: ${d.student_card_id || '-'}</p>
-                    <p class="mb-1"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
-                    <p class="mb-1"><i class="fa-solid fa-user"></i> پدر: ${d.father_name || '-'}</p>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-2"><span>باقی مانده:</span><span class="text-danger fw-bold">${(d.remaining_after || 0).toLocaleString()} AFN</span></div>
-                    <div class="d-flex justify-content-between mb-3"><span>تاریخ انقضا:</span><span class="text-danger fw-bold">${d.due_date || '-'}</span></div>
-                    <button class="btn btn-sm btn-payment w-100" onclick="openPaymentModal(${d.id}, ${d.total_fee || 0})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت و تمدید</button>
-                </div></div>`;
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6><i class="fa-solid fa-user-circle"></i> ${d.name || '-'}</h6>
+                                <span class="badge-expired"><i class="fa-solid fa-clock"></i> منقضی شده</span>
+                            </div>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-id-card"></i> آیدی کارت: ${d.student_card_id || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-table-cells-large"></i> صنف: ${d.class_name || '-'}</p>
+                            <p class="mb-1 small text-muted"><i class="fa-solid fa-user"></i> نام پدر: ${d.father_name || '-'}</p>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-2"><span><strong>باقی مانده:</strong></span><span class="text-danger fw-bold">${(parseFloat(d.remaining_after) || 0).toLocaleString()} AFN</span></div>
+                            <div class="d-flex justify-content-between mb-3"><span><strong>تاریخ انقضا:</strong></span><span class="text-danger fw-bold">${dueDateFormatted}</span></div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-sm btn-payment" onclick="openPaymentModal(${d.id}, ${parseFloat(d.total_fee) || 0})"><i class="fa-solid fa-money-bill-wave"></i> پرداخت و تمدید</button>
+                            </div>
+                        </div></div>`;
                         }
                     }
                     document.getElementById('expiredList').innerHTML = html || '<div class="col-12"><div class="alert alert-info text-center">✅ هیچ شاگرد منقضی شده وجود ندارد</div></div>';
                 } catch (err) {
-                    console.error('Error in loadExpired:', err);
+                    console.error(err);
                     document.getElementById('expiredList').innerHTML = '<div class="col-12"><div class="alert alert-danger">❌ خطا: ' + err.message + '</div></div>';
                 }
             }
@@ -591,32 +523,25 @@
                 tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></tr>';
                 try {
                     let url = `/api/fee-payments-history?start_date=${startDate}&end_date=${endDate}`;
+                    if (classId) url += `&class_id=${classId}`;
                     const res = await fetch(url);
                     let payments = await res.json();
-                    if (classId) payments = payments.filter(p => p.class_id == classId);
                     if (payments.length === 0) { tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">✅ هیچ پرداختی در این بازه ثبت نشده است</div></div></div></tr>'; document.getElementById('historyTableFooter').style.display = 'none'; return; }
                     let totalAmount = 0, html = '';
                     payments.forEach((p, index) => {
                         totalAmount += parseFloat(p.amount) || 0;
-                        html += `<tr>
-                        <td class="text-dark">${index + 1}</div></div></div>
-                        <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
-                        <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
-                        <td class="text-dark">${p.father_name || '-'}</div></div></div>
-                        <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
-                        <td class="text-dark">${p.class_name || '-'}</div></div></div>
-                        <td class="text-dark">${(p.total_fee || 0).toLocaleString()} AFN</div></div></div>
-                        <td class="text-success">${(p.paid_fee || 0).toLocaleString()} AFN</div></div></div>
-                        <td class="${(p.remaining_after || 0) > 0 ? 'text-danger fw-bold' : 'text-success'}">${(p.remaining_after || 0).toLocaleString()} AFN</div></div></div>
-                        <td class="text-dark">${p.due_date ? formatDate(p.due_date) : '-'}</div></div></div>
-                        <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
-                        <td class="text-dark">${p.notes || '-'}</div></div></div>
-                    </div></div></div>`;
+                        html += `<tr><td class="text-dark">${index + 1}</div></div></div><td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+                        <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div><td class="text-dark">${p.father_name || '-'}</div></div></div>
+                        <td class="text-dark">${p.student_card_id || '-'}</div></div></div><td class="text-dark">${p.class_name || '-'}</div></div></div>
+                        <td class="text-dark">${(parseFloat(p.total_fee) || 0).toLocaleString()} AFN</div></div></div><td class="text-success">${(parseFloat(p.paid_fee) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="${(parseFloat(p.remaining_after) || 0) > 0 ? 'text-danger fw-bold' : 'text-success'}">${(parseFloat(p.remaining_after) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="text-dark">${formatDate(p.due_date)}</div></div></div><td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                        <td class="text-dark">${p.notes || '-'}</div></div></div></tr>`;
                     });
                     tbody.innerHTML = html;
                     document.getElementById('historyTotalAmount').innerHTML = totalAmount.toLocaleString() + ' AFN';
                     document.getElementById('historyTableFooter').style.display = 'table-row-group';
-                } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="12" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات</div></div></div></tr>'; }
+                } catch (err) { console.error(err); tbody.innerHTML = '<td><td colspan="12" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات</div></div></div></tr>'; }
             }
 
             function exportHistoryToExcel() {
@@ -630,7 +555,6 @@
                 XLSX.writeFile(wb, `تاریخچه_پرداخت_${startDate}_تا_${endDate}.xlsx`);
             }
 
-            // ========== مودال پرداخت ==========
             async function openPaymentModal(studentId, defaultTotalFee = 0) {
                 try {
                     const res = await fetch(`/api/students/${studentId}`);
@@ -682,8 +606,8 @@
                         if (res.ok) {
                             alert('✅ پرداخت با موفقیت ثبت شد');
                             bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
-                            loadDebtors();
-                            loadExpired();
+                            await loadDebtors();
+                            await loadExpired();
                             if (typeof printReceipt === 'function') {
                                 printReceipt(
                                     data.student_name, data.student_father, data.student_card_id,
@@ -700,7 +624,7 @@
                         submitBtn.innerHTML = '<i class="fa-solid fa-print"></i> ثبت پرداخت و چاپ رسید';
                     });
 
-                    if (paymentModal) paymentModal.show();
+                    paymentModal.show();
                 } catch (err) {
                     alert('❌ خطا: ' + err.message);
                 }
