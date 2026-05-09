@@ -1236,59 +1236,91 @@ app.get("/api/attendance/class/:classId", authenticate, async (req, res) => {
 // ====================== API داشبورد ======================
 
 // ====================== API داشبورد ======================
-// ====================== آمار داشبورد مدیر ======================
+// // ====================== آمار داشبورد مدیر ======================
+// app.get("/api/dashboard-stats", authenticate, async (req, res) => {
+//   try {
+//     const [students] = await db.execute(
+//       `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+//     );
+//     const [teachers] = await db.execute(
+//       `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+//     );
+
+//     // بدهکاران: بر اساس remaining_after > 0
+//     const [debtors] = await db.execute(`
+//       SELECT COUNT(*) as total FROM (
+//         SELECT s.id, fp.remaining_after
+//         FROM students s
+//         JOIN fee_payments fp ON s.id = fp.student_id
+//         WHERE s.status = 'active' AND fp.remaining_after > 0
+//         GROUP BY s.id
+//       ) as debtors_list
+//     `);
+
+//     // درآمد امروز بر اساس issue_date (تاریخ صدور رسید)
+//     const today = new Date().toISOString().split("T")[0];
+//     const [revenue] = await db.execute(
+//       `
+//       SELECT COALESCE(SUM(amount), 0) as total 
+//       FROM fee_payments 
+//       WHERE DATE(issue_date) = ?
+//     `,
+//       [today],
+//     );
+
+//     // درآمد ماه جاری بر اساس issue_date
+//     const [monthlyRevenue] = await db.execute(`
+//       SELECT COALESCE(SUM(amount), 0) as total 
+//       FROM fee_payments 
+//       WHERE MONTH(issue_date) = MONTH(CURDATE()) AND YEAR(issue_date) = YEAR(CURDATE())
+//     `);
+
+//     // درآمد سال جاری بر اساس issue_date
+//     const [yearlyRevenue] = await db.execute(`
+//       SELECT COALESCE(SUM(amount), 0) as total 
+//       FROM fee_payments 
+//       WHERE YEAR(issue_date) = YEAR(CURDATE())
+//     `);
+
+//     res.json({
+//       total_students: students[0]?.total || 0,
+//       total_teachers: teachers[0]?.total || 0,
+//       total_debtors: debtors[0]?.total || 0,
+//       today_income: revenue[0]?.total || 0,
+//       monthly_income: monthlyRevenue[0]?.total || 0,
+//       yearly_income: yearlyRevenue[0]?.total || 0,
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/dashboard-stats:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
   try {
-    const [students] = await db.execute(
-      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
-    );
-    const [teachers] = await db.execute(
-      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
-    );
-
-    // بدهکاران: بر اساس remaining_after > 0
+    const [students] = await db.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'active'`);
+    const [teachers] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`);
+    
+    // بدهکاران: شاگردانی که remaining_after > 0 دارند
     const [debtors] = await db.execute(`
-      SELECT COUNT(*) as total FROM (
-        SELECT s.id, fp.remaining_after
-        FROM students s
-        JOIN fee_payments fp ON s.id = fp.student_id
-        WHERE s.status = 'active' AND fp.remaining_after > 0
-        GROUP BY s.id
-      ) as debtors_list
+      SELECT COUNT(DISTINCT fp.student_id) as total 
+      FROM fee_payments fp
+      JOIN students s ON fp.student_id = s.id
+      WHERE s.status = 'active' AND fp.remaining_after > 0
     `);
-
-    // درآمد امروز بر اساس issue_date (تاریخ صدور رسید)
-    const today = new Date().toISOString().split("T")[0];
-    const [revenue] = await db.execute(
-      `
+    
+    // درآمد امروز بر اساس issue_date
+    const today = new Date().toISOString().split('T')[0];
+    const [revenue] = await db.execute(`
       SELECT COALESCE(SUM(amount), 0) as total 
       FROM fee_payments 
       WHERE DATE(issue_date) = ?
-    `,
-      [today],
-    );
-
-    // درآمد ماه جاری بر اساس issue_date
-    const [monthlyRevenue] = await db.execute(`
-      SELECT COALESCE(SUM(amount), 0) as total 
-      FROM fee_payments 
-      WHERE MONTH(issue_date) = MONTH(CURDATE()) AND YEAR(issue_date) = YEAR(CURDATE())
-    `);
-
-    // درآمد سال جاری بر اساس issue_date
-    const [yearlyRevenue] = await db.execute(`
-      SELECT COALESCE(SUM(amount), 0) as total 
-      FROM fee_payments 
-      WHERE YEAR(issue_date) = YEAR(CURDATE())
-    `);
-
-    res.json({
-      total_students: students[0]?.total || 0,
-      total_teachers: teachers[0]?.total || 0,
+    `, [today]);
+    
+    res.json({ 
+      total_students: students[0]?.total || 0, 
+      total_teachers: teachers[0]?.total || 0, 
       total_debtors: debtors[0]?.total || 0,
-      today_income: revenue[0]?.total || 0,
-      monthly_income: monthlyRevenue[0]?.total || 0,
-      yearly_income: yearlyRevenue[0]?.total || 0,
+      today_income: revenue[0]?.total || 0
     });
   } catch (err) {
     console.error("Error in /api/dashboard-stats:", err);

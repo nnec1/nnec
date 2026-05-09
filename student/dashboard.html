@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -17,8 +16,8 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            height: 100%;
         }
-
         .menu-toggle {
             display: none;
             position: fixed;
@@ -34,50 +33,18 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
-
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 15px 25px 15px;
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
-
-            .overlay.show {
-                display: block;
-            }
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
         }
+        .alert-warning { background: #fef3c7; color: #b45309; border-right: 4px solid #f59e0b; }
+        .alert-danger { background: #fee2e2; color: #dc2626; border-right: 4px solid #dc2626; }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -85,8 +52,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل شاگرد</h5>
@@ -100,59 +66,42 @@
                     <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="fa-solid fa-gauge-high text-success me-2"></i> پیشخوان شاگرد
-                    </h3>
-                    <div class="bg-white px-3 py-2 rounded-3 shadow-sm"><i
-                            class="fa-regular fa-calendar text-success"></i><span id="currentDate"
-                            class="me-2 text-dark"></span></div>
+                    <h3 class="section-title"><i class="fa-solid fa-gauge-high text-success me-2"></i> پیشخوان شاگرد</h3>
+                    <div class="bg-white px-3 py-2 rounded-3 shadow-sm"><i class="fa-regular fa-calendar text-success"></i><span id="currentDate" class="me-2 text-dark"></span></div>
                 </div>
 
                 <div class="row g-4 mb-4">
                     <div class="col-md-3">
-                        <div class="stat-card text-center"><i class="fa-solid fa-id-card fs-1 text-primary"></i>
-                            <h6>آیدی کارت</h6>
-                            <h5 id="studentCardId">-</h5>
-                        </div>
+                        <div class="stat-card text-center"><i class="fa-solid fa-id-card fs-1 text-primary"></i><h6>آیدی کارت</h6><h5 id="studentCardId">-</h5></div>
                     </div>
                     <div class="col-md-3">
-                        <div class="stat-card text-center"><i class="fa-solid fa-user fs-1 text-info"></i>
-                            <h6>نام</h6>
-                            <h5 id="studentName">-</h5>
-                        </div>
+                        <div class="stat-card text-center"><i class="fa-solid fa-user fs-1 text-info"></i><h6>نام</h6><h5 id="studentName">-</h5></div>
                     </div>
                     <div class="col-md-3">
-                        <div class="stat-card text-center"><i class="fa-solid fa-users fs-1 text-success"></i>
-                            <h6>صنف</h6>
-                            <h5 id="studentClass">-</h5>
-                        </div>
+                        <div class="stat-card text-center"><i class="fa-solid fa-users fs-1 text-success"></i><h6>صنف</h6><h5 id="studentClass">-</h5></div>
                     </div>
                     <div class="col-md-3">
-                        <div class="stat-card text-center"><i class="fa-solid fa-star fs-1 text-warning"></i>
-                            <h6>میانگین نمرات</h6>
-                            <h2 id="avgGrade">0</h2>
-                        </div>
+                        <div class="stat-card text-center"><i class="fa-solid fa-star fs-1 text-warning"></i><h6>میانگین نمرات</h6><h2 id="avgGrade">0</h2></div>
                     </div>
                 </div>
 
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="attendanceChart"
-                                height="250"></canvas></div>
+                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="attendanceChart" height="250"></canvas></div>
                     </div>
                     <div class="col-md-6">
-                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="feeChart"
-                                height="250"></canvas></div>
+                        <div class="chart-card p-3 bg-white rounded-3 shadow-sm"><canvas id="feeChart" height="250"></canvas></div>
                     </div>
                 </div>
 
                 <div id="feeWarning" class="alert alert-danger mt-4 d-none"></div>
+                <div id="expiryWarning" class="alert alert-warning mt-4 d-none"></div>
             </div>
         </div>
     </div>
@@ -176,28 +125,41 @@
         }
 
         async function loadStudentInfo() {
-            const res = await fetch(`/api/student/info/${studentId}`);
-            const data = await res.json();
-            document.getElementById('studentCardId').innerText = data.student_card_id || '-';
-            document.getElementById('studentName').innerText = data.name || '-';
-            document.getElementById('studentClass').innerText = data.class_name || '-';
-            document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+            try {
+                const res = await fetch(`/api/student/info/${studentId}`);
+                const data = await res.json();
+                document.getElementById('studentCardId').innerText = data.student_card_id || '-';
+                document.getElementById('studentName').innerText = data.name || '-';
+                document.getElementById('studentClass').innerText = data.class_name || '-';
+                document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+            } catch (err) { console.error(err); }
         }
 
         async function loadStats() {
-            const res = await fetch(`/api/student/stats/${studentId}`);
-            const data = await res.json();
-            document.getElementById('avgGrade').innerText = data.avg_grade || 0;
-            if (attendanceChart) attendanceChart.destroy();
-            attendanceChart = new Chart(document.getElementById('attendanceChart'), { type: 'doughnut', data: { labels: ['حاضر', 'تأخیر', 'غایب'], datasets: [{ data: [data.present_count || 0, data.late_count || 0, data.absent_count || 0], backgroundColor: ['#10b981', '#f59e0b', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+            try {
+                const res = await fetch(`/api/student/stats/${studentId}`);
+                const data = await res.json();
+                document.getElementById('avgGrade').innerText = data.avg_grade || 0;
+                if (attendanceChart) attendanceChart.destroy();
+                attendanceChart = new Chart(document.getElementById('attendanceChart'), { type: 'doughnut', data: { labels: ['حاضر', 'تأخیر', 'غایب'], datasets: [{ data: [data.present_count || 0, data.late_count || 0, data.absent_count || 0], backgroundColor: ['#10b981', '#f59e0b', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+            } catch (err) { console.error(err); }
         }
 
         async function loadFeeStatus() {
-            const res = await fetch(`/api/student/fees/${studentId}`);
-            const data = await res.json();
-            if (feeChart) feeChart.destroy();
-            feeChart = new Chart(document.getElementById('feeChart'), { type: 'pie', data: { labels: ['پرداخت شده', 'باقی مانده'], datasets: [{ data: [data.paid_fee || 0, data.remaining_fee || 0], backgroundColor: ['#10b981', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
-            if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) { document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ هشدار! فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.`; document.getElementById('feeWarning').classList.remove('d-none'); }
+            try {
+                const res = await fetch(`/api/student/fees/${studentId}`);
+                const data = await res.json();
+                if (feeChart) feeChart.destroy();
+                feeChart = new Chart(document.getElementById('feeChart'), { type: 'pie', data: { labels: ['پرداخت شده', 'باقی مانده'], datasets: [{ data: [data.paid_fee || 0, data.remaining_fee || 0], backgroundColor: ['#10b981', '#dc2626'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
+                if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) {
+                    document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ هشدار! فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.`;
+                    document.getElementById('feeWarning').classList.remove('d-none');
+                }
+                if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) {
+                    document.getElementById('expiryWarning').innerHTML = `<i class="fa-solid fa-clock"></i> تاریخ انقضای فیس شما گذشته است!`;
+                    document.getElementById('expiryWarning').classList.remove('d-none');
+                }
+            } catch (err) { console.error(err); }
         }
 
         setupSidebar();
@@ -206,5 +168,4 @@
         loadFeeStatus();
     </script>
 </body>
-
 </html>
