@@ -539,6 +539,76 @@ app.delete("/api/students/:id", authenticate, async (req, res) => {
 // 1. دریافت بدهکاران (بر اساس fee_payments)
 // ====================== بدهکاران (بر اساس آخرین پرداخت هر شاگرد) ======================
 // ====================== بدهکاران (فقط کسانی که باقی مانده > 0) ======================
+// app.get("/api/fee-debtors", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(`
+//       SELECT
+//         s.id,
+//         s.student_card_id,
+//         s.name,
+//         s.father_name,
+//         s.phone,
+//         s.class_id,
+//         c.class_name,
+//         fp.remaining_after,
+//         fp.total_fee,
+//         fp.paid_fee,
+//         DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date
+//       FROM students s
+//       JOIN classes c ON s.class_id = c.id
+//       JOIN (
+//         SELECT * FROM fee_payments
+//         WHERE id IN (SELECT MAX(id) FROM fee_payments GROUP BY student_id)
+//       ) fp ON s.id = fp.student_id
+//       WHERE s.status = 'active' AND fp.remaining_after > 0
+//       ORDER BY fp.remaining_after DESC
+//     `);
+
+//     res.json(results);
+//   } catch (err) {
+//     console.error("Error in /api/fee-debtors:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+// // ====================== منقضی شده ======================
+// // ====================== منقضی شده ======================
+// app.get("/api/fee-expired", authenticate, async (req, res) => {
+//   try {
+//     const [results] = await db.execute(`
+//       SELECT
+//         s.id,
+//         s.student_card_id,
+//         s.name,
+//         s.father_name,
+//         s.phone,
+//         s.class_id,
+//         c.class_name,
+//         fp.remaining_after,
+//         fp.total_fee,
+//         fp.paid_fee,
+//         DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date
+//       FROM students s
+//       JOIN classes c ON s.class_id = c.id
+//       JOIN (
+//         SELECT * FROM fee_payments
+//         WHERE id IN (SELECT MAX(id) FROM fee_payments GROUP BY student_id)
+//       ) fp ON s.id = fp.student_id
+//       WHERE s.status = 'active'
+//         AND fp.due_date IS NOT NULL
+//         AND fp.due_date < CURDATE()
+//         AND fp.remaining_after > 0
+//       ORDER BY fp.due_date ASC
+//     `);
+
+//     res.json(results);
+//   } catch (err) {
+//     console.error("Error in /api/fee-expired:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+//
+
+// ====================== بدهکاران (ساده شده) ======================
 app.get("/api/fee-debtors", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -556,22 +626,21 @@ app.get("/api/fee-debtors", authenticate, async (req, res) => {
         DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      JOIN (
-        SELECT * FROM fee_payments 
-        WHERE id IN (SELECT MAX(id) FROM fee_payments GROUP BY student_id)
-      ) fp ON s.id = fp.student_id
-      WHERE s.status = 'active' AND fp.remaining_after > 0
+      JOIN fee_payments fp ON s.id = fp.student_id
+      WHERE s.status = 'active' 
+        AND fp.remaining_after > 0
       ORDER BY fp.remaining_after DESC
     `);
 
+    console.log("✅ Debtors found:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-debtors:", err);
+    console.error("❌ Error in /api/fee-debtors:", err);
     res.status(500).json({ error: err.message });
   }
 });
-// ====================== منقضی شده ======================
-// ====================== منقضی شده ======================
+
+// ====================== منقضی شده (ساده شده) ======================
 app.get("/api/fee-expired", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(`
@@ -589,10 +658,7 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
         DATE_FORMAT(fp.due_date, '%Y-%m-%d') as due_date
       FROM students s
       JOIN classes c ON s.class_id = c.id
-      JOIN (
-        SELECT * FROM fee_payments 
-        WHERE id IN (SELECT MAX(id) FROM fee_payments GROUP BY student_id)
-      ) fp ON s.id = fp.student_id
+      JOIN fee_payments fp ON s.id = fp.student_id
       WHERE s.status = 'active' 
         AND fp.due_date IS NOT NULL 
         AND fp.due_date < CURDATE()
@@ -600,12 +666,15 @@ app.get("/api/fee-expired", authenticate, async (req, res) => {
       ORDER BY fp.due_date ASC
     `);
 
+    console.log("✅ Expired found:", results.length);
     res.json(results);
   } catch (err) {
-    console.error("Error in /api/fee-expired:", err);
+    console.error("❌ Error in /api/fee-expired:", err);
     res.status(500).json({ error: err.message });
   }
-}); // 3. دریافت تاریخچه پرداخت‌ها
+});
+
+// 3. دریافت تاریخچه پرداخت‌ها
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date } = req.query;
   let query = `
@@ -1271,19 +1340,19 @@ app.get("/api/issue-dates", authenticate, async (req, res) => {
       WHERE issue_date IS NOT NULL
       ORDER BY issue_date DESC
     `);
-    
+
     console.log("✅ Issue dates found:", results.length);
-    
+
     const dates = [];
     for (const row of results) {
       if (row.issue_date) {
         dates.push(row.issue_date);
       }
     }
-    
+
     res.json({
       success: true,
-      dates: dates
+      dates: dates,
     });
   } catch (err) {
     console.error("❌ Error in /api/issue-dates:", err);
@@ -1297,7 +1366,8 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
   const targetDate = date || new Date().toISOString().split("T")[0];
 
   try {
-    const [payments] = await db.execute(`
+    const [payments] = await db.execute(
+      `
       SELECT 
         fp.id,
         fp.student_id,
@@ -1319,14 +1389,24 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
       JOIN classes c ON s.class_id = c.id
       WHERE DATE(fp.issue_date) = ?
       ORDER BY fp.id DESC
-    `, [targetDate]);
+    `,
+      [targetDate],
+    );
 
-    console.log("✅ Daily stats for issue_date", targetDate, ":", payments.length);
+    console.log(
+      "✅ Daily stats for issue_date",
+      targetDate,
+      ":",
+      payments.length,
+    );
 
-    const totalToday = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const uniqueStudents = new Set(payments.map(p => p.student_id)).size;
+    const totalToday = payments.reduce(
+      (sum, p) => sum + (parseFloat(p.amount) || 0),
+      0,
+    );
+    const uniqueStudents = new Set(payments.map((p) => p.student_id)).size;
 
-    const formattedPayments = payments.map(p => ({
+    const formattedPayments = payments.map((p) => ({
       id: p.id,
       student_id: p.student_id,
       student_name: p.student_name,
@@ -1337,11 +1417,17 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
       total_fee: parseFloat(p.total_fee) || 0,
       paid_fee: parseFloat(p.paid_fee) || 0,
       remaining_after: parseFloat(p.remaining_after) || 0,
-      payment_date: p.payment_date ? new Date(p.payment_date).toISOString().split('T')[0] : null,
-      issue_date: p.issue_date ? new Date(p.issue_date).toISOString().split('T')[0] : null,
-      due_date: p.due_date ? new Date(p.due_date).toISOString().split('T')[0] : null,
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+      issue_date: p.issue_date
+        ? new Date(p.issue_date).toISOString().split("T")[0]
+        : null,
+      due_date: p.due_date
+        ? new Date(p.due_date).toISOString().split("T")[0]
+        : null,
       receipt_number: p.receipt_number,
-      notes: p.notes
+      notes: p.notes,
     }));
 
     res.json({
@@ -1350,7 +1436,7 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
       total_amount: totalToday,
       student_count: uniqueStudents,
       transaction_count: formattedPayments.length,
-      payments: formattedPayments
+      payments: formattedPayments,
     });
   } catch (err) {
     console.error("❌ Error in /api/daily-fee-stats-with-expiry:", err);
