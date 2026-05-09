@@ -1477,6 +1477,75 @@ app.put("/api/complaints/:id", authenticate, async (req, res) => {
   }
 });
 
+// ====================== دریافت تاریخچه پرداخت‌های یک شاگرد ======================
+app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `
+      SELECT * FROM fee_payments 
+      WHERE student_id = ? 
+      ORDER BY id DESC
+    `,
+      [req.params.studentId],
+    );
+
+    const formatted = results.map((p) => ({
+      ...p,
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+      issue_date: p.issue_date
+        ? new Date(p.issue_date).toISOString().split("T")[0]
+        : null,
+      due_date: p.due_date
+        ? new Date(p.due_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in /api/student/payments/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// ====================== دریافت وضعیت فیس شاگرد ======================
+app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
+  try {
+    // دریافت آخرین رکورد پرداخت شاگرد
+    const [results] = await db.execute(
+      `
+      SELECT total_fee, paid_fee, remaining_after, due_date 
+      FROM fee_payments 
+      WHERE student_id = ? 
+      ORDER BY id DESC 
+      LIMIT 1
+    `,
+      [req.params.studentId],
+    );
+
+    if (results.length === 0) {
+      return res.json({
+        total_fee: 0,
+        paid_fee: 0,
+        remaining_fee: 0,
+        due_date: null,
+      });
+    }
+
+    const student = results[0];
+    res.json({
+      total_fee: parseFloat(student.total_fee) || 0,
+      paid_fee: parseFloat(student.paid_fee) || 0,
+      remaining_fee: parseFloat(student.remaining_after) || 0,
+      due_date: student.due_date
+        ? new Date(student.due_date).toISOString().split("T")[0]
+        : null,
+    });
+  } catch (err) {
+    console.error("Error in /api/student/fees/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
