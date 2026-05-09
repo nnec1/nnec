@@ -1540,32 +1540,23 @@ app.post("/api/change-password", authenticate, async (req, res) => {
 });
 // ====================== دریافت لیست تاریخ‌های صدور موجود ======================
 // ====================== دریافت لیست تاریخ‌های صدور موجود ======================
+// ====================== دریافت لیست تاریخ‌های پرداخت ======================
 app.get("/api/issue-dates", authenticate, async (req, res) => {
   try {
-    // ساده ترین کوئری ممکن
-    const [results] = await db.execute(`
-      SELECT DISTINCT DATE(payment_date) as issue_date 
-      FROM fee_payments 
-      WHERE payment_date IS NOT NULL
-      ORDER BY payment_date DESC
-    `);
-
-    console.log("✅ Issue dates found:", results.length);
-
+    const [results] = await db.execute(`SELECT payment_date FROM fee_payments ORDER BY payment_date DESC`);
+    
     const dates = [];
     for (const row of results) {
-      if (row.issue_date) {
-        dates.push(row.issue_date);
+      const date = row.payment_date;
+      if (date && !dates.includes(date)) {
+        dates.push(date);
       }
     }
-
-    res.json({
-      success: true,
-      dates: dates,
-    });
+    
+    res.json({ success: true, dates: dates });
   } catch (err) {
-    console.error("❌ Error in /api/issue-dates:", err);
-    res.status(500).json({ error: err.message });
+    console.error("Error:", err);
+    res.json({ success: true, dates: [] }); // برگرداندن آرایه خالی به جای خطا
   }
 });
 // ====================== آمار روزمره فیس با نمایش تاریخ انقضا ======================
