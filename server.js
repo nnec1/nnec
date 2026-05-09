@@ -345,6 +345,116 @@ app.delete("/api/classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
   }
 });
 
+
+// ====================== API صنف‌های بدون استاد ======================
+app.get("/api/classes-without-teacher", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT c.*, 
+        (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) as teacher_count
+      FROM classes c
+      WHERE c.is_active = 1
+        AND (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) = 0
+      ORDER BY c.class_name
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error("Error in /api/classes-without-teacher:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API صنف‌های فعال ======================
+app.get("/api/active-classes", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT c.*, 
+        (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) as teacher_count,
+        (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
+      FROM classes c
+      WHERE c.is_active = 1
+      ORDER BY c.class_name
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error("Error in /api/active-classes:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API تخصیص‌های استاد به صنف ======================
+app.get("/api/teacher-classes", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT tc.*, 
+        e.name as teacher_name, 
+        c.class_name,
+        s.subject_name
+      FROM teacher_classes tc
+      JOIN employees e ON tc.teacher_id = e.id
+      JOIN classes c ON tc.class_id = c.id
+      LEFT JOIN subjects s ON tc.subject_id = s.id
+      ORDER BY c.class_name, e.name
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error("Error in /api/teacher-classes:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API حذف تخصیص ======================
+app.delete("/api/teacher-classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM teacher_classes WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error in DELETE /api/teacher-classes/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API دروس (موضوعات) ======================
+app.get("/api/subjects", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute("SELECT * FROM subjects WHERE is_active = 1 ORDER BY subject_name");
+    res.json(results);
+  } catch (err) {
+    console.error("Error in /api/subjects:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== API تخصیص استاد به صنف ======================
+app.post("/api/assign-teacher-to-class", authenticate, isAdminOrCEO, async (req, res) => {
+  const { teacher_id, class_id, subject_id, academic_year, is_main_teacher } = req.body;
+  
+  if (!teacher_id || !class_id) {
+    return res.status(400).json({ error: "استاد و صنف الزامی است" });
+  }
+  
+  try {
+    const [existing] = await db.execute(
+      "SELECT id FROM teacher_classes WHERE teacher_id = ? AND class_id = ?",
+      [teacher_id, class_id]
+    );
+    
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "این استاد قبلاً به این صنف تخصیص داده شده است" });
+    }
+    
+    const [result] = await db.execute(
+      `INSERT INTO teacher_classes (teacher_id, class_id, subject_id, academic_year, is_main_teacher) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [teacher_id, class_id, subject_id || null, academic_year || "1404", is_main_teacher || false]
+    );
+    
+    res.json({ success: true, id: result.insertId, message: "استاد با موفقیت تخصیص داده شد" });
+  } catch (err) {
+    console.error("Error in POST /api/assign-teacher-to-class:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== API شاگردان ======================
 
 app.get("/api/students", authenticate, async (req, res) => {
