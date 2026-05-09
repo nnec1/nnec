@@ -24,10 +24,10 @@ const authorize = (...roles) => {
     next();
   };
 };
-const isCEO = (req, res, next) => {
-  if (req.user.role !== "ceo") {
-    return res.status(403).json({ error: "دسترسی محدود به ریس سیستم" });
-  }
-  next();
-};
+// const isCEO = (req, res, next) => {
+//   if (req.user.role !== "ceo") {
+//     return res.status(403).json({ error: "دسترسی محدود به ریس سیستم" });
+//   }
+//   next();
+// };
 module.exports = { authenticate, authorize };
