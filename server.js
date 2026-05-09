@@ -1174,23 +1174,32 @@ app.get("/api/financial-summary", authenticate, async (req, res) => {
 // ====================== API کارمندان ======================
 
 app.get("/api/employees", authenticate, async (req, res) => {
-  let query =
-    "SELECT id, name, father_name, phone, email, position, salary, hire_date, status, created_at FROM employees";
-  if (req.user.role === "ceo")
-    query += " WHERE position IN ('admin', 'teacher', 'accountant')";
-  else if (req.user.role === "admin")
-    query += " WHERE position IN ('teacher', 'accountant')";
-  else if (req.user.role === "teacher")
-    return res.status(403).json({ error: "دسترسی محدود" });
-  query += " ORDER BY created_at DESC";
   try {
+    let query = "SELECT id, name, father_name, phone, email, position, salary, hire_date, status, created_at FROM employees";
+    let whereClause = "";
+    
+    // بررسی دقیق نقش کاربر
+    console.log("User role in /api/employees:", req.user.role);
+    
+    if (req.user.role === "ceo") {
+      whereClause = " WHERE position IN ('admin', 'teacher', 'accountant')";
+    } else if (req.user.role === "admin") {
+      whereClause = " WHERE position IN ('teacher', 'accountant')";
+    } else if (req.user.role === "teacher") {
+      return res.status(403).json({ error: "دسترسی محدود - فقط مدیر و ریس می‌توانند کارمندان را مشاهده کنند" });
+    }
+    
+    query += whereClause + " ORDER BY created_at DESC";
+    
+    console.log("Executing query:", query);
+    
     const [results] = await db.execute(query);
     res.json(results);
   } catch (err) {
+    console.error("Error in /api/employees:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 app.get("/api/teachers", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
