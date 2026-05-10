@@ -10,22 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        .payment-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 1px solid #e2e8f0;
-        }
-
-        .payment-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
         .filter-box {
             background: white;
             border-radius: 16px;
@@ -40,6 +24,14 @@
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             overflow-x: auto;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
         }
 
         .menu-toggle {
@@ -155,27 +147,22 @@
                                     <th>نام شاگرد</th>
                                     <th>نام پدر</th>
                                     <th>صنف</th>
-                                    <th>فیس کل (AFN)</th>
-                                    <th>پرداخت شده (AFN)</th>
-                                    <th>باقی مانده (AFN)</th>
-                                    <th>تاریخ انقضا</th>
+                                    <th>وضعیت</th>
                                     <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsList">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="spinner-border text-success"></div> در حال بارگیری...
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
-                        </thead>
-                        <tbody id="studentsList">
-                            <td>
-                            <td colspan="9" class="text-center py-4">
-                                <div class="spinner-border text-success"></div> در حال بارگیری...
                     </div>
                 </div>
             </div>
-            </td>
-            </tbody>
-            </table>
         </div>
-    </div>
-    </div>
-    </div>
     </div>
 
     <!-- مودال ویرایش فیس -->
@@ -189,7 +176,6 @@
                 <div class="modal-body">
                     <form id="editFeeForm">
                         <input type="hidden" id="editStudentId">
-                        <input type="hidden" id="editPaymentId">
                         <div class="mb-3"><label class="form-label">نام شاگرد</label><input type="text"
                                 id="editStudentName" class="form-control" disabled></div>
                         <div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number"
@@ -214,6 +200,7 @@
     <script src="/main.js"></script>
     <script>
         let editFeeModal = null;
+        let allStudentsData = [];
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
@@ -248,76 +235,57 @@
 
             try {
                 const res = await fetch('/api/students');
-                let allStudents = await res.json();
-                let students = allStudents;
+                let students = await res.json();
 
                 if (classId) students = students.filter(s => s.class_id == classId);
                 if (search) students = students.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search.toLowerCase())));
 
                 if (students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<table><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></table>';
+                    document.getElementById('studentsList').innerHTML = '<td><td colspan="6" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
                     return;
                 }
 
                 let html = '';
                 for (const s of students) {
-                    // دریافت آخرین پرداخت شاگرد
-                    let lastPayment = null;
-                    try {
-                        const paymentsRes = await fetch(`/api/student/payments/${s.id}`);
-                        if (paymentsRes.ok) {
-                            const payments = await paymentsRes.json();
-                            if (payments && Array.isArray(payments) && payments.length > 0) {
-                                lastPayment = payments[0];
-                            }
-                        } else {
-                            console.log("No payments found for student", s.id);
-                        }
-                    } catch (err) {
-                        console.error("Error fetching payments for student", s.id, err);
-                    }
+                    let statusClass = s.status === 'active' ? 'status-active' : 'bg-secondary';
+                    let statusText = s.status === 'active' ? 'فعال' : (s.status === 'graduated' ? 'فارغ‌التحصیل' : 'غیرفعال');
 
                     html += `<tr>
-                <td class="text-dark">${s.student_card_id || '-'}</div></div></div>
-                <td class="text-dark"><strong>${s.name}</strong></div></div></div>
-                <td class="text-dark">${s.father_name || '-'}</div></div></div>
-                <td class="text-dark">${s.class_name || '-'}</div></div></div>
-                <td class="text-dark">${lastPayment ? (lastPayment.total_fee || 0).toLocaleString() : '0'} AFN</div></div></div>
-                <td class="text-success">${lastPayment ? (lastPayment.paid_fee || 0).toLocaleString() : '0'} AFN</div></div></div>
-                <td class="${lastPayment && lastPayment.remaining_after > 0 ? 'text-danger fw-bold' : 'text-success'}">${lastPayment ? (lastPayment.remaining_after || 0).toLocaleString() : '0'} AFN</div></div></div>
-                <td class="text-dark">${lastPayment && lastPayment.due_date ? formatDate(lastPayment.due_date) : '-'}</div></div></div>
-                <td class="text-dark"><button class="btn btn-sm btn-warning" onclick="openEditModal(${s.id})"><i class="fa-solid fa-pen"></i> ویرایش فیس</button></div></div></div>
-            </div></div></div>`;
+                        <td class="text-dark">${s.student_card_id || '-'}</div></div></div>
+                        <td class="text-dark"><strong>${s.name}</strong></div></div></div>
+                        <td class="text-dark">${s.father_name || '-'}</div></div></div>
+                        <td class="text-dark">${s.class_name || '-'}</div></div></div>
+                        <td class="text-dark"><span class="badge ${statusClass}">${statusText}</span></div></div></div>
+                        <td class="text-dark"><button class="btn btn-sm btn-warning" onclick="openEditModal(${s.id}, '${s.name.replace(/'/g, "\\'")}', '${s.father_name || ''}')"><i class="fa-solid fa-pen"></i> ویرایش فیس</button></div></div></div>
+                    </div></div></div>`;
                 }
                 document.getElementById('studentsList').innerHTML = html;
             } catch (err) {
                 console.error(err);
-                document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات: ' + err.message + '</div></div></div></tr>';
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">خطا در بارگیری اطلاعات: ' + err.message + '</div></div></div><table>';
             }
         }
 
-        async function openEditModal(studentId, paymentId) {
+        async function openEditModal(studentId, studentName, fatherName) {
             try {
-                const studentRes = await fetch(`/api/students/${studentId}`);
-                const student = await studentRes.json();
+                // دریافت آخرین پرداخت شاگرد از API fee-payments-history
+                const today = new Date().toISOString().split('T')[0];
+                const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
 
-                let lastPayment = null;
-                try {
-                    const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
-                    const payments = await paymentsRes.json();
-                    if (payments && Array.isArray(payments) && payments.length > 0) {
-                        lastPayment = payments[0];
-                    }
-                } catch (err) {
-                    console.error("Error fetching payments:", err);
-                }
+                const paymentsRes = await fetch(`/api/fee-payments-history?start_date=${firstDay}&end_date=${today}`);
+                const allPayments = await paymentsRes.json();
+
+                // پیدا کردن آخرین پرداخت این شاگرد
+                const studentPayments = allPayments.filter(p => p.student_id == studentId);
+                const lastPayment = studentPayments.length > 0 ? studentPayments[0] : null;
 
                 document.getElementById('editStudentId').value = studentId;
-                document.getElementById('editPaymentId').value = lastPayment ? lastPayment.id : '';
-                document.getElementById('editStudentName').value = student.name || '';
+                document.getElementById('editStudentName').value = studentName;
                 document.getElementById('editTotalFee').value = lastPayment ? (lastPayment.total_fee || 0) : 0;
                 document.getElementById('editPaidFee').value = lastPayment ? (lastPayment.paid_fee || 0) : 0;
-                document.getElementById('editRemainingFee').value = lastPayment ? ((lastPayment.total_fee || 0) - (lastPayment.paid_fee || 0)) : 0;
+
+                const remaining = (lastPayment ? (lastPayment.total_fee || 0) : 0) - (lastPayment ? (lastPayment.paid_fee || 0) : 0);
+                document.getElementById('editRemainingFee').value = remaining > 0 ? remaining : 0;
                 document.getElementById('editDueDate').value = lastPayment && lastPayment.due_date ? formatDate(lastPayment.due_date) : '';
                 document.getElementById('editNotes').value = lastPayment ? (lastPayment.notes || '') : '';
 
@@ -327,34 +295,43 @@
             }
         }
 
-        // ========== اینجا کد رویداد submit اضافه می‌شود ==========
+        // ذخیره تغییرات فیس
         document.getElementById('editFeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const paymentId = document.getElementById('editPaymentId').value;
-            const totalFee = document.getElementById('editTotalFee').value;
-            const paidFee = document.getElementById('editPaidFee').value;
+            const studentId = document.getElementById('editStudentId').value;
+            const totalFee = parseFloat(document.getElementById('editTotalFee').value);
+            const paidFee = parseFloat(document.getElementById('editPaidFee').value);
             const dueDate = document.getElementById('editDueDate').value;
             const notes = document.getElementById('editNotes').value;
-
-            if (!paymentId) {
-                alert('❌ شناسه پرداخت یافت نشد');
-                return;
-            }
-
-            const remainingFee = parseFloat(totalFee) - parseFloat(paidFee);
+            const remainingFee = totalFee - paidFee;
 
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ذخیره...';
 
             try {
-                const res = await fetch(`/api/fee-payments/${paymentId}`, {
+                // دریافت آخرین payment_id برای این شاگرد
+                const today = new Date().toISOString().split('T')[0];
+                const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+                const paymentsRes = await fetch(`/api/fee-payments-history?start_date=${firstDay}&end_date=${today}`);
+                const allPayments = await paymentsRes.json();
+                const studentPayments = allPayments.filter(p => p.student_id == studentId);
+                const lastPayment = studentPayments.length > 0 ? studentPayments[0] : null;
+
+                if (!lastPayment || !lastPayment.id) {
+                    alert('❌ پرداختی برای این شاگرد یافت نشد');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-save"></i> ذخیره تغییرات';
+                    return;
+                }
+
+                const res = await fetch(`/api/fee-payments/${lastPayment.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        total_fee: parseFloat(totalFee),
-                        paid_fee: parseFloat(paidFee),
+                        total_fee: totalFee,
+                        paid_fee: paidFee,
                         remaining_after: remainingFee > 0 ? remainingFee : 0,
                         due_date: dueDate,
                         notes: notes
@@ -377,7 +354,6 @@
                 submitBtn.innerHTML = '<i class="fa-solid fa-save"></i> ذخیره تغییرات';
             }
         });
-        // ========== پایان کد رویداد submit ==========
 
         editFeeModal = new bootstrap.Modal(document.getElementById('editFeeModal'));
         setupSidebar();
