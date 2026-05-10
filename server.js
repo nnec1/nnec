@@ -1365,10 +1365,10 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
   }
 });
 // ====================== دریافت تاریخچه پرداخت‌های یک شاگرد ======================
+// ====================== دریافت تاریخچه پرداخت‌های یک شاگرد ======================
 app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(
-      `
+    const [results] = await db.execute(`
       SELECT 
         fp.id,
         fp.amount,
@@ -1383,23 +1383,15 @@ app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
       FROM fee_payments fp
       WHERE fp.student_id = ?
       ORDER BY fp.id DESC
-    `,
-      [req.params.studentId],
-    );
-
-    const formatted = results.map((p) => ({
+    `, [req.params.studentId]);
+    
+    const formatted = results.map(p => ({
       ...p,
-      payment_date: p.payment_date
-        ? new Date(p.payment_date).toISOString().split("T")[0]
-        : null,
-      issue_date: p.issue_date
-        ? new Date(p.issue_date).toISOString().split("T")[0]
-        : null,
-      due_date: p.due_date
-        ? new Date(p.due_date).toISOString().split("T")[0]
-        : null,
+      payment_date: p.payment_date ? new Date(p.payment_date).toISOString().split('T')[0] : null,
+      issue_date: p.issue_date ? new Date(p.issue_date).toISOString().split('T')[0] : null,
+      due_date: p.due_date ? new Date(p.due_date).toISOString().split('T')[0] : null
     }));
-
+    
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/student/payments/:studentId:", err);
