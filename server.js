@@ -719,12 +719,21 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 });
 // 5. ویرایش فیس و بدهکار (فقط ریس)
 // ====================== ویرایش فیس (فقط ریس) ======================
-app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
+// ====================== ویرایش فیس (بدون محدودیت نقش - موقت) ======================
+app.put("/api/fee-payments/:id", authenticate, async (req, res) => {
   const { total_fee, paid_fee, remaining_after, due_date, notes } = req.body;
   const paymentId = req.params.id;
 
   try {
-    // به روز رسانی فیلدها
+    // بررسی وجود پرداخت
+    const [check] = await db.execute(
+      `SELECT id FROM fee_payments WHERE id = ?`,
+      [paymentId],
+    );
+    if (check.length === 0) {
+      return res.status(404).json({ error: "پرداخت یافت نشد" });
+    }
+
     await db.execute(
       `
       UPDATE fee_payments 
@@ -1366,9 +1375,11 @@ app.get("/api/daily-fee-stats-with-expiry", authenticate, async (req, res) => {
 });
 // ====================== دریافت تاریخچه پرداخت‌های یک شاگرد ======================
 // ====================== دریافت تاریخچه پرداخت‌های یک شاگرد ======================
+// ====================== دریافت تاریخچه پرداخت‌های شاگرد ======================
 app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT 
         fp.id,
         fp.amount,
@@ -1383,15 +1394,23 @@ app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
       FROM fee_payments fp
       WHERE fp.student_id = ?
       ORDER BY fp.id DESC
-    `, [req.params.studentId]);
-    
-    const formatted = results.map(p => ({
+    `,
+      [req.params.studentId],
+    );
+
+    const formatted = results.map((p) => ({
       ...p,
-      payment_date: p.payment_date ? new Date(p.payment_date).toISOString().split('T')[0] : null,
-      issue_date: p.issue_date ? new Date(p.issue_date).toISOString().split('T')[0] : null,
-      due_date: p.due_date ? new Date(p.due_date).toISOString().split('T')[0] : null
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+      issue_date: p.issue_date
+        ? new Date(p.issue_date).toISOString().split("T")[0]
+        : null,
+      due_date: p.due_date
+        ? new Date(p.due_date).toISOString().split("T")[0]
+        : null,
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/student/payments/:studentId:", err);
