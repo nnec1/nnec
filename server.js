@@ -1940,6 +1940,134 @@ app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ====================== دریافت نمرات یک شاگرد ======================
+app.get("/api/student/grades/:studentId", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `
+      SELECT 
+        g.id,
+        g.student_id,
+        g.class_id,
+        g.score,
+        g.max_score,
+        g.exam_type,
+        g.exam_date,
+        g.teacher_id,
+        c.class_name
+      FROM grades g
+      LEFT JOIN classes c ON g.class_id = c.id
+      WHERE g.student_id = ?
+      ORDER BY g.exam_date DESC
+    `,
+      [req.params.studentId],
+    );
+
+    const formatted = results.map((g) => ({
+      ...g,
+      exam_date: g.exam_date
+        ? new Date(g.exam_date).toISOString().split("T")[0]
+        : null,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Error in /api/student/grades/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== ذخیره نمره (دسترسی استاد) ======================
+app.post("/api/teacher/save-grade", authenticate, async (req, res) => {
+  const { student_id, class_id, score, max_score, exam_type, teacher_id } =
+    req.body;
+
+  try {
+    // بررسی وجود نمره قبلی
+    const [existing] = await db.execute(
+      `
+      SELECT id FROM grades 
+      WHERE student_id = ? AND class_id = ? AND exam_type = ?
+    `,
+      [student_id, class_id, exam_type],
+    );
+
+    if (existing.length > 0) {
+      await db.execute(
+        `
+        UPDATE grades 
+        SET score = ?, max_score = ?, exam_date = CURDATE(), teacher_id = ?
+        WHERE id = ?
+      `,
+        [score, max_score, teacher_id, existing[0].id],
+      );
+    } else {
+      await db.execute(
+        `
+        INSERT INTO grades (student_id, class_id, score, max_score, exam_type, exam_date, teacher_id)
+        VALUES (?, ?, ?, ?, ?, CURDATE(), ?)
+      `,
+        [student_id, class_id, score, max_score, exam_type, teacher_id],
+      );
+    }
+
+    res.json({ success: true, message: "نمره با موفقیت ذخیره شد" });
+  } catch (err) {
+    console.error("❌ Error in /api/teacher/save-grade:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== ذخیره نمره گروهی ======================
+app.post("/api/teacher/save-group-grade", authenticate, async (req, res) => {
+  const { class_id, score, max_score, exam_type, teacher_id } = req.body;
+
+  try {
+    // دریافت همه شاگردان فعال صنف
+    const [students] = await db.execute(
+      `
+      SELECT id FROM students WHERE class_id = ? AND status = 'active'
+    `,
+      [class_id],
+    );
+
+    let saved = 0;
+    for (const student of students) {
+      const [existing] = await db.execute(
+        `
+        SELECT id FROM grades 
+        WHERE student_id = ? AND class_id = ? AND exam_type = ?
+      `,
+        [student.id, class_id, exam_type],
+      );
+
+      if (existing.length > 0) {
+        await db.execute(
+          `
+          UPDATE grades 
+          SET score = ?, max_score = ?, exam_date = CURDATE(), teacher_id = ?
+          WHERE id = ?
+        `,
+          [score, max_score, teacher_id, existing[0].id],
+        );
+      } else {
+        await db.execute(
+          `
+          INSERT INTO grades (student_id, class_id, score, max_score, exam_type, exam_date, teacher_id)
+          VALUES (?, ?, ?, ?, ?, CURDATE(), ?)
+        `,
+          [student.id, class_id, score, max_score, exam_type, teacher_id],
+        );
+      }
+      saved++;
+    }
+
+    res.json({ success: true, message: `${saved} نمره با موفقیت ذخیره شد` });
+  } catch (err) {
+    console.error("❌ Error in /api/teacher/save-group-grade:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
