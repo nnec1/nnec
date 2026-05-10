@@ -250,54 +250,58 @@
         }
 
         async function loadStudents() {
-            const classId = document.getElementById('filterClass').value;
-            const search = document.getElementById('searchStudent').value;
-            let url = '/api/students';
-            let students = [];
+    const classId = document.getElementById('filterClass').value;
+    const search = document.getElementById('searchStudent').value;
+    
+    try {
+        const res = await fetch('/api/students');
+        let allStudents = await res.json();
+        let students = allStudents;
+        
+        if (classId) students = students.filter(s => s.class_id == classId);
+        if (search) students = students.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search.toLowerCase())));
+        
+        if (students.length === 0) { 
+            document.getElementById('studentsList').innerHTML = '<table><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></table>'; 
+            return; 
+        }
+        
+        let html = '';
+        for (const s of students) {
+            // دریافت آخرین پرداخت شاگرد
+            let lastPayment = null;
             try {
-                const res = await fetch(url);
-                let allStudents = await res.json();
-                students = allStudents;
-                if (classId) students = students.filter(s => s.class_id == classId);
-                if (search) students = students.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search.toLowerCase())));
-                if (students.length === 0) {
-                    document.getElementById('studentsList').innerHTML = '<td><td colspan="9" class="text-center text-muted py-4">هیچ شاگردی یافت نشد</div></div></div></tr>';
-                    return;
-                }
-
-                let html = '';
-                for (const s of students) {
-                    // دریافت آخرین پرداخت شاگرد
-                    let lastPayment = null;
-                    try {
-                        const paymentsRes = await fetch(`/api/student/payments/${s.id}`);
-                        const payments = await paymentsRes.json();
-                        if (payments && Array.isArray(payments) && payments.length > 0) {
-                            lastPayment = payments[0];
-                        }
-                    } catch (err) {
-                        console.error("Error fetching payments for student", s.id, err);
+                const paymentsRes = await fetch(`/api/student/payments/${s.id}`);
+                if (paymentsRes.ok) {
+                    const payments = await paymentsRes.json();
+                    if (payments && Array.isArray(payments) && payments.length > 0) {
+                        lastPayment = payments[0];
                     }
-
-                    html += `<tr>
+                } else {
+                    console.log("No payments found for student", s.id);
+                }
+            } catch (err) {
+                console.error("Error fetching payments for student", s.id, err);
+            }
+            
+            html += `<tr>
                 <td class="text-dark">${s.student_card_id || '-'}</div></div></div>
                 <td class="text-dark"><strong>${s.name}</strong></div></div></div>
                 <td class="text-dark">${s.father_name || '-'}</div></div></div>
                 <td class="text-dark">${s.class_name || '-'}</div></div></div>
-                <td class="text-dark">${lastPayment ? (lastPayment.total_fee || 0).toLocaleString() : '-'} AFN</div></div></div>
-                <td class="text-success">${lastPayment ? (lastPayment.paid_fee || 0).toLocaleString() : '-'} AFN</div></div></div>
-                <td class="${lastPayment && lastPayment.remaining_after > 0 ? 'text-danger fw-bold' : 'text-success'}">${lastPayment ? (lastPayment.remaining_after || 0).toLocaleString() : '-'} AFN</div></div></div>
+                <td class="text-dark">${lastPayment ? (lastPayment.total_fee || 0).toLocaleString() : '0'} AFN</div></div></div>
+                <td class="text-success">${lastPayment ? (lastPayment.paid_fee || 0).toLocaleString() : '0'} AFN</div></div></div>
+                <td class="${lastPayment && lastPayment.remaining_after > 0 ? 'text-danger fw-bold' : 'text-success'}">${lastPayment ? (lastPayment.remaining_after || 0).toLocaleString() : '0'} AFN</div></div></div>
                 <td class="text-dark">${lastPayment && lastPayment.due_date ? formatDate(lastPayment.due_date) : '-'}</div></div></div>
-                <td class="text-dark"><button class="btn btn-sm btn-warning" onclick="openEditModal(${s.id}, ${lastPayment ? lastPayment.id : 'null'})"><i class="fa-solid fa-pen"></i> ویرایش فیس</button></div></div></div>
+                <td class="text-dark"><button class="btn btn-sm btn-warning" onclick="openEditModal(${s.id})"><i class="fa-solid fa-pen"></i> ویرایش فیس</button></div></div></div>
             </div></div></div>`;
-                }
-                document.getElementById('studentsList').innerHTML = html;
-            } catch (err) {
-                console.error(err);
-                document.getElementById('studentsList').innerHTML = '<table><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div><table>';
-            }
         }
-
+        document.getElementById('studentsList').innerHTML = html;
+    } catch (err) { 
+        console.error(err); 
+        document.getElementById('studentsList').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">خطا در بارگیری اطلاعات: ' + err.message + '</div></div></div></tr>'; 
+    }
+}
         async function openEditModal(studentId, paymentId) {
             try {
                 const studentRes = await fetch(`/api/students/${studentId}`);
