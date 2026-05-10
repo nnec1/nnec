@@ -1405,6 +1405,66 @@ app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== تاریخچه پرداخت‌های فیس ======================
+app.get("/api/fee-payments-history", authenticate, async (req, res) => {
+  const { start_date, end_date, class_id } = req.query;
+  
+  let query = `
+    SELECT 
+      fp.id,
+      fp.student_id,
+      fp.amount,
+      fp.total_fee,
+      fp.paid_fee,
+      fp.remaining_after,
+      fp.payment_date,
+      fp.issue_date,
+      fp.due_date,
+      fp.receipt_number,
+      fp.notes,
+      s.name as student_name,
+      s.father_name,
+      s.student_card_id,
+      c.class_name,
+      c.id as class_id
+    FROM fee_payments fp
+    JOIN students s ON fp.student_id = s.id
+    JOIN classes c ON s.class_id = c.id
+    WHERE 1=1
+  `;
+  
+  let params = [];
+  
+  if (start_date && end_date) {
+    query += ` AND DATE(fp.payment_date) BETWEEN ? AND ?`;
+    params.push(start_date, end_date);
+  }
+  
+  if (class_id && class_id !== '') {
+    query += ` AND c.id = ?`;
+    params.push(class_id);
+  }
+  
+  query += ` ORDER BY fp.payment_date DESC, fp.id DESC`;
+  
+  try {
+    const [results] = await db.execute(query, params);
+    
+    const formatted = results.map(p => ({
+      ...p,
+      payment_date: p.payment_date ? new Date(p.payment_date).toISOString().split('T')[0] : null,
+      issue_date: p.issue_date ? new Date(p.issue_date).toISOString().split('T')[0] : null,
+      due_date: p.due_date ? new Date(p.due_date).toISOString().split('T')[0] : null
+    }));
+    
+    console.log("✅ Payment history fetched:", formatted.length);
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Error in /api/fee-payments-history:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
