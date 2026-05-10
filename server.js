@@ -1604,8 +1604,8 @@ app.get("/api/attendance-report", authenticate, async (req, res) => {
 // ====================== گزارش حاضری استادان ======================
 app.get("/api/teacher-attendance-report", authenticate, async (req, res) => {
   const { date } = req.query;
-  const targetDate = date || new Date().toISOString().split('T')[0];
-  
+  const targetDate = date || new Date().toISOString().split("T")[0];
+
   try {
     // دریافت همه استادان فعال
     const [allTeachers] = await db.execute(`
@@ -1614,39 +1614,45 @@ app.get("/api/teacher-attendance-report", authenticate, async (req, res) => {
       WHERE position = 'teacher' AND status = 'active'
       ORDER BY name
     `);
-    
+
     // دریافت استادانی که در تاریخ مشخص حاضری گرفته‌اند
-    const [attendedTeachers] = await db.execute(`
+    const [attendedTeachers] = await db.execute(
+      `
       SELECT DISTINCT teacher_id 
       FROM daily_attendance 
       WHERE attendance_date = ?
-    `, [targetDate]);
-    
-    const attendedIds = new Set(attendedTeachers.map(t => t.teacher_id));
-    
+    `,
+      [targetDate],
+    );
+
+    const attendedIds = new Set(attendedTeachers.map((t) => t.teacher_id));
+
     // دسته‌بندی استادان
     const teachersWithAttendance = [];
     const teachersWithoutAttendance = [];
-    
+
     for (const teacher of allTeachers) {
       if (attendedIds.has(teacher.id)) {
         // دریافت کلاس‌هایی که استاد حاضری گرفته
-        const [classes] = await db.execute(`
+        const [classes] = await db.execute(
+          `
           SELECT DISTINCT c.id, c.class_name, c.start_time
           FROM daily_attendance da
           JOIN classes c ON da.class_id = c.id
           WHERE da.teacher_id = ? AND da.attendance_date = ?
-        `, [teacher.id, targetDate]);
-        
+        `,
+          [teacher.id, targetDate],
+        );
+
         teachersWithAttendance.push({
           ...teacher,
-          classes: classes
+          classes: classes,
         });
       } else {
         teachersWithoutAttendance.push(teacher);
       }
     }
-    
+
     res.json({
       success: true,
       date: targetDate,
@@ -1654,7 +1660,7 @@ app.get("/api/teacher-attendance-report", authenticate, async (req, res) => {
       attended_count: teachersWithAttendance.length,
       not_attended_count: teachersWithoutAttendance.length,
       attended: teachersWithAttendance,
-      not_attended: teachersWithoutAttendance
+      not_attended: teachersWithoutAttendance,
     });
   } catch (err) {
     console.error("❌ Error in /api/teacher-attendance-report:", err);
@@ -1666,17 +1672,20 @@ app.get("/api/teacher-attendance-report", authenticate, async (req, res) => {
 // ====================== Comprehensive Teacher Attendance Report ======================
 app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
   const { teacher_id, month, year, date, start_date, end_date } = req.query;
-  
+
   try {
-    const [teacherClasses] = await db.execute(`
+    const [teacherClasses] = await db.execute(
+      `
       SELECT c.id, c.class_name, c.start_time
       FROM classes c
       JOIN teacher_classes tc ON c.id = tc.class_id
       WHERE tc.teacher_id = ?
-    `, [teacher_id]);
-    
+    `,
+      [teacher_id],
+    );
+
     let classesAttendance = [];
-    
+
     for (const cls of teacherClasses) {
       let attendanceQuery = `
         SELECT COUNT(*) as count, MAX(attendance_date) as last_attendance
@@ -1684,7 +1693,7 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
         WHERE teacher_id = ? AND class_id = ?
       `;
       let params = [teacher_id, cls.id];
-      
+
       let studentStatsQuery = `
         SELECT 
           COUNT(DISTINCT s.id) as total_students,
@@ -1697,7 +1706,7 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
         WHERE s.class_id = ? AND s.status = 'active'
       `;
       let studentParams = [cls.id];
-      
+
       if (date) {
         attendanceQuery += ` AND attendance_date = ?`;
         params.push(date);
@@ -1714,10 +1723,10 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
         studentStatsQuery += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
         studentParams.push(month, year);
       }
-      
+
       const [attendance] = await db.execute(attendanceQuery, params);
       const [studentStats] = await db.execute(studentStatsQuery, studentParams);
-      
+
       classesAttendance.push({
         class_id: cls.id,
         class_name: cls.class_name,
@@ -1728,18 +1737,25 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
         present_count: studentStats[0]?.present_count || 0,
         absent_count: studentStats[0]?.absent_count || 0,
         late_count: studentStats[0]?.late_count || 0,
-        attendance_percent: studentStats[0]?.total_students > 0 
-          ? ((studentStats[0]?.present_count / studentStats[0]?.total_students) * 100).toFixed(1) 
-          : 0
+        attendance_percent:
+          studentStats[0]?.total_students > 0
+            ? (
+                (studentStats[0]?.present_count /
+                  studentStats[0]?.total_students) *
+                100
+              ).toFixed(1)
+            : 0,
       });
     }
-    
+
     res.json({
       success: true,
       total_classes: teacherClasses.length,
-      classes_attended: classesAttendance.filter(c => c.has_attendance).length,
-      classes_not_attended: classesAttendance.filter(c => !c.has_attendance).length,
-      classes: classesAttendance
+      classes_attended: classesAttendance.filter((c) => c.has_attendance)
+        .length,
+      classes_not_attended: classesAttendance.filter((c) => !c.has_attendance)
+        .length,
+      classes: classesAttendance,
     });
   } catch (err) {
     console.error("❌ Error:", err);
@@ -1750,15 +1766,18 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
 // ====================== Monthly Class Attendance Report ======================
 app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
   const { class_id, month, year, date, start_date, end_date } = req.query;
-  
+
   try {
-    const [students] = await db.execute(`
+    const [students] = await db.execute(
+      `
       SELECT id, name, father_name, student_card_id
       FROM students
       WHERE class_id = ? AND status = 'active'
       ORDER BY name
-    `, [class_id]);
-    
+    `,
+      [class_id],
+    );
+
     let attendanceQuery = `
       SELECT da.attendance_date, ad.student_id, ad.status
       FROM daily_attendance da
@@ -1766,7 +1785,7 @@ app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
       WHERE da.class_id = ?
     `;
     let params = [class_id];
-    
+
     if (date) {
       attendanceQuery += ` AND da.attendance_date = ?`;
       params.push(date);
@@ -1777,18 +1796,20 @@ app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
       attendanceQuery += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
       params.push(month, year);
     }
-    
+
     attendanceQuery += ` ORDER BY da.attendance_date ASC`;
-    
+
     const [attendanceRecords] = await db.execute(attendanceQuery, params);
-    
-    const studentStats = students.map(student => {
-      let present = 0, absent = 0, late = 0;
+
+    const studentStats = students.map((student) => {
+      let present = 0,
+        absent = 0,
+        late = 0;
       for (const record of attendanceRecords) {
         if (record.student_id === student.id) {
-          if (record.status === 'present') present++;
-          else if (record.status === 'absent') absent++;
-          else if (record.status === 'late') late++;
+          if (record.status === "present") present++;
+          else if (record.status === "absent") absent++;
+          else if (record.status === "late") late++;
         }
       }
       const total = present + absent + late;
@@ -1797,23 +1818,125 @@ app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
         present,
         absent,
         late,
-        attendance_percent: total > 0 ? ((present / total) * 100).toFixed(1) : 0
+        attendance_percent:
+          total > 0 ? ((present / total) * 100).toFixed(1) : 0,
       };
     });
-    
+
     const datesSet = new Set();
     for (const record of attendanceRecords) {
       datesSet.add(record.attendance_date);
     }
-    
+
     res.json({
       success: true,
       total_students: students.length,
       total_days: datesSet.size,
-      students: studentStats
+      students: studentStats,
     });
   } catch (err) {
     console.error("❌ Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== گزارش استادان با صنف‌ها و آمار حاضری ======================
+app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
+  const { date } = req.query;
+  const targetDate = date || new Date().toISOString().split("T")[0];
+
+  try {
+    // دریافت همه استادان فعال
+    const [teachers] = await db.execute(`
+      SELECT id, name, father_name, phone, email
+      FROM employees
+      WHERE position = 'teacher' AND status = 'active'
+      ORDER BY name
+    `);
+
+    const result = [];
+
+    for (const teacher of teachers) {
+      // دریافت صنف‌های تخصیص داده شده به این استاد
+      const [classes] = await db.execute(
+        `
+        SELECT c.id, c.class_name, c.start_time
+        FROM classes c
+        JOIN teacher_classes tc ON c.id = tc.class_id
+        WHERE tc.teacher_id = ? AND c.is_active = 1
+        ORDER BY c.start_time
+      `,
+        [teacher.id],
+      );
+
+      const classDetails = [];
+
+      for (const cls of classes) {
+        // بررسی اینکه استاد در تاریخ مشخص حاضری گرفته است یا خیر
+        const [attendanceCheck] = await db.execute(
+          `
+          SELECT COUNT(*) as has_attendance
+          FROM daily_attendance
+          WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?
+        `,
+          [teacher.id, cls.id, targetDate],
+        );
+
+        // آمار حاضری شاگردان این صنف در تاریخ مشخص
+        const [studentStats] = await db.execute(
+          `
+          SELECT 
+            COUNT(DISTINCT s.id) as total_students,
+            COUNT(CASE WHEN ad.status = 'present' THEN 1 END) as present_count,
+            COUNT(CASE WHEN ad.status = 'absent' THEN 1 END) as absent_count,
+            COUNT(CASE WHEN ad.status = 'late' THEN 1 END) as late_count
+          FROM students s
+          LEFT JOIN attendance_details ad ON s.id = ad.student_id
+          LEFT JOIN daily_attendance da ON ad.attendance_id = da.id
+          WHERE s.class_id = ? AND s.status = 'active'
+            AND (da.attendance_date IS NULL OR da.attendance_date = ?)
+        `,
+          [cls.id, targetDate],
+        );
+
+        classDetails.push({
+          class_id: cls.id,
+          class_name: cls.class_name,
+          start_time: cls.start_time,
+          has_attendance: attendanceCheck[0]?.has_attendance > 0,
+          total_students: studentStats[0]?.total_students || 0,
+          present_count: studentStats[0]?.present_count || 0,
+          absent_count: studentStats[0]?.absent_count || 0,
+          late_count: studentStats[0]?.late_count || 0,
+        });
+      }
+
+      if (classDetails.length > 0) {
+        result.push({
+          teacher: {
+            id: teacher.id,
+            name: teacher.name,
+            father_name: teacher.father_name,
+            phone: teacher.phone,
+            email: teacher.email,
+          },
+          classes: classDetails,
+          total_classes: classDetails.length,
+          attended_classes: classDetails.filter((c) => c.has_attendance).length,
+          not_attended_classes: classDetails.filter((c) => !c.has_attendance)
+            .length,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      date: targetDate,
+      total_teachers: result.length,
+      teachers: result,
+    });
+  } catch (err) {
+    console.error("❌ Error in /api/teachers-classes-attendance:", err);
     res.status(500).json({ error: err.message });
   }
 });
