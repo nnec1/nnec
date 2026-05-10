@@ -1663,11 +1663,11 @@ app.get("/api/teacher-attendance-report", authenticate, async (req, res) => {
 });
 
 // ====================== Comprehensive Teacher Attendance Report ======================
+// ====================== Comprehensive Teacher Attendance Report ======================
 app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
-  const { teacher_id, month, year } = req.query;
+  const { teacher_id, month, year, date, start_date, end_date } = req.query;
   
   try {
-    // Get all classes assigned to the teacher
     const [teacherClasses] = await db.execute(`
       SELECT c.id, c.class_name, c.start_time
       FROM classes c
@@ -1675,22 +1675,17 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
       WHERE tc.teacher_id = ?
     `, [teacher_id]);
     
-    const currentMonth = month || new Date().getMonth() + 1;
-    const currentYear = year || new Date().getFullYear();
-    
-    const classesAttendance = [];
+    let classesAttendance = [];
     
     for (const cls of teacherClasses) {
-      // Check if teacher took attendance for this class in this month
-      const [attendance] = await db.execute(`
+      let attendanceQuery = `
         SELECT COUNT(*) as count, MAX(attendance_date) as last_attendance
         FROM daily_attendance
-        WHERE teacher_id = ? AND class_id = ? 
-          AND MONTH(attendance_date) = ? AND YEAR(attendance_date) = ?
-      `, [teacher_id, cls.id, currentMonth, currentYear]);
+        WHERE teacher_id = ? AND class_id = ?
+      `;
+      let params = [teacher_id, cls.id];
       
-      // Student attendance statistics for this class
-      const [studentStats] = await db.execute(`
+      let studentStatsQuery = `
         SELECT 
           COUNT(DISTINCT s.id) as total_students,
           COUNT(CASE WHEN ad.status = 'present' THEN 1 END) as present_count,
@@ -1700,8 +1695,28 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
         LEFT JOIN attendance_details ad ON s.id = ad.student_id
         LEFT JOIN daily_attendance da ON ad.attendance_id = da.id
         WHERE s.class_id = ? AND s.status = 'active'
-          AND (da.attendance_date IS NULL OR (MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?))
-      `, [cls.id, currentMonth, currentYear]);
+      `;
+      let studentParams = [cls.id];
+      
+      if (date) {
+        attendanceQuery += ` AND attendance_date = ?`;
+        params.push(date);
+        studentStatsQuery += ` AND da.attendance_date = ?`;
+        studentParams.push(date);
+      } else if (start_date && end_date) {
+        attendanceQuery += ` AND attendance_date BETWEEN ? AND ?`;
+        params.push(start_date, end_date);
+        studentStatsQuery += ` AND da.attendance_date BETWEEN ? AND ?`;
+        studentParams.push(start_date, end_date);
+      } else if (month && year) {
+        attendanceQuery += ` AND MONTH(attendance_date) = ? AND YEAR(attendance_date) = ?`;
+        params.push(month, year);
+        studentStatsQuery += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
+        studentParams.push(month, year);
+      }
+      
+      const [attendance] = await db.execute(attendanceQuery, params);
+      const [studentStats] = await db.execute(studentStatsQuery, studentParams);
       
       classesAttendance.push({
         class_id: cls.id,
@@ -1721,29 +1736,22 @@ app.get("/api/teacher-full-attendance", authenticate, async (req, res) => {
     
     res.json({
       success: true,
-      teacher_id: teacher_id,
-      month: currentMonth,
-      year: currentYear,
       total_classes: teacherClasses.length,
       classes_attended: classesAttendance.filter(c => c.has_attendance).length,
       classes_not_attended: classesAttendance.filter(c => !c.has_attendance).length,
       classes: classesAttendance
     });
   } catch (err) {
-    console.error("❌ Error in /api/teacher-full-attendance:", err);
+    console.error("❌ Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 // ====================== Monthly Class Attendance Report ======================
 app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
-  const { class_id, month, year } = req.query;
+  const { class_id, month, year, date, start_date, end_date } = req.query;
   
   try {
-    const targetMonth = month || new Date().getMonth() + 1;
-    const targetYear = year || new Date().getFullYear();
-    
-    // Get all students in the class
     const [students] = await db.execute(`
       SELECT id, name, father_name, student_card_id
       FROM students
@@ -1751,21 +1759,29 @@ app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
       ORDER BY name
     `, [class_id]);
     
-    // Get attendance records for the month
-    const [attendanceRecords] = await db.execute(`
-      SELECT 
-        da.attendance_date,
-        ad.student_id,
-        ad.status
+    let attendanceQuery = `
+      SELECT da.attendance_date, ad.student_id, ad.status
       FROM daily_attendance da
       JOIN attendance_details ad ON da.id = ad.attendance_id
-      WHERE da.class_id = ? 
-        AND MONTH(da.attendance_date) = ? 
-        AND YEAR(da.attendance_date) = ?
-      ORDER BY da.attendance_date ASC
-    `, [class_id, targetMonth, targetYear]);
+      WHERE da.class_id = ?
+    `;
+    let params = [class_id];
     
-    // Calculate statistics for each student
+    if (date) {
+      attendanceQuery += ` AND da.attendance_date = ?`;
+      params.push(date);
+    } else if (start_date && end_date) {
+      attendanceQuery += ` AND da.attendance_date BETWEEN ? AND ?`;
+      params.push(start_date, end_date);
+    } else if (month && year) {
+      attendanceQuery += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
+      params.push(month, year);
+    }
+    
+    attendanceQuery += ` ORDER BY da.attendance_date ASC`;
+    
+    const [attendanceRecords] = await db.execute(attendanceQuery, params);
+    
     const studentStats = students.map(student => {
       let present = 0, absent = 0, late = 0;
       for (const record of attendanceRecords) {
@@ -1785,7 +1801,6 @@ app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
       };
     });
     
-    // Get unique attendance dates
     const datesSet = new Set();
     for (const record of attendanceRecords) {
       datesSet.add(record.attendance_date);
@@ -1793,16 +1808,12 @@ app.get("/api/class-monthly-attendance", authenticate, async (req, res) => {
     
     res.json({
       success: true,
-      class_id: class_id,
-      month: targetMonth,
-      year: targetYear,
       total_students: students.length,
       total_days: datesSet.size,
-      attendance_dates: Array.from(datesSet).map(d => new Date(d).toISOString().split('T')[0]),
       students: studentStats
     });
   } catch (err) {
-    console.error("❌ Error in /api/class-monthly-attendance:", err);
+    console.error("❌ Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
