@@ -721,17 +721,28 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 // ====================== ویرایش فیس (فقط ریس) ======================
 // ====================== ویرایش فیس (فقط ریس) ======================
 app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
-  const { total_fee, paid_fee, remaining_after, payment_date, due_date, notes } = req.body;
+  const {
+    total_fee,
+    paid_fee,
+    remaining_after,
+    payment_date,
+    due_date,
+    notes,
+  } = req.body;
   const paymentId = req.params.id;
-  
+
   try {
     // بررسی وجود پرداخت
-    const [check] = await db.execute(`SELECT id FROM fee_payments WHERE id = ?`, [paymentId]);
+    const [check] = await db.execute(
+      `SELECT id FROM fee_payments WHERE id = ?`,
+      [paymentId],
+    );
     if (check.length === 0) {
       return res.status(404).json({ error: "پرداخت یافت نشد" });
     }
-    
-    await db.execute(`
+
+    await db.execute(
+      `
       UPDATE fee_payments 
       SET total_fee = ?, 
           paid_fee = ?, 
@@ -740,11 +751,21 @@ app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
           due_date = ?, 
           notes = ?
       WHERE id = ?
-    `, [total_fee, paid_fee, remaining_after, payment_date, due_date, notes || null, paymentId]);
-    
-    res.json({ 
-      success: true, 
-      message: "اطلاعات فیس با موفقیت به‌روز شد" 
+    `,
+      [
+        total_fee,
+        paid_fee,
+        remaining_after,
+        payment_date,
+        due_date,
+        notes || null,
+        paymentId,
+      ],
+    );
+
+    res.json({
+      success: true,
+      message: "اطلاعات فیس با موفقیت به‌روز شد",
     });
   } catch (err) {
     console.error("❌ Error in PUT /api/fee-payments/:id:", err);
@@ -1409,7 +1430,7 @@ app.get("/api/student/payments/:studentId", authenticate, async (req, res) => {
 // ====================== تاریخچه پرداخت‌های فیس ======================
 app.get("/api/fee-payments-history", authenticate, async (req, res) => {
   const { start_date, end_date, class_id } = req.query;
-  
+
   let query = `
     SELECT 
       fp.id,
@@ -1433,35 +1454,149 @@ app.get("/api/fee-payments-history", authenticate, async (req, res) => {
     JOIN classes c ON s.class_id = c.id
     WHERE 1=1
   `;
-  
+
   let params = [];
-  
+
   if (start_date && end_date) {
     query += ` AND DATE(fp.payment_date) BETWEEN ? AND ?`;
     params.push(start_date, end_date);
   }
-  
-  if (class_id && class_id !== '') {
+
+  if (class_id && class_id !== "") {
     query += ` AND c.id = ?`;
     params.push(class_id);
   }
-  
+
   query += ` ORDER BY fp.payment_date DESC, fp.id DESC`;
-  
+
   try {
     const [results] = await db.execute(query, params);
-    
-    const formatted = results.map(p => ({
+
+    const formatted = results.map((p) => ({
       ...p,
-      payment_date: p.payment_date ? new Date(p.payment_date).toISOString().split('T')[0] : null,
-      issue_date: p.issue_date ? new Date(p.issue_date).toISOString().split('T')[0] : null,
-      due_date: p.due_date ? new Date(p.due_date).toISOString().split('T')[0] : null
+      payment_date: p.payment_date
+        ? new Date(p.payment_date).toISOString().split("T")[0]
+        : null,
+      issue_date: p.issue_date
+        ? new Date(p.issue_date).toISOString().split("T")[0]
+        : null,
+      due_date: p.due_date
+        ? new Date(p.due_date).toISOString().split("T")[0]
+        : null,
     }));
-    
+
     console.log("✅ Payment history fetched:", formatted.length);
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/fee-payments-history:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== دریافت گزارش حاضری شاگرد ======================
+app.get(
+  "/api/student/attendance/:studentId",
+  authenticate,
+  async (req, res) => {
+    const { month, year } = req.query;
+    const studentId = req.params.studentId;
+
+    try {
+      let query = `
+      SELECT 
+        ad.status, 
+        ad.notes, 
+        da.attendance_date as date
+      FROM attendance_details ad
+      JOIN daily_attendance da ON ad.attendance_id = da.id
+      WHERE ad.student_id = ?
+    `;
+      let params = [studentId];
+
+      if (month && month !== "all") {
+        query += ` AND MONTH(da.attendance_date) = ?`;
+        params.push(month);
+      }
+
+      if (year) {
+        query += ` AND YEAR(da.attendance_date) = ?`;
+        params.push(year);
+      }
+
+      query += ` ORDER BY da.attendance_date DESC`;
+
+      const [details] = await db.execute(query, params);
+
+      const present = details.filter((d) => d.status === "present").length;
+      const absent = details.filter((d) => d.status === "absent").length;
+      const late = details.filter((d) => d.status === "late").length;
+
+      res.json({
+        present: present,
+        absent: absent,
+        late: late,
+        details: details.map((d) => ({
+          date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
+          status: d.status,
+          notes: d.notes,
+        })),
+      });
+    } catch (err) {
+      console.error("❌ Error in /api/student/attendance/:studentId:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ====================== گزارش حاضری شاگردان برای مدیر ======================
+app.get("/api/attendance-report", authenticate, async (req, res) => {
+  const { class_id, start_date, end_date } = req.query;
+
+  try {
+    let query = `
+      SELECT 
+        s.id as student_id,
+        s.student_card_id,
+        s.name,
+        s.father_name,
+        c.class_name,
+        COUNT(CASE WHEN ad.status = 'present' THEN 1 END) as present_count,
+        COUNT(CASE WHEN ad.status = 'absent' THEN 1 END) as absent_count,
+        COUNT(CASE WHEN ad.status = 'late' THEN 1 END) as late_count,
+        COUNT(*) as total_days
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      LEFT JOIN attendance_details ad ON s.id = ad.student_id
+      LEFT JOIN daily_attendance da ON ad.attendance_id = da.id
+      WHERE s.status = 'active'
+    `;
+    let params = [];
+
+    if (class_id && class_id !== "") {
+      query += ` AND s.class_id = ?`;
+      params.push(class_id);
+    }
+
+    if (start_date && end_date) {
+      query += ` AND da.attendance_date BETWEEN ? AND ?`;
+      params.push(start_date, end_date);
+    }
+
+    query += ` GROUP BY s.id ORDER BY s.name`;
+
+    const [results] = await db.execute(query, params);
+
+    const formatted = results.map((r) => ({
+      ...r,
+      attendance_percent:
+        r.total_days > 0
+          ? ((r.present_count / r.total_days) * 100).toFixed(1)
+          : 0,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Error in /api/attendance-report:", err);
     res.status(500).json({ error: err.message });
   }
 });
