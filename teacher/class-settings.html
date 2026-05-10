@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -9,8 +10,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        .status-active { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 30px; font-size: 11px; }
-        .status-disabled { background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 30px; font-size: 11px; }
+        .status-active {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+
+        .status-disabled {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -26,16 +41,50 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
-            .overlay.show { display: block; }
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -43,7 +92,8 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-chalkboard-user fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل استاد</h5>
@@ -54,30 +104,93 @@
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> تکالیف</a>
-                    <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
-                    <a href="class-settings.html" class="nav-link active"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
+
+                    <a href="class-settings.html" class="nav-link active"><i class="fa-solid fa-gear"></i> تنظیمات
+                        صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="section-title"><i class="fa-solid fa-gear text-success me-2"></i> تنظیمات صنف - غیرفعال‌سازی شاگرد</h3>
-                    <button class="btn btn-primary btn-sm" onclick="refreshData()"><i class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button>
+                    <h3 class="section-title"><i class="fa-solid fa-gear text-success me-2"></i> تنظیمات صنف -
+                        غیرفعال‌سازی شاگرد</h3>
+                    <button class="btn btn-primary btn-sm" onclick="refreshData()"><i
+                            class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button>
                 </div>
 
-                <div class="card p-4 mb-4"><h5><i class="fa-solid fa-table-cells-large text-success me-2"></i> انتخاب صنف</h5><select id="selectedClass" class="form-select mt-2" onchange="loadStudents()"><option value="">انتخاب صنف...</option></select><small class="text-muted mt-2"><i class="fa-solid fa-circle-info"></i> لطفاً ابتدا صنف مورد نظر را انتخاب کنید</small></div>
+                <div class="card p-4 mb-4">
+                    <h5><i class="fa-solid fa-table-cells-large text-success me-2"></i> انتخاب صنف</h5><select
+                        id="selectedClass" class="form-select mt-2" onchange="loadStudents()">
+                        <option value="">انتخاب صنف...</option>
+                    </select><small class="text-muted mt-2"><i class="fa-solid fa-circle-info"></i> لطفاً ابتدا صنف مورد
+                        نظر را انتخاب کنید</small>
+                </div>
 
                 <div class="row g-4">
-                    <div class="col-md-6"><div class="table-container"><h5><i class="fa-solid fa-user-check text-success me-2"></i> شاگردان فعال</h5><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>آیدی کارت</th><th>نام</th><th>نام پدر</th><th>عملیات</th></tr></thead><tbody id="activeStudentsList"><tr><td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید</div></div></div></td></tbody></table></div></div></div>
-                    <div class="col-md-6"><div class="table-container"><h5><i class="fa-solid fa-user-xmark text-danger me-2"></i> شاگردان غیرفعال شده</h5><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>آیدی کارت</th><th>نام</th><th>نام پدر</th><th>عملیات</th></tr></thead><tbody id="disabledStudentsList"><tr><td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید</div></div></div></td></tbody></table></div></div></div>
+                    <div class="col-md-6">
+                        <div class="table-container">
+                            <h5><i class="fa-solid fa-user-check text-success me-2"></i> شاگردان فعال</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>آیدی کارت</th>
+                                            <th>نام</th>
+                                            <th>نام پدر</th>
+                                            <th>عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="activeStudentsList">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید
+                            </div>
+                        </div>
+                    </div>
+                    </td>
+                    </tbody>
+                    </table>
                 </div>
-
-                <div class="card p-4 mt-4"><h5><i class="fa-solid fa-circle-info text-info me-2"></i> راهنما</h5><p>در این بخش می‌توانید شاگردان خود را غیرفعال کنید. شاگردان غیرفعال شده نمی‌توانند وارد سیستم شوند.</p><p class="text-muted mb-0">⚠️ توجه: غیرفعال کردن شاگرد به معنی حذف اطلاعات او نیست و در صورت لزوم می‌توانید دوباره فعال کنید.</p></div>
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="table-container">
+                <h5><i class="fa-solid fa-user-xmark text-danger me-2"></i> شاگردان غیرفعال شده</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>آیدی کارت</th>
+                                <th>نام</th>
+                                <th>نام پدر</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="disabledStudentsList">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">لطفاً صنف را انتخاب کنید
+                </div>
+            </div>
+        </div>
+        </td>
+        </tbody>
+        </table>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="card p-4 mt-4">
+        <h5><i class="fa-solid fa-circle-info text-info me-2"></i> راهنما</h5>
+        <p>در این بخش می‌توانید شاگردان خود را غیرفعال کنید. شاگردان غیرفعال شده نمی‌توانند وارد سیستم شوند.</p>
+        <p class="text-muted mb-0">⚠️ توجه: غیرفعال کردن شاگرد به معنی حذف اطلاعات او نیست و در صورت لزوم می‌توانید
+            دوباره فعال کنید.</p>
+    </div>
+    </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -151,4 +264,5 @@
         loadClasses();
     </script>
 </body>
+
 </html>
