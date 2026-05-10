@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>تاریخچه فیس | آموزشگاه نوی نور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .filter-box { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .btn-excel { background: linear-gradient(135deg, #1d7e3a, #0f5c2a); border: none; padding: 8px 20px; border-radius: 30px; color: white; font-weight: 500; }
+        .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 1050; background: white; border: none; width: 48px; height: 48px; border-radius: 14px; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; }
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="fee-history.html" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i> تاریخچه فیس</h3>
+                    <button class="btn-excel" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی Excel</button>
+                </div>
+
+                <div class="filter-box">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3"><label class="form-label">از تاریخ</label><input type="date" id="startDate" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label">تا تاریخ</label><input type="date" id="endDate" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label">صنف</label><select id="classFilter" class="form-select"><option value="">همه صنف‌ها</option></select></div>
+                        <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadHistory()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button></div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th><th>تاریخ پرداخت</th><th>تاریخ صدور</th>
+                                    <th>نام شاگرد</th><th>نام پدر</th><th>آیدی کارت</th><th>صنف</th>
+                                    <th>مبلغ پرداخت</th><th>فیس کل</th><th>پرداخت شده</th><th>باقی مانده</th>
+                                    <th>تاریخ انقضا</th><th>شماره رسید</th><th>یادداشت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTable"><tr><td colspan="14" class="text-center py-4 text-muted">لطفاً بازه تاریخی را انتخاب کنید</div></div></div></tr></tbody>
+                            <tfoot id="tableFooter" style="display:none;"><tr><td colspan="7" class="text-end fw-bold">مجموع کل:</div></div></div><td class="text-success fw-bold" id="totalAmount">0 AFN</div></div></div><td colspan="6"></div></div></div></tr></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
+            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+            catch(e) { return dateString; }
+        }
+
+        async function loadClasses() {
+            try {
+                const res = await fetch('/api/classes');
+                const classes = await res.json();
+                document.getElementById('classFilter').innerHTML = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+            } catch(err) { console.error(err); }
+        }
+
+        async function loadHistory() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const classId = document.getElementById('classFilter').value;
+            
+            if (!startDate || !endDate) { alert('❌ لطفاً بازه تاریخی را انتخاب کنید'); return; }
+            
+            const tbody = document.getElementById('historyTable');
+            tbody.innerHTML = '<tr><td colspan="14" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></td>';
+            
+            try {
+                let url = `/api/fee-payments-history?start_date=${startDate}&end_date=${endDate}`;
+                if (classId) url += `&class_id=${classId}`;
+                
+                const res = await fetch(url);
+                let payments = await res.json();
+                
+                if (!Array.isArray(payments)) payments = [];
+                if (payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="14" class="text-center text-muted py-4">✅ هیچ پرداختی در این بازه ثبت نشده است</div></div></div></tr>';
+                    document.getElementById('tableFooter').style.display = 'none';
+                    return;
+                }
+                
+                let total = 0, html = '';
+                payments.forEach((p, index) => {
+                    total += parseFloat(p.amount) || 0;
+                    html += `<tr>
+                        <td class="text-dark">${index + 1}</div></div></div>
+                        <td class="text-dark">${formatDate(p.payment_date)}</div></div></div>
+                        <td class="text-dark">${formatDate(p.issue_date)}</div></div></div>
+                        <td class="text-dark"><strong>${p.student_name || '-'}</strong></div></div></div>
+                        <td class="text-dark">${p.father_name || '-'}</div></div></div>
+                        <td class="text-dark">${p.student_card_id || '-'}</div></div></div>
+                        <td class="text-dark">${p.class_name || '-'}</div></div></div>
+                        <td class="text-success fw-bold">${(parseFloat(p.amount) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="text-dark">${(parseFloat(p.total_fee) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="text-success">${(parseFloat(p.paid_fee) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="${(parseFloat(p.remaining_after) || 0) > 0 ? 'text-danger fw-bold' : 'text-success'}">${(parseFloat(p.remaining_after) || 0).toLocaleString()} AFN</div></div></div>
+                        <td class="text-dark">${formatDate(p.due_date)}</div></div></div>
+                        <td class="text-dark">${p.receipt_number || '-'}</div></div></div>
+                        <td class="text-dark">${p.notes || '-'}</div></div></div>
+                    </div></div></div>`;
+                });
+                
+                tbody.innerHTML = html;
+                document.getElementById('totalAmount').innerHTML = total.toLocaleString() + ' AFN';
+                document.getElementById('tableFooter').style.display = 'table-row-group';
+            } catch(err) {
+                console.error(err);
+                tbody.innerHTML = '<td><td colspan="14" class="text-center text-danger py-4">❌ خطا در بارگیری اطلاعات</div></div></div></tr>';
+            }
+        }
+
+        function exportToExcel() {
+            const startDate = document.getElementById('startDate').value || 'start';
+            const endDate = document.getElementById('endDate').value || 'end';
+            const rows = document.querySelectorAll('#historyTable tr');
+            const data = [['#', 'تاریخ پرداخت', 'تاریخ صدور', 'نام شاگرد', 'نام پدر', 'آیدی کارت', 'صنف', 'مبلغ پرداخت', 'فیس کل', 'پرداخت شده', 'باقی مانده', 'تاریخ انقضا', 'شماره رسید', 'یادداشت']];
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length > 0 && cols[0] && cols[0].innerText !== '✅ هیچ پرداختی در این بازه ثبت نشده است') {
+                    data.push(Array.from(cols).map(col => col.innerText));
+                }
+            });
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'تاریخچه پرداخت‌ها');
+            XLSX.writeFile(wb, `تاریخچه_پرداخت_${startDate}_تا_${endDate}.xlsx`);
+        }
+
+        document.getElementById('startDate').value = new Date(new Date().setDate(1)).toISOString().split('T')[0];
+        document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+        
+        setupSidebar();
+        loadClasses();
+    </script>
+</body>
+</html>
