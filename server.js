@@ -719,44 +719,32 @@ app.post("/api/collect-fee", authenticate, async (req, res) => {
 });
 // 5. ویرایش فیس و بدهکار (فقط ریس)
 // ====================== ویرایش فیس (فقط ریس) ======================
-// ====================== ویرایش فیس (بدون محدودیت نقش - موقت) ======================
-app.put("/api/fee-payments/:id", authenticate, async (req, res) => {
-  const { total_fee, paid_fee, remaining_after, due_date, notes } = req.body;
+// ====================== ویرایش فیس (فقط ریس) ======================
+app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
+  const { total_fee, paid_fee, remaining_after, payment_date, due_date, notes } = req.body;
   const paymentId = req.params.id;
-
+  
   try {
     // بررسی وجود پرداخت
-    const [check] = await db.execute(
-      `SELECT id FROM fee_payments WHERE id = ?`,
-      [paymentId],
-    );
+    const [check] = await db.execute(`SELECT id FROM fee_payments WHERE id = ?`, [paymentId]);
     if (check.length === 0) {
       return res.status(404).json({ error: "پرداخت یافت نشد" });
     }
-
-    await db.execute(
-      `
+    
+    await db.execute(`
       UPDATE fee_payments 
       SET total_fee = ?, 
           paid_fee = ?, 
           remaining_after = ?, 
+          payment_date = ?,
           due_date = ?, 
           notes = ?
       WHERE id = ?
-    `,
-      [
-        total_fee,
-        paid_fee,
-        remaining_after,
-        due_date,
-        notes || null,
-        paymentId,
-      ],
-    );
-
-    res.json({
-      success: true,
-      message: "اطلاعات فیس با موفقیت به‌روز شد",
+    `, [total_fee, paid_fee, remaining_after, payment_date, due_date, notes || null, paymentId]);
+    
+    res.json({ 
+      success: true, 
+      message: "اطلاعات فیس با موفقیت به‌روز شد" 
     });
   } catch (err) {
     console.error("❌ Error in PUT /api/fee-payments/:id:", err);

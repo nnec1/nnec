@@ -21,6 +21,17 @@
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
             .overlay.show { display: block; }
         }
+        .remaining-box {
+            background: #f0fdf4;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .remaining-box h4 {
+            color: #dc2626;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -67,7 +78,7 @@
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle">
                             <thead class="table-light">
-                                <tr><th>آیدی کارت</th><th>نام شاگرد</th><th>نام پدر</th><th>صنف</th><th>وضعیت</th><th>عملیات</th></td>
+                                <tr><th>آیدی کارت</th><th>نام شاگرد</th><th>نام پدر</th><th>صنف</th><th>وضعیت</th><th>عملیات</th></tr>
                             </thead>
                             <tbody id="studentsList"><tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></tr></tbody>
                         </table>
@@ -87,14 +98,41 @@
                 </div>
                 <div class="modal-body">
                     <form id="editFeeForm">
-                        <input type="hidden" id="editStudentId">
                         <input type="hidden" id="editPaymentId">
                         <div class="mb-3"><label class="form-label">نام شاگرد</label><input type="text" id="editStudentName" class="form-control" disabled></div>
-                        <div class="mb-3"><label class="form-label">فیس کل (AFN)</label><input type="number" id="editTotalFee" class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">پرداخت شده (AFN)</label><input type="number" id="editPaidFee" class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">باقی مانده (AFN)</label><input type="number" id="editRemainingFee" class="form-control" readonly style="background:#f1f5f9"></div>
-                        <div class="mb-3"><label class="form-label">تاریخ انقضا</label><input type="date" id="editDueDate" class="form-control"></div>
-                        <div class="mb-3"><label class="form-label">یادداشت</label><textarea id="editNotes" class="form-control" rows="2"></textarea></div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">فیس کل (AFN)</label>
+                                <input type="number" id="editTotalFee" class="form-control" required oninput="calculateRemaining()">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">پرداخت شده (AFN)</label>
+                                <input type="number" id="editPaidFee" class="form-control" required oninput="calculateRemaining()">
+                            </div>
+                        </div>
+                        
+                        <div class="remaining-box" id="remainingBox">
+                            <span>💰 باقی مانده بدهی:</span>
+                            <h4 id="remainingAmount">0 AFN</h4>
+                        </div>
+                        
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ پرداخت</label>
+                                <input type="date" id="editPaymentDate" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">تاریخ انقضا</label>
+                                <input type="date" id="editDueDate" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">یادداشت</label>
+                            <textarea id="editNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                        
                         <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره تغییرات</button>
                     </form>
                 </div>
@@ -120,9 +158,23 @@
         }
 
         function formatDate(dateString) {
-            if (!dateString) return '-';
+            if (!dateString) return '';
             try { const d = new Date(dateString); if (isNaN(d.getTime())) return dateString; return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
             catch (e) { return dateString; }
+        }
+
+        // محاسبه خودکار باقی مانده
+        function calculateRemaining() {
+            const totalFee = parseFloat(document.getElementById('editTotalFee').value) || 0;
+            const paidFee = parseFloat(document.getElementById('editPaidFee').value) || 0;
+            const remaining = totalFee - paidFee;
+            const remainingAmount = remaining > 0 ? remaining : 0;
+            document.getElementById('remainingAmount').innerHTML = remainingAmount.toLocaleString() + ' AFN';
+            if (remainingAmount > 0) {
+                document.getElementById('remainingAmount').style.color = '#dc2626';
+            } else {
+                document.getElementById('remainingAmount').style.color = '#10b981';
+            }
         }
 
         async function loadClasses() {
@@ -144,9 +196,7 @@
                 const res = await fetch('/api/students');
                 let students = await res.json();
                 
-                if (!Array.isArray(students)) {
-                    students = [];
-                }
+                if (!Array.isArray(students)) students = [];
                 
                 if (classId) students = students.filter(s => s.class_id == classId);
                 if (search) students = students.filter(s => (s.name && s.name.toLowerCase().includes(search.toLowerCase())) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search.toLowerCase())));
@@ -170,7 +220,7 @@
                         <td class="text-dark">${s.father_name || '-'}</div></div></div>
                         <td class="text-dark">${s.class_name || '-'}</div></div></div>
                         <td class="text-dark"><span class="badge ${statusClass}">${statusText}</span></div></div></div>
-                        <td class="text-dark"><button class="btn btn-sm btn-warning" onclick='openEditModal(${s.id}, "${s.name.replace(/'/g, "\\'")}", "${s.father_name ? s.father_name.replace(/'/g, "\\'") : ''}")'><i class="fa-solid fa-pen"></i> ویرایش فیس</button></div></div></div>
+                        <td class="text-dark"><button class="btn btn-sm btn-warning" onclick='openEditModal(${s.id})'><i class="fa-solid fa-pen"></i> ویرایش فیس</button></div></div></div>
                     </div></div></div>`;
                 }
                 tbody.innerHTML = html;
@@ -183,7 +233,7 @@
             }
         }
 
-        async function openEditModal(studentId, studentName, fatherName) {
+        async function openEditModal(studentId) {
             try {
                 // دریافت آخرین پرداخت شاگرد
                 const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
@@ -193,16 +243,21 @@
                 }
                 const lastPayment = payments && payments.length > 0 ? payments[0] : null;
                 
-                document.getElementById('editStudentId').value = studentId;
-                document.getElementById('editPaymentId').value = lastPayment ? lastPayment.id : '';
-                document.getElementById('editStudentName').value = studentName;
-                document.getElementById('editTotalFee').value = lastPayment ? (lastPayment.total_fee || 0) : 0;
-                document.getElementById('editPaidFee').value = lastPayment ? (lastPayment.paid_fee || 0) : 0;
+                if (!lastPayment) {
+                    alert('❌ هیچ پرداختی برای این شاگرد یافت نشد');
+                    return;
+                }
                 
-                const remaining = (lastPayment ? (lastPayment.total_fee || 0) : 0) - (lastPayment ? (lastPayment.paid_fee || 0) : 0);
-                document.getElementById('editRemainingFee').value = remaining > 0 ? remaining : 0;
-                document.getElementById('editDueDate').value = lastPayment && lastPayment.due_date ? formatDate(lastPayment.due_date) : '';
-                document.getElementById('editNotes').value = lastPayment ? (lastPayment.notes || '') : '';
+                document.getElementById('editPaymentId').value = lastPayment.id;
+                document.getElementById('editStudentName').value = lastPayment.student_name || '';
+                document.getElementById('editTotalFee').value = lastPayment.total_fee || 0;
+                document.getElementById('editPaidFee').value = lastPayment.paid_fee || 0;
+                document.getElementById('editPaymentDate').value = formatDate(lastPayment.payment_date);
+                document.getElementById('editDueDate').value = formatDate(lastPayment.due_date);
+                document.getElementById('editNotes').value = lastPayment.notes || '';
+                
+                // محاسبه و نمایش باقی مانده
+                calculateRemaining();
                 
                 if (editFeeModal) editFeeModal.show();
             } catch (err) { 
@@ -219,12 +274,13 @@
                 const paymentId = document.getElementById('editPaymentId').value;
                 const totalFee = parseFloat(document.getElementById('editTotalFee').value);
                 const paidFee = parseFloat(document.getElementById('editPaidFee').value);
+                const paymentDate = document.getElementById('editPaymentDate').value;
                 const dueDate = document.getElementById('editDueDate').value;
                 const notes = document.getElementById('editNotes').value;
                 const remainingFee = totalFee - paidFee;
                 
                 if (!paymentId) {
-                    alert('❌ ابتدا شاگرد را انتخاب کنید');
+                    alert('❌ شناسه پرداخت یافت نشد');
                     return;
                 }
                 
@@ -240,6 +296,7 @@
                             total_fee: totalFee,
                             paid_fee: paidFee,
                             remaining_after: remainingFee > 0 ? remainingFee : 0,
+                            payment_date: paymentDate,
                             due_date: dueDate,
                             notes: notes
                         })
