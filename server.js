@@ -1600,6 +1600,67 @@ app.get("/api/attendance-report", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== گزارش حاضری استادان ======================
+app.get("/api/teacher-attendance-report", authenticate, async (req, res) => {
+  const { date } = req.query;
+  const targetDate = date || new Date().toISOString().split('T')[0];
+  
+  try {
+    // دریافت همه استادان فعال
+    const [allTeachers] = await db.execute(`
+      SELECT id, name, father_name, phone, email 
+      FROM employees 
+      WHERE position = 'teacher' AND status = 'active'
+      ORDER BY name
+    `);
+    
+    // دریافت استادانی که در تاریخ مشخص حاضری گرفته‌اند
+    const [attendedTeachers] = await db.execute(`
+      SELECT DISTINCT teacher_id 
+      FROM daily_attendance 
+      WHERE attendance_date = ?
+    `, [targetDate]);
+    
+    const attendedIds = new Set(attendedTeachers.map(t => t.teacher_id));
+    
+    // دسته‌بندی استادان
+    const teachersWithAttendance = [];
+    const teachersWithoutAttendance = [];
+    
+    for (const teacher of allTeachers) {
+      if (attendedIds.has(teacher.id)) {
+        // دریافت کلاس‌هایی که استاد حاضری گرفته
+        const [classes] = await db.execute(`
+          SELECT DISTINCT c.id, c.class_name, c.start_time
+          FROM daily_attendance da
+          JOIN classes c ON da.class_id = c.id
+          WHERE da.teacher_id = ? AND da.attendance_date = ?
+        `, [teacher.id, targetDate]);
+        
+        teachersWithAttendance.push({
+          ...teacher,
+          classes: classes
+        });
+      } else {
+        teachersWithoutAttendance.push(teacher);
+      }
+    }
+    
+    res.json({
+      success: true,
+      date: targetDate,
+      total_teachers: allTeachers.length,
+      attended_count: teachersWithAttendance.length,
+      not_attended_count: teachersWithoutAttendance.length,
+      attended: teachersWithAttendance,
+      not_attended: teachersWithoutAttendance
+    });
+  } catch (err) {
+    console.error("❌ Error in /api/teacher-attendance-report:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
