@@ -2072,25 +2072,29 @@ app.post("/api/teacher/save-group-grade", authenticate, async (req, res) => {
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
 app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT s.id, s.student_card_id, s.name, s.father_name, s.mother_name, s.phone, 
              s.class_id, s.status, s.address, s.photo, s.qr_token, s.registration_date,
              c.class_name
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.id = ?
-    `, [req.params.studentId]);
-    
+    `,
+      [req.params.studentId],
+    );
+
     if (results.length === 0) {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
-    
+
     const student = results[0];
     if (student.registration_date) {
       const d = new Date(student.registration_date);
-      if (!isNaN(d.getTime())) student.registration_date = d.toISOString().split('T')[0];
+      if (!isNaN(d.getTime()))
+        student.registration_date = d.toISOString().split("T")[0];
     }
-    
+
     res.json(student);
   } catch (err) {
     console.error("❌ Error in /api/student/info/:studentId:", err);
@@ -2102,37 +2106,49 @@ app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   try {
     // آمار حاضری
-    const [presentCount] = await db.execute(`
+    const [presentCount] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM attendance_details ad 
       JOIN daily_attendance da ON ad.attendance_id = da.id 
       WHERE ad.student_id = ? AND ad.status = 'present' 
       AND YEAR(da.attendance_date) = YEAR(CURDATE())
-    `, [req.params.studentId]);
-    
-    const [absentCount] = await db.execute(`
+    `,
+      [req.params.studentId],
+    );
+
+    const [absentCount] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM attendance_details ad 
       JOIN daily_attendance da ON ad.attendance_id = da.id 
       WHERE ad.student_id = ? AND ad.status = 'absent' 
       AND YEAR(da.attendance_date) = YEAR(CURDATE())
-    `, [req.params.studentId]);
-    
-    const [lateCount] = await db.execute(`
+    `,
+      [req.params.studentId],
+    );
+
+    const [lateCount] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM attendance_details ad 
       JOIN daily_attendance da ON ad.attendance_id = da.id 
       WHERE ad.student_id = ? AND ad.status = 'late' 
       AND YEAR(da.attendance_date) = YEAR(CURDATE())
-    `, [req.params.studentId]);
-    
+    `,
+      [req.params.studentId],
+    );
+
     // میانگین نمرات
-    const [grades] = await db.execute(`
+    const [grades] = await db.execute(
+      `
       SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?
-    `, [req.params.studentId]);
-    
+    `,
+      [req.params.studentId],
+    );
+
     res.json({
       present_count: presentCount[0]?.count || 0,
       absent_count: absentCount[0]?.count || 0,
       late_count: lateCount[0]?.count || 0,
-      avg_grade: Math.round(grades[0]?.avg_grade || 0)
+      avg_grade: Math.round(grades[0]?.avg_grade || 0),
     });
   } catch (err) {
     console.error("❌ Error in /api/student/stats/:studentId:", err);
@@ -2144,31 +2160,92 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
 app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
   try {
     // دریافت آخرین پرداخت شاگرد
-    const [payments] = await db.execute(`
+    const [payments] = await db.execute(
+      `
       SELECT 
         COALESCE(SUM(amount), 0) as total_paid,
         MAX(total_fee) as total_fee,
         MAX(due_date) as due_date
       FROM fee_payments 
       WHERE student_id = ?
-    `, [req.params.studentId]);
-    
+    `,
+      [req.params.studentId],
+    );
+
     const lastPayment = payments[0] || {};
     const totalFee = parseFloat(lastPayment.total_fee) || 0;
     const paidFee = parseFloat(lastPayment.total_paid) || 0;
     const remainingFee = totalFee - paidFee;
-    
+
     res.json({
       total_fee: totalFee,
       paid_fee: paidFee,
       remaining_fee: remainingFee > 0 ? remainingFee : 0,
-      due_date: lastPayment.due_date ? new Date(lastPayment.due_date).toISOString().split('T')[0] : null
+      due_date: lastPayment.due_date
+        ? new Date(lastPayment.due_date).toISOString().split("T")[0]
+        : null,
     });
   } catch (err) {
     console.error("❌ Error in /api/student/fees/:studentId:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== گزارش حاضری شاگرد ======================
+app.get(
+  "/api/student/attendance/:studentId",
+  authenticate,
+  async (req, res) => {
+    const { month, year } = req.query;
+    const studentId = req.params.studentId;
+
+    try {
+      let query = `
+      SELECT 
+        ad.status, 
+        ad.notes, 
+        da.attendance_date as date
+      FROM attendance_details ad
+      JOIN daily_attendance da ON ad.attendance_id = da.id
+      WHERE ad.student_id = ?
+    `;
+      let params = [studentId];
+
+      if (month && month !== "all") {
+        query += ` AND MONTH(da.attendance_date) = ?`;
+        params.push(month);
+      }
+
+      if (year) {
+        query += ` AND YEAR(da.attendance_date) = ?`;
+        params.push(year);
+      }
+
+      query += ` ORDER BY da.attendance_date DESC`;
+
+      const [details] = await db.execute(query, params);
+
+      const present = details.filter((d) => d.status === "present").length;
+      const absent = details.filter((d) => d.status === "absent").length;
+      const late = details.filter((d) => d.status === "late").length;
+
+      res.json({
+        present: present,
+        absent: absent,
+        late: late,
+        details: details.map((d) => ({
+          date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
+          status: d.status,
+          notes: d.notes,
+        })),
+      });
+    } catch (err) {
+      console.error("❌ Error in /api/student/attendance/:studentId:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
 // ====================== صفحات ======================
 
 app.use((req, res) => {
