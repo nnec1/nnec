@@ -2364,6 +2364,169 @@ app.get(
     }
   },
 );
+
+
+
+// ====================== انتقال شاگرد به صنف دیگر (فقط استاد) ======================
+app.put("/api/transfer-student", authenticate, async (req, res) => {
+  const { student_id, new_class_id } = req.body;
+  const teacherId = req.user.id;
+  
+  // فقط استاد می‌تواند شاگرد خود را انتقال دهد
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند شاگرد را انتقال دهد" });
+  }
+  
+  try {
+    // بررسی وجود شاگرد و اینکه در صنف استاد باشد
+    const [student] = await db.execute(`
+      SELECT s.*, c.class_name as current_class_name 
+      FROM students s
+      JOIN classes c ON s.class_id = c.id
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `, [student_id, teacherId]);
+    
+    if (student.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد یا در صنف شما نیست" });
+    }
+    
+    // بررسی وجود صنف مقصد
+    const [targetClass] = await db.execute(`
+      SELECT c.* FROM classes c
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE c.id = ? AND tc.teacher_id = ? AND c.is_active = 1
+    `, [new_class_id, teacherId]);
+    
+    if (targetClass.length === 0) {
+      return res.status(404).json({ error: "صنف مقصد وجود ندارد یا به شما تعلق ندارد" });
+    }
+    
+    // انتقال شاگرد
+    await db.execute(`UPDATE students SET class_id = ? WHERE id = ?`, [new_class_id, student_id]);
+    
+    res.json({
+      success: true,
+      message: `شاگرد "${student[0].name}" با موفقیت از صنف "${student[0].current_class_name}" به صنف "${targetClass[0].class_name}" منتقل شد`
+    });
+    
+  } catch (err) {
+    console.error("❌ Error in /api/transfer-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== دریافت صنف‌های دیگر استاد برای انتقال ======================
+app.get("/api/teacher/other-classes/:studentId", authenticate, async (req, res) => {
+  const studentId = req.params.studentId;
+  const teacherId = req.user.id;
+  
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "دسترسی محدود" });
+  }
+  
+  try {
+    // دریافت صنف فعلی شاگرد
+    const [student] = await db.execute(`
+      SELECT class_id FROM students WHERE id = ?
+    `, [studentId]);
+    
+    if (student.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+    
+    const currentClassId = student[0].class_id;
+    
+    // دریافت صنف‌های دیگر استاد (به جز صنف فعلی)
+    const [classes] = await db.execute(`
+      SELECT c.id, c.class_name, c.start_time
+      FROM classes c
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE tc.teacher_id = ? AND c.id != ? AND c.is_active = 1
+      ORDER BY c.class_name
+    `, [teacherId, currentClassId]);
+    
+    res.json(classes);
+  } catch (err) {
+    console.error("❌ Error in /api/teacher/other-classes/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== غیرفعال کردن شاگرد توسط استاد ======================
+app.put("/api/teacher/disable-student", authenticate, async (req, res) => {
+  const { student_id, reason } = req.body;
+  const teacherId = req.user.id;
+  
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند شاگرد را غیرفعال کند" });
+  }
+  
+  try {
+    // بررسی اینکه شاگرد در صنف استاد باشد
+    const [check] = await db.execute(`
+      SELECT s.id, s.name FROM students s
+      JOIN classes c ON s.class_id = c.id
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `, [student_id, teacherId]);
+    
+    if (check.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد یا در صنف شما نیست" });
+    }
+    
+    // غیرفعال کردن شاگرد
+    await db.execute(`UPDATE students SET status = 'disabled' WHERE id = ?`, [student_id]);
+    
+    // ثبت دلیل غیرفعال شدن (اختیاری - می‌توان جدول جداگانه ساخت)
+    console.log(`Student ${student_id} (${check[0].name}) disabled by teacher ${teacherId}. Reason: ${reason || 'Not specified'}`);
+    
+    res.json({
+      success: true,
+      message: `شاگرد "${check[0].name}" با موفقیت غیرفعال شد`
+    });
+    
+  } catch (err) {
+    console.error("❌ Error in /api/teacher/disable-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== فعال کردن شاگرد توسط استاد ======================
+app.put("/api/teacher/enable-student", authenticate, async (req, res) => {
+  const { student_id } = req.body;
+  const teacherId = req.user.id;
+  
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند شاگرد را فعال کند" });
+  }
+  
+  try {
+    // بررسی اینکه شاگرد در صنف استاد باشد
+    const [check] = await db.execute(`
+      SELECT s.id, s.name FROM students s
+      JOIN classes c ON s.class_id = c.id
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `, [student_id, teacherId]);
+    
+    if (check.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد یا در صنف شما نیست" });
+    }
+    
+    // فعال کردن شاگرد
+    await db.execute(`UPDATE students SET status = 'active' WHERE id = ?`, [student_id]);
+    
+    res.json({
+      success: true,
+      message: `شاگرد "${check[0].name}" با موفقیت فعال شد`
+    });
+    
+  } catch (err) {
+    console.error("❌ Error in /api/teacher/enable-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== انتقال شاگرد به صنف دیگر (فقط استاد) ======================
 app.put("/api/transfer-student", authenticate, async (req, res) => {
   const { student_id, new_class_id } = req.body;
