@@ -772,6 +772,32 @@ app.put("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== حذف پرداخت (فقط ریس) ======================
+app.delete("/api/fee-payments/:id", authenticate, isCEO, async (req, res) => {
+  const paymentId = req.params.id;
+
+  try {
+    // بررسی وجود پرداخت
+    const [check] = await db.execute(
+      `SELECT id FROM fee_payments WHERE id = ?`,
+      [paymentId],
+    );
+    if (check.length === 0) {
+      return res.status(404).json({ error: "پرداخت یافت نشد" });
+    }
+
+    await db.execute(`DELETE FROM fee_payments WHERE id = ?`, [paymentId]);
+
+    res.json({
+      success: true,
+      message: "پرداخت با موفقیت حذف شد",
+    });
+  } catch (err) {
+    console.error("❌ Error in DELETE /api/fee-payments/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== API پیام‌ها ======================
 
 app.post("/api/messages", authenticate, async (req, res) => {
