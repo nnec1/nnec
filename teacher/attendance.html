@@ -4,69 +4,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>انتقال شاگرد | آموزشگاه نوی نور</title>
+    <title>حاضری شاگردان | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        .transfer-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .student-item {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 10px;
+        .present-checkbox {
+            width: 22px;
+            height: 22px;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #e2e8f0;
+            accent-color: #10b981;
         }
 
-        .student-item:hover {
-            background: #e0f2fe;
-            border-color: #10b981;
-            transform: translateX(-5px);
-        }
-
-        .student-item.selected {
-            background: #dcfce7;
-            border-color: #10b981;
-            border-width: 2px;
-        }
-
-        .class-option {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 10px;
+        .absent-checkbox {
+            width: 22px;
+            height: 22px;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #e2e8f0;
+            accent-color: #dc2626;
         }
 
-        .class-option:hover {
-            background: #e0f2fe;
-            border-color: #10b981;
+        .late-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #f59e0b;
         }
 
-        .class-option.selected {
-            background: #dcfce7;
-            border-color: #10b981;
-            border-width: 2px;
+        .student-photo-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #f1f5f9;
         }
 
-        .search-box {
+        .attendance-present-row {
+            background-color: #dcfce7 !important;
+            border-right: 4px solid #10b981;
+        }
+
+        .attendance-absent-row {
+            background-color: #fee2e2 !important;
+            border-right: 4px solid #dc2626;
+        }
+
+        .attendance-late-row {
+            background-color: #fef3c7 !important;
+            border-right: 4px solid #f59e0b;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .quick-actions {
             background: white;
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .fee-warning-badge {
+            background: #dc2626;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 20px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .fee-warning-badge:hover {
+            background: #b91c1c;
         }
 
         .menu-toggle {
@@ -125,21 +140,6 @@
                 display: block;
             }
         }
-
-        .student-photo-small {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .current-class-badge {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-        }
     </style>
 </head>
 
@@ -159,12 +159,11 @@
                 </div>
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
-                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="attendance.html" class="nav-link active"><i class="fa-solid fa-calendar-check"></i>
+                        حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
-                    <a href="transfer-student.html" class="nav-link active"><i
-                            class="fa-solid fa-arrow-right-arrow-left"></i> انتقال شاگرد</a>
                     <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> تکالیف</a>
-                    <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
+
                     <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
@@ -174,261 +173,175 @@
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="fa-solid fa-arrow-right-arrow-left text-success me-2"></i>
-                        انتقال شاگرد</h3>
-                </div>
+                <h3 class="section-title"><i class="fa-solid fa-calendar-check text-success me-2"></i> حاضری شاگردان
+                </h3>
 
-                <!-- مرحله 1: انتخاب صنف -->
-                <div class="search-box">
-                    <h5 class="mb-3"><i class="fa-solid fa-table-cells-large text-primary"></i> مرحله 1: انتخاب صنف</h5>
-                    <select id="classSelect" class="form-select" onchange="loadStudents()">
-                        <option value="">انتخاب صنف...</option>
-                    </select>
-                </div>
-
-                <!-- مرحله 2: انتخاب شاگرد -->
-                <div class="search-box" id="studentSection" style="display: none;">
-                    <h5 class="mb-3"><i class="fa-solid fa-users text-primary"></i> مرحله 2: انتخاب شاگرد برای انتقال
-                    </h5>
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <input type="text" id="searchStudent" class="form-control"
-                                placeholder="جستجوی نام یا آیدی کارت..." oninput="filterStudents()">
-                        </div>
+                <div class="quick-actions">
+                    <div class="row align-items-center">
+                        <div class="col-md-4"><select class="form-select" id="attendanceClass"
+                                onchange="loadAttendanceList()">
+                                <option value="">انتخاب صنف...</option>
+                            </select></div>
+                        <div class="col-md-3"><input type="date" class="form-control" id="attendanceDate"></div>
+                        <div class="col-md-3"><button class="btn btn-success w-100" onclick="saveAttendance()"><i
+                                    class="fa-solid fa-save"></i> ذخیره حاضری</button></div>
+                        <div class="col-md-2"><button class="btn btn-secondary w-100" onclick="markAllPresent()"><i
+                                    class="fa-solid fa-check-double"></i> همه حاضر</button></div>
                     </div>
-                    <div id="studentsList" style="max-height: 300px; overflow-y: auto;"></div>
                 </div>
 
-                <!-- مرحله 3: انتخاب صنف مقصد -->
-                <div class="search-box" id="targetClassSection" style="display: none;">
-                    <h5 class="mb-3"><i class="fa-solid fa-arrow-left text-primary"></i> مرحله 3: انتخاب صنف مقصد</h5>
-                    <div id="targetClassesList"></div>
-                </div>
+                <div id="feeWarning" class="alert alert-danger d-none"></div>
 
-                <!-- دکمه انتقال -->
-                <div class="text-center" id="transferBtnSection" style="display: none;">
-                    <button class="btn btn-success btn-lg px-5" onclick="transferStudent()">
-                        <i class="fa-solid fa-arrow-right-arrow-left"></i> انتقال شاگرد
-                    </button>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>عکس</th>
+                                    <th>آیدی کارت</th>
+                                    <th>نام شاگرد</th>
+                                    <th>نام پدر</th>
+                                    <th>وضعیت فیس</th>
+                                    <th style="width:200px">وضعیت حاضری</th>
+                                    <th>یادداشت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceList">
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید
+                    </div>
                 </div>
-
-                <div id="resultMessage" class="mt-4"></div>
             </div>
+            </table>
+            </tbody>
+            </table>
         </div>
+    </div>
+    </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
         let teacherId = localStorage.getItem('userId') || 3;
-        let selectedStudent = null;
-        let allStudents = [];
-        let availableClasses = [];
-        let selectedTargetClass = null;
+        let currentAttendance = [];
+        let feeExpiredStudents = [];
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             if (!toggleBtn) return;
-            toggleBtn.addEventListener('click', () => { sidebar.classList.add('show'); overlay.classList.add('show'); });
-            if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
-        async function loadTeacherClasses() {
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+            catch (e) { return dateString; }
+        }
+
+        async function loadClasses() {
             try {
                 const res = await fetch(`/api/teacher/classes/${teacherId}`);
                 const classes = await res.json();
-                const select = document.getElementById('classSelect');
-                select.innerHTML = '<option value="">انتخاب صنف...</option>' +
-                    classes.map(c => `<option value="${c.id}">${c.class_name} - ${c.start_time?.substring(0, 5) || '08:00'}</option>`).join('');
+                const select = document.getElementById('attendanceClass');
+                if (classes.length === 0) select.innerHTML = '<option value="">هیچ صنفی به شما تخصیص داده نشده</option>';
+                else select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
             } catch (err) { console.error(err); }
         }
 
-        async function loadStudents() {
-            const classId = document.getElementById('classSelect').value;
-            if (!classId) {
-                document.getElementById('studentSection').style.display = 'none';
-                return;
-            }
-
-            document.getElementById('studentSection').style.display = 'block';
-            document.getElementById('studentsList').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div>';
-
+        async function loadAttendanceList() {
+            const classId = document.getElementById('attendanceClass').value;
+            if (!classId) { document.getElementById('attendanceList').innerHTML = '<table><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></tr>'; return; }
+            const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
             try {
-                const res = await fetch('/api/students');
+                const res = await fetch(`/api/teacher/students/${teacherId}`);
                 let students = await res.json();
-                students = students.filter(s => s.class_id == classId && s.status === 'active');
-                allStudents = students;
-                displayStudents(students);
+                students = students.filter(s => s.class_id == classId);
+                if (students.length === 0) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">هیچ شاگردی در این صنف وجود ندارد</div></div></div></tr>'; return; }
+
+                // بررسی شاگردان منقضی شده بر اساس due_date
+                feeExpiredStudents = students.filter(s => s.due_date && new Date(s.due_date) < new Date());
+                if (feeExpiredStudents.length > 0) {
+                    document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی شده دارند! لطفاً به دفتر مراجعه کنید.`;
+                    document.getElementById('feeWarning').classList.remove('d-none');
+                } else {
+                    document.getElementById('feeWarning').classList.add('d-none');
+                }
+
+                currentAttendance = students.map(s => ({ student_id: s.id, name: s.name, father_name: s.father_name, student_card_id: s.student_card_id, photo: s.photo, fee_expired: s.due_date && new Date(s.due_date) < new Date(), status: 'present', notes: '' }));
+                await checkExistingAttendance(classId, date);
+                document.getElementById('attendanceList').innerHTML = students.map((s, i) => `<tr id="attendance-row-${i}" class="${currentAttendance[i].status === 'present' ? 'attendance-present-row' : (currentAttendance[i].status === 'absent' ? 'attendance-absent-row' : 'attendance-late-row')}">
+                    <td class="text-center">${i + 1}</div></div></div><td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
+                    <td class="text-dark"><strong>${s.student_card_id || '-'}</strong>${currentAttendance[i].fee_expired ? '<span class="fee-warning-badge" onclick="window.open(\'/admin/fee-management.html\', \'_blank\')"><i class="fa-solid fa-circle-exclamation"></i> فیس منقضی - کلیک کنید</span>' : ''}</div></div></div>
+                    <td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div>
+                    <td class="text-dark">${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="fa-regular fa-circle-xmark"></i> منقضی - به دفتر مراجعه کنید</span>' : '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر</span>') : '-'}</div></div></div>
+                    <td class="text-center"><div class="checkbox-group"><label><input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')"> <i class="fa-solid fa-check-circle"></i> حاضر</label><label><input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')"> <i class="fa-solid fa-xmark-circle"></i> غایب</label><label><input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')"> <i class="fa-solid fa-clock"></i> تأخیر</label></div></div></div></div>
+                    <td><input type="text" class="form-control form-control-sm" placeholder="یادداشت..." value="${currentAttendance[i].notes || ''}" onchange="currentAttendance[${i}].notes = this.value"></div></div></div>
+                </div></div></div>`).join('');
             } catch (err) { console.error(err); }
         }
 
-        function displayStudents(students) {
-            if (students.length === 0) {
-                document.getElementById('studentsList').innerHTML = '<div class="alert alert-info text-center">هیچ شاگردی در این صنف وجود ندارد</div>';
-                return;
-            }
-
-            let html = '';
-            for (const s of students) {
-                const isSelected = selectedStudent && selectedStudent.id === s.id;
-                html += `
-                    <div class="student-item ${isSelected ? 'selected' : ''}" onclick="selectStudent(${s.id})">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'">
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                                    <div>
-                                        <strong>${s.name}</strong>
-                                        <small class="text-muted d-block">${s.student_card_id || '-'}</small>
-                                    </div>
-                                    <div class="text-end">
-                                        <small class="text-muted">پدر: ${s.father_name || '-'}</small><br>
-                                        <small class="text-muted">تماس: ${s.phone || '-'}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            document.getElementById('studentsList').innerHTML = html;
+        async function checkExistingAttendance(classId, date) {
+            try {
+                const res = await fetch(`/api/attendance/class/${classId}?date=${date}`);
+                const data = await res.json();
+                if (data.exists && data.details) data.details.forEach(detail => { const index = currentAttendance.findIndex(a => a.student_id === detail.student_id); if (index !== -1) { currentAttendance[index].status = detail.status; currentAttendance[index].notes = detail.notes || ''; } });
+            } catch (err) { console.error(err); }
         }
 
-        function filterStudents() {
-            const search = document.getElementById('searchStudent').value.toLowerCase();
-            const filtered = allStudents.filter(s =>
-                s.name.toLowerCase().includes(search) ||
-                (s.student_card_id && s.student_card_id.toLowerCase().includes(search))
-            );
-            displayStudents(filtered);
-        }
+        function setAttendanceStatus(index, status) { currentAttendance[index].status = status; const row = document.getElementById(`attendance-row-${index}`); if (row) { row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row'); if (status === 'present') row.classList.add('attendance-present-row'); else if (status === 'absent') row.classList.add('attendance-absent-row'); else row.classList.add('attendance-late-row'); } }
 
-        async function selectStudent(studentId) {
-            selectedStudent = allStudents.find(s => s.id == studentId);
-            displayStudents(allStudents);
+        function markAllPresent() { for (let i = 0; i < currentAttendance.length; i++) { currentAttendance[i].status = 'present'; const radio = document.querySelector(`input[name="status_${i}"][value="present"]`); if (radio) radio.checked = true; const row = document.getElementById(`attendance-row-${i}`); if (row) { row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row'); row.classList.add('attendance-present-row'); } } alert('همه شاگردان حاضر شدند'); }
 
-            // دریافت صنف‌های قابل انتقال
-            document.getElementById('targetClassSection').style.display = 'block';
-            document.getElementById('targetClassesList').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div>';
+        async function saveAttendance() {
+            const classId = document.getElementById('attendanceClass').value;
+            if (!classId) { alert('لطفاً صنف را انتخاب کنید'); return; }
+            const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+
+            // بررسی اینکه آیا قبلاً حاضری ثبت شده است (اختیاری - می‌توان قبل از ارسال هم چک کرد)
+            const checkRes = await fetch(`/api/attendance/class/${classId}?date=${date}`);
+            const checkData = await checkRes.json();
+            if (checkData.exists) {
+                if (!confirm('⚠️ قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید. آیا می‌خواهید جایگزین کنید؟')) {
+                    return;
+                }
+            }
 
             try {
-                const res = await fetch(`/api/transfer-available-classes/${studentId}`);
-                availableClasses = await res.json();
-                displayTargetClasses();
-            } catch (err) {
-                console.error(err);
-                document.getElementById('targetClassesList').innerHTML = '<div class="alert alert-danger">خطا در بارگیری صنف‌ها</div>';
-            }
-        }
-
-        function displayTargetClasses() {
-            if (availableClasses.length === 0) {
-                document.getElementById('targetClassesList').innerHTML = '<div class="alert alert-warning text-center">هیچ صنف دیگری برای انتقال وجود ندارد</div>';
-                document.getElementById('transferBtnSection').style.display = 'none';
-                return;
-            }
-
-            let html = '<div class="row">';
-            for (const cls of availableClasses) {
-                const isSelected = selectedTargetClass === cls.id;
-                html += `
-                    <div class="col-md-6 mb-3">
-                        <div class="class-option ${isSelected ? 'selected' : ''}" onclick="selectTargetClass(${cls.id})">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong><i class="fa-solid fa-table-cells-large"></i> ${cls.class_name}</strong>
-                                    <small class="text-muted d-block">زمان: ${cls.start_time?.substring(0, 5) || '08:00'}</small>
-                                </div>
-                                ${isSelected ? '<i class="fa-solid fa-check-circle text-success fs-5"></i>' : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            html += '</div>';
-            document.getElementById('targetClassesList').innerHTML = html;
-            document.getElementById('transferBtnSection').style.display = 'block';
-        }
-
-        function selectTargetClass(classId) {
-            selectedTargetClass = classId;
-            displayTargetClasses();
-        }
-
-        async function transferStudent() {
-            if (!selectedStudent) {
-                alert('❌ لطفاً شاگرد را انتخاب کنید');
-                return;
-            }
-            if (!selectedTargetClass) {
-                alert('❌ لطفاً صنف مقصد را انتخاب کنید');
-                return;
-            }
-
-            const targetClass = availableClasses.find(c => c.id == selectedTargetClass);
-            if (!confirm(`آیا از انتقال شاگرد "${selectedStudent.name}" به صنف "${targetClass.class_name}" اطمینان دارید؟`)) return;
-
-            const resultDiv = document.getElementById('resultMessage');
-            resultDiv.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-success"></div> در حال انتقال...</div>';
-
-            try {
-                const res = await fetch('/api/transfer-student', {
-                    method: 'PUT',
+                const res = await fetch('/api/teacher/save-attendance', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        student_id: selectedStudent.id,
-                        new_class_id: selectedTargetClass
-                    })
+                    body: JSON.stringify({ teacher_id: teacherId, class_id: classId, date, attendance: currentAttendance })
                 });
 
                 const data = await res.json();
 
                 if (res.ok) {
-                    resultDiv.innerHTML = `
-                        <div class="alert alert-success">
-                            <i class="fa-solid fa-check-circle"></i>
-                            <strong>✅ انتقال با موفقیت انجام شد!</strong><br>
-                            ${data.message}
-                        </div>
-                    `;
-
-                    // ریست فرم
-                    selectedStudent = null;
-                    selectedTargetClass = null;
-                    document.getElementById('classSelect').value = '';
-                    document.getElementById('studentSection').style.display = 'none';
-                    document.getElementById('targetClassSection').style.display = 'none';
-                    document.getElementById('transferBtnSection').style.display = 'none';
-                    document.getElementById('studentsList').innerHTML = '';
-                    document.getElementById('searchStudent').value = '';
-
-                    // بازخوانی لیست صنف‌ها
-                    loadTeacherClasses();
+                    alert('✅ حاضری با موفقیت ذخیره شد');
+                    if (feeExpiredStudents.length > 0) {
+                        alert(`⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی دارند. لطفاً به مدیریت اطلاع دهید.`);
+                    }
+                } else if (data.already_exists) {
+                    alert('⚠️ شما قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید!');
                 } else {
-                    resultDiv.innerHTML = `<div class="alert alert-danger">❌ خطا: ${data.error}</div>`;
+                    alert('❌ خطا در ذخیره حاضری: ' + (data.error || 'مشخص نیست'));
                 }
             } catch (err) {
-                resultDiv.innerHTML = `<div class="alert alert-danger">❌ خطا در ارتباط با سرور: ${err.message}</div>`;
+                alert('❌ خطا در ارتباط با سرور');
             }
-
-            setTimeout(() => {
-                setTimeout(() => resultDiv.innerHTML = '', 5000);
-            }, 5000);
         }
 
+        document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
         setupSidebar();
-        loadTeacherClasses();
-
-        fetch(`/api/teacher/info/${teacherId}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('teacherNameSidebar').innerText = data.name || 'استاد';
-            })
-            .catch(err => console.error(err));
+        loadClasses();
     </script>
 </body>
 
