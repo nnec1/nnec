@@ -2702,6 +2702,131 @@ app.get("/api/check-session", authenticate, (req, res) => {
     email: req.user.email
   });
 });
+
+// ====================== غیرفعال کردن شاگرد توسط استاد ======================
+app.put("/api/teacher/disable-student", authenticate, async (req, res) => {
+  const { student_id, reason } = req.body;
+  const teacherId = req.user.id;
+  
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند شاگرد را غیرفعال کند" });
+  }
+  
+  try {
+    const [check] = await db.execute(`
+      SELECT s.id, s.name, s.status FROM students s
+      JOIN classes c ON s.class_id = c.id
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `, [student_id, teacherId]);
+    
+    if (check.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد یا در صنف شما نیست" });
+    }
+    
+    if (check[0].status === 'disabled') {
+      return res.status(400).json({ error: "شاگرد قبلاً غیرفعال شده است" });
+    }
+    
+    await db.execute(`UPDATE students SET status = 'disabled' WHERE id = ?`, [student_id]);
+    
+    res.json({
+      success: true,
+      message: `شاگرد "${check[0].name}" با موفقیت غیرفعال شد`
+    });
+    
+  } catch (err) {
+    console.error("❌ Error in /api/teacher/disable-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== غیرفعال کردن شاگرد توسط مدیر ======================
+app.put("/api/admin/disable-student", authenticate, async (req, res) => {
+  const { student_id, reason } = req.body;
+  
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "فقط مدیر می‌تواند شاگرد را غیرفعال کند" });
+  }
+  
+  try {
+    const [check] = await db.execute(`SELECT id, name FROM students WHERE id = ?`, [student_id]);
+    if (check.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+    
+    await db.execute(`UPDATE students SET status = 'disabled' WHERE id = ?`, [student_id]);
+    
+    res.json({
+      success: true,
+      message: `شاگرد "${check[0].name}" با موفقیت غیرفعال شد`
+    });
+    
+  } catch (err) {
+    console.error("❌ Error in /api/admin/disable-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== فعال کردن شاگرد با انتخاب صنف جدید ======================
+app.put("/api/admin/enable-student", authenticate, async (req, res) => {
+  const { student_id, new_class_id } = req.body;
+  
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "فقط مدیر می‌تواند شاگرد را فعال کند" });
+  }
+  
+  try {
+    const [check] = await db.execute(`SELECT id, name FROM students WHERE id = ?`, [student_id]);
+    if (check.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+    
+    // بررسی صنف مقصد
+    if (new_class_id) {
+      const [classCheck] = await db.execute(`SELECT id, class_name FROM classes WHERE id = ? AND is_active = 1`, [new_class_id]);
+      if (classCheck.length === 0) {
+        return res.status(404).json({ error: "صنف انتخاب شده وجود ندارد یا غیرفعال است" });
+      }
+      await db.execute(`UPDATE students SET status = 'active', class_id = ? WHERE id = ?`, [new_class_id, student_id]);
+    } else {
+      await db.execute(`UPDATE students SET status = 'active' WHERE id = ?`, [student_id]);
+    }
+    
+    res.json({
+      success: true,
+      message: `شاگرد "${check[0].name}" با موفقیت فعال شد`
+    });
+    
+  } catch (err) {
+    console.error("❌ Error in /api/admin/enable-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== دریافت شاگردان غیرفعال ======================
+app.get("/api/admin/disabled-students", authenticate, async (req, res) => {
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "دسترسی محدود" });
+  }
+  
+  try {
+    const [results] = await db.execute(`
+      SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, 
+             s.class_id, s.status, s.photo, s.registration_date,
+             c.class_name
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.status = 'disabled'
+      ORDER BY s.name
+    `);
+    
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in /api/admin/disabled-students:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
