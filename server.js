@@ -2530,12 +2530,13 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
   }
 });
 // ====================== بررسی نشست کاربر ======================
+// ====================== بررسی نشست کاربر فعلی ======================
 app.get("/api/check-session", authenticate, (req, res) => {
   res.json({
     id: req.user.id,
     name: req.user.name,
     role: req.user.role,
-    email: req.user.email,
+    email: req.user.email
   });
 });
 // ====================== صفحات ======================
