@@ -131,7 +131,7 @@
                         <div class="row g-3">
                             <div class="col-md-6"><label class="form-label">تاریخ تکلیف</label><input type="date"
                                     id="hwDate" class="form-control" required></div>
-                            <div class="col-md-6"><label class="form-label">تاریخ سررسید</label><input type="date"
+                            <div class="col-md-6"><label class="form-label">تاریخ تاریخ بررسی</label><input type="date"
                                     id="dueDate" class="form-control"></div>
                             <div class="col-md-6"><label class="form-label">صنف</label><select id="hwClass"
                                     class="form-select" required>
@@ -206,7 +206,7 @@
                         <div class="d-flex justify-content-between flex-wrap">
                             <div>
                                 <h5><i class="fa-solid fa-book-open text-success"></i> ${h.class_name}</h5>
-                                <small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${formatDate(h.homework_date)} | <i class="fa-regular fa-calendar-clock"></i> سررسید: ${formatDate(h.due_date)}</small>
+                                <small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${formatDate(h.homework_date)} | <i class="fa-regular fa-calendar-clock"></i> تاریخ بررسی: ${formatDate(h.due_date)}</small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-warning me-1" onclick="editHomework(${h.id})"><i class="fa-solid fa-pencil"></i></button>
