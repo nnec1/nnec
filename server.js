@@ -2942,6 +2942,106 @@ app.get("/api/admin/disabled-students", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== دریافت تکالیف یک استاد ======================
+app.get("/api/teacher/homework/:teacherId", authenticate, async (req, res) => {
+  const { teacherId } = req.params;
+  const { class_id } = req.query;
+  
+  try {
+    let query = `
+      SELECT h.*, c.class_name 
+      FROM homework h
+      JOIN classes c ON h.class_id = c.id
+      WHERE h.teacher_id = ?
+    `;
+    let params = [teacherId];
+    
+    if (class_id && class_id !== '') {
+      query += ` AND h.class_id = ?`;
+      params.push(class_id);
+    }
+    
+    query += ` ORDER BY h.homework_date DESC`;
+    
+    const [results] = await db.execute(query, params);
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in GET /api/teacher/homework/:teacherId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== دریافت یک تکلیف خاص ======================
+app.get("/api/homework/:id", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT h.*, c.class_name 
+      FROM homework h
+      JOIN classes c ON h.class_id = c.id
+      WHERE h.id = ?
+    `, [req.params.id]);
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: "تکلیف یافت نشد" });
+    }
+    
+    res.json(results[0]);
+  } catch (err) {
+    console.error("❌ Error in GET /api/homework/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== ایجاد تکلیف جدید ======================
+app.post("/api/homework", authenticate, async (req, res) => {
+  const { class_id, teacher_id, homework_date, due_date, assignment } = req.body;
+  
+  if (!class_id || !teacher_id || !homework_date || !assignment) {
+    return res.status(400).json({ error: "اطلاعات کامل نیست" });
+  }
+  
+  try {
+    const [result] = await db.execute(`
+      INSERT INTO homework (class_id, teacher_id, homework_date, due_date, assignment)
+      VALUES (?, ?, ?, ?, ?)
+    `, [class_id, teacher_id, homework_date, due_date || null, assignment]);
+    
+    res.json({ id: result.insertId, message: "تکلیف با موفقیت اضافه شد" });
+  } catch (err) {
+    console.error("❌ Error in POST /api/homework:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== ویرایش تکلیف ======================
+app.put("/api/homework/:id", authenticate, async (req, res) => {
+  const { class_id, teacher_id, homework_date, due_date, assignment } = req.body;
+  
+  try {
+    await db.execute(`
+      UPDATE homework 
+      SET class_id = ?, teacher_id = ?, homework_date = ?, due_date = ?, assignment = ?
+      WHERE id = ?
+    `, [class_id, teacher_id, homework_date, due_date || null, assignment, req.params.id]);
+    
+    res.json({ message: "تکلیف با موفقیت ویرایش شد" });
+  } catch (err) {
+    console.error("❌ Error in PUT /api/homework/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== حذف تکلیف ======================
+app.delete("/api/homework/:id", authenticate, async (req, res) => {
+  try {
+    await db.execute(`DELETE FROM homework WHERE id = ?`, [req.params.id]);
+    res.json({ message: "تکلیف با موفقیت حذف شد" });
+  } catch (err) {
+    console.error("❌ Error in DELETE /api/homework/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
