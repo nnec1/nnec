@@ -229,34 +229,71 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
+        // async function loadEmployees() {
+        //     try {
+        //         const res = await fetch('/api/employees');
+        //         if (!res.ok) {
+        //             if (res.status === 403) {
+        //                 document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ شما دسترسی به این بخش ندارید</td></tr>';
+        //                 return;
+        //             }
+        //             throw new Error('خطا در دریافت اطلاعات');
+        //         }
+        //         let emps = await res.json();
+        //         if (!Array.isArray(emps)) emps = [];
+        //         const role = document.getElementById('filterRole').value;
+        //         const search = document.getElementById('searchEmp').value.toLowerCase();
+        //         if (role) emps = emps.filter(e => e.position === role);
+        //         if (search) emps = emps.filter(e => e.name && e.name.toLowerCase().includes(search));
+        //         if (emps.length === 0) { document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ کارمندی یافت نشد</td></tr>'; return; }
+        //         document.getElementById('employeesList').innerHTML = emps.map(e => `<tr>
+        //             <td class="text-dark"><strong>${e.name || '-'}</strong></td>
+        //             <td class="text-dark">${e.father_name || '-'}</td>
+        //             <td class="text-dark">${e.phone || '-'}</td>
+        //             <td class="text-dark">${e.email || '-'}</td>
+        //             <td class="text-dark">${e.position === 'admin' ? 'مدیر' : (e.position === 'teacher' ? 'استاد' : 'حسابدار')}</td>
+        //             <td class="text-dark">${(e.salary || 0).toLocaleString()} AFN</td>
+        //             <td class="text-dark"><span class="badge ${e.status === 'active' ? 'bg-success' : 'bg-danger'}">${e.status === 'active' ? 'فعال' : 'غیرفعال'}</span></td>
+        //             <td class="text-dark"><button class="btn btn-sm btn-warning me-1" onclick="editEmployee(${e.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteEmployee(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
+        //         </tr>`).join('');
+        //     } catch (err) { console.error(err); document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ خطا: ' + err.message + '</td></tr>'; }
+        // }
+
         async function loadEmployees() {
             try {
                 const res = await fetch('/api/employees');
-                if (!res.ok) {
-                    if (res.status === 403) {
-                        document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ شما دسترسی به این بخش ندارید</td></tr>';
-                        return;
-                    }
-                    throw new Error('خطا در دریافت اطلاعات');
-                }
+                if (!res.ok) throw new Error('خطا در دریافت اطلاعات');
                 let emps = await res.json();
                 if (!Array.isArray(emps)) emps = [];
+
                 const role = document.getElementById('filterRole').value;
                 const search = document.getElementById('searchEmp').value.toLowerCase();
+
                 if (role) emps = emps.filter(e => e.position === role);
                 if (search) emps = emps.filter(e => e.name && e.name.toLowerCase().includes(search));
-                if (emps.length === 0) { document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ کارمندی یافت نشد</td></tr>'; return; }
-                document.getElementById('employeesList').innerHTML = emps.map(e => `<tr>
-                    <td class="text-dark"><strong>${e.name || '-'}</strong></td>
-                    <td class="text-dark">${e.father_name || '-'}</td>
-                    <td class="text-dark">${e.phone || '-'}</td>
-                    <td class="text-dark">${e.email || '-'}</td>
-                    <td class="text-dark">${e.position === 'admin' ? 'مدیر' : (e.position === 'teacher' ? 'استاد' : 'حسابدار')}</td>
-                    <td class="text-dark">${(e.salary || 0).toLocaleString()} AFN</td>
-                    <td class="text-dark"><span class="badge ${e.status === 'active' ? 'bg-success' : 'bg-danger'}">${e.status === 'active' ? 'فعال' : 'غیرفعال'}</span></td>
-                    <td class="text-dark"><button class="btn btn-sm btn-warning me-1" onclick="editEmployee(${e.id})"><i class="fa-solid fa-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteEmployee(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
-                </tr>`).join('');
-            } catch (err) { console.error(err); document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ خطا: ' + err.message + '</td></tr>'; }
+
+                if (emps.length === 0) {
+                    document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">هیچ کارمندی یافت نشد</div></div></div></td>';
+                    return;
+                }
+
+                document.getElementById('employeesList').innerHTML = emps.map(e => `</tr>
+            <td class="text-dark"><strong>${e.name || '-'}</strong></td>
+            <td class="text-dark">${e.father_name || '-'}</td>
+            <td class="text-dark">${e.phone || '-'}</td>
+            <td class="text-dark">${e.email || '-'}</td>
+            <td class="text-dark">${e.position === 'admin' ? 'مدیر' : (e.position === 'teacher' ? 'استاد' : 'حسابدار')}</td>
+            <td class="text-dark">${(e.salary || 0).toLocaleString()} AFN</div></div></div>
+            <td class="text-dark"><span class="badge ${e.status === 'active' ? 'bg-success' : 'bg-danger'}">${e.status === 'active' ? 'فعال' : 'غیرفعال'}</span></td>
+            <td class="text-dark">
+                <button class="btn btn-sm btn-warning me-1" onclick="editEmployee(${e.id})"><i class="fa-solid fa-pencil"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteEmployee(${e.id})"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        </tr>`).join('');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('employeesList').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">❌ خطا: ' + err.message + '</div></div></div></td>';
+            }
         }
 
         async function deleteEmployee(id) { if (confirm('حذف شود؟')) { await fetch(`/api/employees/${id}`, { method: 'DELETE' }); loadEmployees(); } }

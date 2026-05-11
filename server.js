@@ -1154,6 +1154,29 @@ app.get("/api/teachers", authenticate, async (req, res) => {
   }
 });
 
+// ====================== دریافت اطلاعات یک کارمند ======================
+app.get("/api/employees/:id", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `
+      SELECT id, name, father_name, phone, email, position, salary, hire_date, status, photo, created_at 
+      FROM employees 
+      WHERE id = ?
+    `,
+      [req.params.id],
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "کارمند یافت نشد" });
+    }
+
+    res.json(results[0]);
+  } catch (err) {
+    console.error("❌ Error in GET /api/employees/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post(
   "/api/employees",
   authenticate,
@@ -2465,38 +2488,48 @@ app.get("/api/students/:id", authenticate, async (req, res) => {
     const studentId = req.params.id;
     const userId = req.user.id;
     const userRole = req.user.role;
-    
+
     // ✅ اگر کاربر شاگرد است، فقط می‌تواند اطلاعات خودش را ببیند
-    if (userRole === 'student' && userId != studentId) {
-      return res.status(403).json({ error: "شما فقط می‌توانید اطلاعات خود را مشاهده کنید" });
+    if (userRole === "student" && userId != studentId) {
+      return res
+        .status(403)
+        .json({ error: "شما فقط می‌توانید اطلاعات خود را مشاهده کنید" });
     }
-    
+
     // ✅ اگر کاربر استاد است، می‌تواند شاگردان صنف خود را ببیند
-    if (userRole === 'teacher') {
-      const [check] = await db.execute(`
+    if (userRole === "teacher") {
+      const [check] = await db.execute(
+        `
         SELECT s.id FROM students s
         JOIN teacher_classes tc ON s.class_id = tc.class_id
         WHERE tc.teacher_id = ? AND s.id = ?
-      `, [userId, studentId]);
-      
+      `,
+        [userId, studentId],
+      );
+
       if (check.length === 0 && userId != studentId) {
-        return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
+        return res
+          .status(403)
+          .json({ error: "شما دسترسی به این شاگرد ندارید" });
       }
     }
-    
-    const [results] = await db.execute(`
+
+    const [results] = await db.execute(
+      `
       SELECT s.id, s.student_card_id, s.name, s.father_name, s.phone, s.class_id, 
              s.status, s.address, s.photo, s.qr_token, s.registration_date,
              c.class_name 
       FROM students s 
       LEFT JOIN classes c ON s.class_id = c.id 
       WHERE s.id = ?
-    `, [studentId]);
-    
+    `,
+      [studentId],
+    );
+
     if (results.length === 0) {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
-    
+
     res.json(results[0]);
   } catch (err) {
     console.error("Error in GET /api/students/:id:", err);
@@ -2509,7 +2542,7 @@ app.get("/api/check-session", authenticate, (req, res) => {
     id: req.user.id,
     name: req.user.name,
     role: req.user.role,
-    email: req.user.email
+    email: req.user.email,
   });
 });
 // ====================== صفحات ======================
