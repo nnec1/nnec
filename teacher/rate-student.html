@@ -33,9 +33,14 @@
         }
 
         .rating-star {
-            color: #f59e0b;
-            font-size: 1.2rem;
+            color: #cbd5e1;
+            font-size: 1.5rem;
             cursor: pointer;
+            display: inline-block;
+        }
+
+        .rating-star.selected {
+            color: #f59e0b;
         }
 
         .rating-star:hover {
@@ -47,6 +52,19 @@
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
+        }
+
+        .nav-tabs .nav-link {
+            color: #4a5568;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            margin-right: 5px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
         }
 
         .menu-toggle {
@@ -105,6 +123,19 @@
                 display: block;
             }
         }
+
+        .complaint-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-right: 3px solid #f59e0b;
+        }
+
+        .complaint-responded {
+            border-right-color: #10b981;
+            background: #f0fdf4;
+        }
     </style>
 </head>
 
@@ -148,37 +179,76 @@
                     </h3>
                 </div>
 
-                <div class="filter-box">
-                    <div class="row g-3">
-                        <div class="col-md-4"><select id="classFilter" class="form-select" onchange="loadStudents()">
-                                <option value="">همه صنف‌ها</option>
-                            </select></div>
-                        <div class="col-md-4"><input type="text" id="searchStudent" class="form-control"
-                                placeholder="جستجوی نام یا آیدی..." oninput="filterStudents()"></div>
-                        <div class="col-md-4"><button class="btn btn-primary w-100" onclick="loadStudents()"><i
-                                    class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button></div>
+                <!-- تب ها -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#rateTab">⭐ ثبت
+                            امتیاز</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#complaintTab">📝 ثبت شکایت</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#historyTab">📋 تاریخچه</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- تب ثبت امتیاز -->
+                    <div class="tab-pane fade show active" id="rateTab">
+                        <div class="filter-box">
+                            <div class="row g-3">
+                                <div class="col-md-4"><select id="rateClassFilter" class="form-select"
+                                        onchange="loadRateStudents()">
+                                        <option value="">همه صنف‌ها</option>
+                                    </select></div>
+                                <div class="col-md-4"><input type="text" id="rateSearch" class="form-control"
+                                        placeholder="جستجوی نام یا آیدی..." oninput="filterRateStudents()"></div>
+                                <div class="col-md-4"><button class="btn btn-primary w-100"
+                                        onclick="loadRateStudents()"><i class="fa-solid fa-arrow-rotate-right"></i>
+                                        بروزرسانی</button></div>
+                            </div>
+                        </div>
+                        <div id="rateStudentsList" class="row"></div>
+                    </div>
+
+                    <!-- تب ثبت شکایت -->
+                    <div class="tab-pane fade" id="complaintTab">
+                        <div class="filter-box">
+                            <div class="row g-3">
+                                <div class="col-md-4"><select id="complaintClassFilter" class="form-select"
+                                        onchange="loadComplaintStudents()">
+                                        <option value="">همه صنف‌ها</option>
+                                    </select></div>
+                                <div class="col-md-4"><input type="text" id="complaintSearch" class="form-control"
+                                        placeholder="جستجوی نام یا آیدی..." oninput="filterComplaintStudents()"></div>
+                                <div class="col-md-4"><button class="btn btn-primary w-100"
+                                        onclick="loadComplaintStudents()"><i class="fa-solid fa-arrow-rotate-right"></i>
+                                        بروزرسانی</button></div>
+                            </div>
+                        </div>
+                        <div id="complaintStudentsList" class="row"></div>
+                    </div>
+
+                    <!-- تب تاریخچه -->
+                    <div class="tab-pane fade" id="historyTab">
+                        <div id="historyList" class="mt-3"></div>
                     </div>
                 </div>
-
-                <div id="studentsList" class="row"></div>
             </div>
         </div>
     </div>
 
-    <!-- مودال ثبت امتیاز/شکایت -->
+    <!-- مودال ثبت امتیاز -->
     <div class="modal fade" id="rateModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
-                    <h5 class="modal-title"><i class="fa-solid fa-star"></i> ثبت امتیاز / شکایت</h5>
+                    <h5 class="modal-title"><i class="fa-solid fa-star"></i> ثبت امتیاز</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rateStudentId">
+                    <input type="hidden" id="rateClassId">
                     <div class="mb-3"><label class="form-label">شاگرد</label><input type="text" id="rateStudentName"
                             class="form-control" disabled></div>
                     <div class="mb-3"><label class="form-label">امتیاز (1 تا 10)</label>
-                        <div id="ratingStars" class="mb-2">
+                        <div id="ratingStars" class="mb-2 text-center">
                             <span class="rating-star" data-value="1">☆</span>
                             <span class="rating-star" data-value="2">☆</span>
                             <span class="rating-star" data-value="3">☆</span>
@@ -191,13 +261,34 @@
                             <span class="rating-star" data-value="10">☆</span>
                         </div>
                         <input type="hidden" id="ratingValue">
-                        <small class="text-muted">در صورت تمایل امتیاز دهید</small>
+                        <small class="text-muted">برای ثبت امتیاز روی ستاره‌ها کلیک کنید</small>
                     </div>
-                    <div class="mb-3"><label class="form-label">متن شکایت / توضیحات</label><textarea id="complaintText"
-                            class="form-control" rows="4"
-                            placeholder="در صورت وجود مشکل یا شکایت اینجا بنویسید..."></textarea></div>
-                    <button class="btn btn-primary w-100" onclick="submitRating()"><i
-                            class="fa-solid fa-paper-plane"></i> ثبت</button>
+                    <div class="mb-3"><label class="form-label">یادداشت (اختیاری)</label><textarea id="ratingNotes"
+                            class="form-control" rows="2" placeholder="توضیحات اضافی..."></textarea></div>
+                    <button class="btn btn-warning w-100" onclick="submitRating()"><i class="fa-solid fa-star"></i> ثبت
+                        امتیاز</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال ثبت شکایت -->
+    <div class="modal fade" id="complaintModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-message"></i> ثبت شکایت</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="complaintStudentId">
+                    <input type="hidden" id="complaintClassId">
+                    <div class="mb-3"><label class="form-label">شاگرد</label><input type="text"
+                            id="complaintStudentName" class="form-control" disabled></div>
+                    <div class="mb-3"><label class="form-label">متن شکایت</label><textarea id="complaintText"
+                            class="form-control" rows="5" placeholder="شرح مشکل را بنویسید..."></textarea></div>
+                    <button class="btn btn-danger w-100" onclick="submitComplaint()"><i
+                            class="fa-solid fa-paper-plane"></i> ثبت شکایت</button>
                 </div>
             </div>
         </div>
@@ -207,8 +298,10 @@
     <script src="/main.js"></script>
     <script>
         let teacherId = localStorage.getItem('userId') || 3;
-        let allStudents = [];
+        let allRateStudents = [];
+        let allComplaintStudents = [];
         let rateModal = null;
+        let complaintModal = null;
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
@@ -220,32 +313,52 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) { sidebar.classList.remove('show'); overlay.classList.remove('show'); } });
         }
 
+        // تنظیم ستاره‌ها
+        function setupStars() {
+            document.querySelectorAll('#ratingStars .rating-star').forEach(star => {
+                star.addEventListener('click', function () {
+                    const value = parseInt(this.dataset.value);
+                    document.getElementById('ratingValue').value = value;
+                    document.querySelectorAll('#ratingStars .rating-star').forEach((s, index) => {
+                        if (index < value) {
+                            s.innerHTML = '★';
+                            s.classList.add('selected');
+                        } else {
+                            s.innerHTML = '☆';
+                            s.classList.remove('selected');
+                        }
+                    });
+                });
+            });
+        }
+
         async function loadClasses() {
             try {
                 const res = await fetch(`/api/teacher/classes/${teacherId}`);
                 const classes = await res.json();
-                const select = document.getElementById('classFilter');
-                select.innerHTML = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                const options = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                document.getElementById('rateClassFilter').innerHTML = options;
+                document.getElementById('complaintClassFilter').innerHTML = options;
             } catch (err) { console.error(err); }
         }
 
-        async function loadStudents() {
-            const classId = document.getElementById('classFilter').value;
+        // بارگذاری شاگردان برای امتیاز
+        async function loadRateStudents() {
+            const classId = document.getElementById('rateClassFilter').value;
             try {
                 const res = await fetch(`/api/teacher/students/${teacherId}`);
                 let students = await res.json();
                 if (classId) students = students.filter(s => s.class_id == classId);
-                allStudents = students;
-                displayStudents(students);
+                allRateStudents = students;
+                displayRateStudents(students);
             } catch (err) { console.error(err); }
         }
 
-        function displayStudents(students) {
+        function displayRateStudents(students) {
             if (students.length === 0) {
-                document.getElementById('studentsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">هیچ شاگردی یافت نشد</div></div>';
+                document.getElementById('rateStudentsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">هیچ شاگردی یافت نشد</div></div>';
                 return;
             }
-
             let html = '';
             for (const s of students) {
                 html += `
@@ -261,113 +374,212 @@
                                 </div>
                             </div>
                             <hr>
-                            <div class="d-flex gap-2 justify-content-center">
+                            <div class="text-center">
                                 <button class="btn btn-sm btn-warning" onclick="openRateModal(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.class_id})">
-                                    <i class="fa-solid fa-star"></i> امتیاز / شکایت
+                                    <i class="fa-solid fa-star"></i> ثبت امتیاز
                                 </button>
                             </div>
                         </div>
                     </div>
                 `;
             }
-            document.getElementById('studentsList').innerHTML = html;
+            document.getElementById('rateStudentsList').innerHTML = html;
         }
 
-        function filterStudents() {
-            const search = document.getElementById('searchStudent').value.toLowerCase();
-            const filtered = allStudents.filter(s =>
-                s.name.toLowerCase().includes(search) ||
-                (s.student_card_id && s.student_card_id.toLowerCase().includes(search))
-            );
-            displayStudents(filtered);
+        function filterRateStudents() {
+            const search = document.getElementById('rateSearch').value.toLowerCase();
+            const filtered = allRateStudents.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
+            displayRateStudents(filtered);
         }
 
         function openRateModal(studentId, studentName, classId) {
             document.getElementById('rateStudentId').value = studentId;
+            document.getElementById('rateClassId').value = classId;
             document.getElementById('rateStudentName').value = studentName;
             document.getElementById('ratingValue').value = '';
-            document.getElementById('complaintText').value = '';
-
-            // تنظیم ستاره‌ها
-            document.querySelectorAll('.rating-star').forEach(star => {
-                star.innerHTML = '☆';
-                star.style.color = '#cbd5e1';
+            document.getElementById('ratingNotes').value = '';
+            document.querySelectorAll('#ratingStars .rating-star').forEach((s, index) => {
+                s.innerHTML = '☆';
+                s.classList.remove('selected');
             });
-
             rateModal.show();
+            setupStars();
         }
-
-        // ستاره‌ها
-        document.querySelectorAll('.rating-star').forEach(star => {
-            star.addEventListener('click', function () {
-                const value = parseInt(this.dataset.value);
-                document.getElementById('ratingValue').value = value;
-                document.querySelectorAll('.rating-star').forEach((s, index) => {
-                    if (index < value) {
-                        s.innerHTML = '★';
-                        s.style.color = '#f59e0b';
-                    } else {
-                        s.innerHTML = '☆';
-                        s.style.color = '#cbd5e1';
-                    }
-                });
-            });
-        });
 
         async function submitRating() {
             const studentId = document.getElementById('rateStudentId').value;
-            const studentName = document.getElementById('rateStudentName').value;
+            const classId = document.getElementById('rateClassId').value;
             const rating = document.getElementById('ratingValue').value;
-            const complaint = document.getElementById('complaintText').value;
-            const classId = allStudents.find(s => s.id == studentId)?.class_id;
+            const notes = document.getElementById('ratingNotes').value;
 
-            if (!rating && !complaint) {
-                alert('❌ لطفاً امتیاز یا متن شکایت را وارد کنید');
-                return;
-            }
+            if (!rating) { alert('❌ لطفاً امتیاز را انتخاب کنید'); return; }
 
-            const submitBtn = event.target;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
 
             try {
                 const res = await fetch('/api/teacher/rate-student', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        student_id: studentId,
-                        class_id: classId,
-                        rating: rating || null,
-                        complaint: complaint || null
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, class_id: classId, rating: rating, notes: notes })
                 });
-
                 const data = await res.json();
                 if (res.ok) {
-                    alert(`✅ ${rating ? 'امتیاز' : 'شکایت'} با موفقیت ثبت شد`);
+                    alert('✅ امتیاز با موفقیت ثبت شد');
                     rateModal.hide();
-                    loadStudents();
-                } else {
-                    alert('❌ خطا: ' + data.error);
-                }
-            } catch (err) {
-                alert('❌ خطا در ارتباط با سرور');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ثبت';
+                    loadRateStudents();
+                    loadHistory();
+                } else { alert('❌ خطا: ' + data.error); }
+            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-star"></i> ثبت امتیاز'; }
+        }
+
+        // بارگذاری شاگردان برای شکایت
+        async function loadComplaintStudents() {
+            const classId = document.getElementById('complaintClassFilter').value;
+            try {
+                const res = await fetch(`/api/teacher/students/${teacherId}`);
+                let students = await res.json();
+                if (classId) students = students.filter(s => s.class_id == classId);
+                allComplaintStudents = students;
+                displayComplaintStudents(students);
+            } catch (err) { console.error(err); }
+        }
+
+        function displayComplaintStudents(students) {
+            if (students.length === 0) {
+                document.getElementById('complaintStudentsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">هیچ شاگردی یافت نشد</div></div>';
+                return;
             }
+            let html = '';
+            for (const s of students) {
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="student-card">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="${s.photo || '/default-avatar.png'}" class="student-photo" onerror="this.src='/default-avatar.png'">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">${s.name}</h6>
+                                    <small class="text-muted">${s.student_card_id || '-'}</small>
+                                    <div><small>پدر: ${s.father_name || '-'}</small></div>
+                                    <div><small>صنف: ${s.class_name || '-'}</small></div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <button class="btn btn-sm btn-danger" onclick="openComplaintModal(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.class_id})">
+                                    <i class="fa-solid fa-message"></i> ثبت شکایت
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('complaintStudentsList').innerHTML = html;
+        }
+
+        function filterComplaintStudents() {
+            const search = document.getElementById('complaintSearch').value.toLowerCase();
+            const filtered = allComplaintStudents.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
+            displayComplaintStudents(filtered);
+        }
+
+        function openComplaintModal(studentId, studentName, classId) {
+            document.getElementById('complaintStudentId').value = studentId;
+            document.getElementById('complaintClassId').value = classId;
+            document.getElementById('complaintStudentName').value = studentName;
+            document.getElementById('complaintText').value = '';
+            complaintModal.show();
+        }
+
+        async function submitComplaint() {
+            const studentId = document.getElementById('complaintStudentId').value;
+            const classId = document.getElementById('complaintClassId').value;
+            const complaint = document.getElementById('complaintText').value;
+
+            if (!complaint.trim()) { alert('❌ لطفاً متن شکایت را وارد کنید'); return; }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
+
+            try {
+                const res = await fetch('/api/teacher/complaint-student', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, class_id: classId, complaint: complaint })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ شکایت با موفقیت ثبت شد');
+                    complaintModal.hide();
+                    loadComplaintStudents();
+                    loadHistory();
+                } else { alert('❌ خطا: ' + data.error); }
+            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ثبت شکایت'; }
+        }
+
+        // بارگذاری تاریخچه
+        async function loadHistory() {
+            try {
+                const res = await fetch(`/api/teacher/my-ratings/${teacherId}`);
+                const data = await res.json();
+                if (!data || data.length === 0) {
+                    document.getElementById('historyList').innerHTML = '<div class="alert alert-info text-center">هیچ امتیاز یا شکایتی ثبت نشده است</div>';
+                    return;
+                }
+                let html = '';
+                for (const r of data) {
+                    if (r.rating) {
+                        // نمایش امتیاز
+                        let stars = '';
+                        for (let i = 1; i <= 10; i++) {
+                            stars += i <= r.rating ? '★' : '☆';
+                        }
+                        html += `
+                            <div class="rating-card pending">
+                                <div class="d-flex justify-content-between flex-wrap">
+                                    <div><strong>شاگرد:</strong> ${r.student_name}</div>
+                                    <div><strong>صنف:</strong> ${r.class_name}</div>
+                                    <div><small class="text-muted">${r.created_date}</small></div>
+                                </div>
+                                <div class="mt-2"><strong>امتیاز:</strong> <span class="text-warning">${stars}</span> (${r.rating}/10)</div>
+                                ${r.notes ? `<div class="mt-1"><small class="text-muted">یادداشت: ${r.notes}</small></div>` : ''}
+                                <div class="mt-2"><span class="badge ${r.status === 'pending' ? 'bg-warning' : 'bg-success'}">${r.status === 'pending' ? 'در انتظار' : 'پاسخ داده شد'}</span></div>
+                            </div>
+                        `;
+                    } else if (r.complaint) {
+                        // نمایش شکایت
+                        html += `
+                            <div class="rating-card ${r.status === 'pending' ? 'pending' : 'responded'}">
+                                <div class="d-flex justify-content-between flex-wrap">
+                                    <div><strong>شاگرد:</strong> ${r.student_name}</div>
+                                    <div><strong>صنف:</strong> ${r.class_name}</div>
+                                    <div><small class="text-muted">${r.created_date}</small></div>
+                                </div>
+                                <div class="mt-2"><strong>شکایت:</strong><p class="mt-1">${r.complaint}</p></div>
+                                ${r.response ? `<div class="alert alert-success mt-2"><strong>پاسخ مدیر:</strong><br>${r.response}</div>` : ''}
+                                <div class="mt-2"><span class="badge ${r.status === 'pending' ? 'bg-warning' : 'bg-success'}">${r.status === 'pending' ? 'در انتظار پاسخ' : 'پاسخ داده شد'}</span></div>
+                            </div>
+                        `;
+                    }
+                }
+                document.getElementById('historyList').innerHTML = html;
+            } catch (err) { console.error(err); }
         }
 
         rateModal = new bootstrap.Modal(document.getElementById('rateModal'));
+        complaintModal = new bootstrap.Modal(document.getElementById('complaintModal'));
         setupSidebar();
         loadClasses();
-        loadStudents();
+        loadRateStudents();
+        loadComplaintStudents();
+        loadHistory();
 
         fetch(`/api/teacher/info/${teacherId}`)
             .then(res => res.json())
-            .then(data => {
-                document.getElementById('teacherNameSidebar').innerText = data.name || 'استاد';
-            }).catch(err => console.error(err));
+            .then(data => { document.getElementById('teacherNameSidebar').innerText = data.name || 'استاد'; })
+            .catch(err => console.error(err));
     </script>
 </body>
 

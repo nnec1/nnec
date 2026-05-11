@@ -3175,6 +3175,185 @@ app.put("/api/admin/respond-rating/:id", authenticate, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+
+// ====================== ثبت امتیاز توسط استاد ======================
+app.post("/api/teacher/rate-student", authenticate, async (req, res) => {
+    const { student_id, class_id, rating, notes } = req.body;
+    const teacher_id = req.user.id;
+    
+    if (req.user.role !== "teacher") {
+        return res.status(403).json({ error: "فقط استاد می‌تواند امتیاز ثبت کند" });
+    }
+    
+    if (!student_id || !class_id || !rating) {
+        return res.status(400).json({ error: "اطلاعات کامل نیست" });
+    }
+    
+    if (rating < 1 || rating > 10) {
+        return res.status(400).json({ error: "امتیاز باید بین 1 تا 10 باشد" });
+    }
+    
+    try {
+        const [check] = await db.execute(`
+            SELECT s.id FROM students s
+            JOIN teacher_classes tc ON s.class_id = tc.class_id
+            WHERE s.id = ? AND tc.teacher_id = ?
+        `, [student_id, teacher_id]);
+        
+        if (check.length === 0) {
+            return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
+        }
+        
+        const [result] = await db.execute(`
+            INSERT INTO ratings (student_id, teacher_id, class_id, rating, complaint, status)
+            VALUES (?, ?, ?, ?, NULL, 'pending')
+        `, [student_id, teacher_id, class_id, rating]);
+        
+        res.json({ success: true, id: result.insertId, message: "امتیاز با موفقیت ثبت شد" });
+    } catch (err) {
+        console.error("❌ Error in POST /api/teacher/rate-student:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== ثبت شکایت توسط استاد ======================
+app.post("/api/teacher/complaint-student", authenticate, async (req, res) => {
+    const { student_id, class_id, complaint } = req.body;
+    const teacher_id = req.user.id;
+    
+    if (req.user.role !== "teacher") {
+        return res.status(403).json({ error: "فقط استاد می‌تواند شکایت ثبت کند" });
+    }
+    
+    if (!student_id || !class_id || !complaint) {
+        return res.status(400).json({ error: "اطلاعات کامل نیست" });
+    }
+    
+    try {
+        const [check] = await db.execute(`
+            SELECT s.id FROM students s
+            JOIN teacher_classes tc ON s.class_id = tc.class_id
+            WHERE s.id = ? AND tc.teacher_id = ?
+        `, [student_id, teacher_id]);
+        
+        if (check.length === 0) {
+            return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
+        }
+        
+        const [result] = await db.execute(`
+            INSERT INTO ratings (student_id, teacher_id, class_id, rating, complaint, status)
+            VALUES (?, ?, ?, NULL, ?, 'pending')
+        `, [student_id, teacher_id, class_id, complaint]);
+        
+        res.json({ success: true, id: result.insertId, message: "شکایت با موفقیت ثبت شد" });
+    } catch (err) {
+        console.error("❌ Error in POST /api/teacher/complaint-student:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== دریافت همه امتیازات و شکایات (برای مدیر) ======================
+app.get("/api/admin/all-ratings", authenticate, async (req, res) => {
+    if (req.user.role !== "admin" && req.user.role !== "ceo") {
+        return res.status(403).json({ error: "دسترسی محدود" });
+    }
+    
+    try {
+        const [results] = await db.execute(`
+            SELECT r.*, 
+                   s.name as student_name, s.student_card_id, 
+                   e.name as teacher_name, 
+                   c.class_name,
+                   DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') as created_date
+            FROM ratings r
+            JOIN students s ON r.student_id = s.id
+            JOIN employees e ON r.teacher_id = e.id
+            JOIN classes c ON r.class_id = c.id
+            ORDER BY r.created_at DESC
+        `);
+        
+        res.json(results);
+    } catch (err) {
+        console.error("❌ Error in GET /api/admin/all-ratings:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== دریافت امتیازات و شکایات یک استاد ======================
+app.get("/api/teacher/my-ratings/:teacherId", authenticate, async (req, res) => {
+    const teacherId = req.params.teacherId;
+    
+    if (req.user.role !== "teacher" || req.user.id != teacherId) {
+        return res.status(403).json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
+    }
+    
+    try {
+        const [results] = await db.execute(`
+            SELECT r.*, s.name as student_name, s.student_card_id, c.class_name,
+                   DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') as created_date
+            FROM ratings r
+            JOIN students s ON r.student_id = s.id
+            JOIN classes c ON r.class_id = c.id
+            WHERE r.teacher_id = ?
+            ORDER BY r.created_at DESC
+        `, [teacherId]);
+        
+        res.json(results);
+    } catch (err) {
+        console.error("❌ Error in GET /api/teacher/my-ratings/:teacherId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== دریافت امتیازات و شکایات یک شاگرد ======================
+app.get("/api/student/ratings/:studentId", authenticate, async (req, res) => {
+    const studentId = req.params.studentId;
+    
+    if (req.user.role === "student" && req.user.id != studentId) {
+        return res.status(403).json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
+    }
+    
+    try {
+        const [results] = await db.execute(`
+            SELECT r.*, e.name as teacher_name, c.class_name,
+                   DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') as created_date
+            FROM ratings r
+            JOIN employees e ON r.teacher_id = e.id
+            JOIN classes c ON r.class_id = c.id
+            WHERE r.student_id = ?
+            ORDER BY r.created_at DESC
+        `, [studentId]);
+        
+        res.json(results);
+    } catch (err) {
+        console.error("❌ Error in GET /api/student/ratings/:studentId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== پاسخ به شکایت توسط مدیر ======================
+app.put("/api/admin/respond-rating/:id", authenticate, async (req, res) => {
+    const { response } = req.body;
+    const ratingId = req.params.id;
+    
+    if (req.user.role !== "admin" && req.user.role !== "ceo") {
+        return res.status(403).json({ error: "فقط مدیر می‌تواند پاسخ دهد" });
+    }
+    
+    try {
+        await db.execute(`
+            UPDATE ratings SET response = ?, status = 'responded', updated_at = NOW()
+            WHERE id = ?
+        `, [response, ratingId]);
+        
+        res.json({ success: true, message: "پاسخ با موفقیت ثبت شد" });
+    } catch (err) {
+        console.error("❌ Error in PUT /api/admin/respond-rating/:id:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
