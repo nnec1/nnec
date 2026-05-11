@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مدیریت امتیازات و شکایات | آموزشگاه نوی نور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .rating-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .pending { border-right: 4px solid #f59e0b; }
+        .responded { border-right: 4px solid #10b981; }
+        .filter-box { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="overlay" id="overlay"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="text-center py-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                        <i class="fa-solid fa-building fs-1 text-white"></i>
+                    </div>
+                    <h5 class="text-white mb-0">پنل مدیریت</h5>
+                    <small class="text-muted" id="adminName">مدیر سیستم</small>
+                </div>
+                <nav class="nav flex-column mt-2">
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
+                    <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
+                    <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
+                    <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
+                    <a href="rating.html" class="nav-link active"><i class="fa-solid fa-star"></i> امتیازات و شکایات</a>
+                    <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
+                    <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
+                    <hr class="text-secondary mx-3 my-2">
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <h3 class="section-title"><i class="fa-solid fa-star text-warning me-2"></i> مدیریت امتیازات و شکایات</h3>
+                    <button class="btn btn-secondary" onclick="loadRatings()"><i class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button>
+                </div>
+
+                <div class="filter-box">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select" onchange="loadRatings()">
+                                <option value="">همه</option>
+                                <option value="pending">در انتظار پاسخ</option>
+                                <option value="responded">پاسخ داده شده</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" id="searchRating" class="form-control" placeholder="جستجوی شاگرد یا استاد..." oninput="filterRatings()">
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="loadRatings()"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ratingsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال پاسخ به شکایت -->
+    <div class="modal fade" id="responseModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:white">
+                    <h5 class="modal-title"><i class="fa-solid fa-reply"></i> پاسخ به شکایت</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="responseRatingId">
+                    <div id="complaintContent" class="alert alert-secondary"></div>
+                    <textarea id="responseText" class="form-control" rows="4" placeholder="پاسخ شما..."></textarea>
+                    <button class="btn btn-success w-100 mt-3" onclick="sendResponse()"><i class="fa-solid fa-paper-plane"></i> ارسال پاسخ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/main.js"></script>
+    <script>
+        let allRatings = [];
+        let responseModal = null;
+
+        function setupSidebar() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!toggleBtn) return;
+            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
+            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            toggleBtn.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return dateString;
+        }
+
+        async function loadRatings() {
+            try {
+                const res = await fetch('/api/admin/all-ratings');
+                if (!res.ok) {
+                    if (res.status === 403) {
+                        document.getElementById('ratingsList').innerHTML = '<div class="alert alert-danger text-center">شما دسترسی به این بخش ندارید</div>';
+                        return;
+                    }
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                allRatings = await res.json();
+                if (!Array.isArray(allRatings)) allRatings = [];
+                filterRatings();
+            } catch (err) { 
+                console.error(err); 
+                document.getElementById('ratingsList').innerHTML = '<div class="alert alert-danger">❌ خطا: ' + err.message + '</div>';
+            }
+        }
+
+        function filterRatings() {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchRating').value.toLowerCase();
+            
+            let filtered = [...allRatings];
+            if (status) filtered = filtered.filter(r => r.status === status);
+            if (search) filtered = filtered.filter(r => (r.student_name && r.student_name.toLowerCase().includes(search)) || (r.teacher_name && r.teacher_name.toLowerCase().includes(search)));
+            
+            if (filtered.length === 0) {
+                document.getElementById('ratingsList').innerHTML = '<div class="alert alert-info text-center">نتیجه‌ای یافت نشد</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const r of filtered) {
+                html += `
+                    <div class="rating-card ${r.status === 'pending' ? 'pending' : 'responded'}">
+                        <div class="d-flex justify-content-between flex-wrap">
+                            <div><strong>شاگرد:</strong> ${r.student_name || '-'} (${r.student_card_id || '-'})</div>
+                            <div><strong>استاد:</strong> ${r.teacher_name || '-'}</div>
+                            <div><strong>صنف:</strong> ${r.class_name || '-'}</div>
+                            <div><small class="text-muted">${formatDate(r.created_date)}</small></div>
+                        </div>
+                        ${r.rating ? `<div class="mt-2"><strong>امتیاز:</strong> ${r.rating}/10</div>` : ''}
+                        ${r.complaint ? `<div class="mt-2"><strong>شکایت:</strong><p class="mt-1">${r.complaint}</p></div>` : ''}
+                        ${r.response ? `<div class="alert alert-success mt-2"><strong>پاسخ:</strong> ${r.response}</div>` : ''}
+                        ${r.complaint && !r.response ? `<button class="btn btn-sm btn-primary mt-2" onclick="openResponseModal(${r.id}, '${(r.complaint || '').replace(/'/g, "\\'")}')"><i class="fa-solid fa-reply"></i> پاسخ</button>` : ''}
+                    </div>
+                `;
+            }
+            document.getElementById('ratingsList').innerHTML = html;
+        }
+
+        function openResponseModal(id, complaint) {
+            document.getElementById('responseRatingId').value = id;
+            document.getElementById('complaintContent').innerHTML = `<strong>متن شکایت:</strong><br>${complaint}`;
+            document.getElementById('responseText').value = '';
+            responseModal.show();
+        }
+
+        async function sendResponse() {
+            const id = document.getElementById('responseRatingId').value;
+            const response = document.getElementById('responseText').value;
+            if (!response.trim()) { alert('لطفاً پاسخ را وارد کنید'); return; }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ارسال...';
+            
+            try {
+                const res = await fetch(`/api/admin/respond-rating/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ response })
+                });
+                if (res.ok) {
+                    alert('✅ پاسخ با موفقیت ارسال شد');
+                    responseModal.hide();
+                    loadRatings();
+                } else {
+                    const data = await res.json();
+                    alert('❌ خطا: ' + (data.error || 'مشخص نیست'));
+                }
+            } catch (err) {
+                alert('❌ خطا در ارتباط با سرور');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ارسال پاسخ';
+            }
+        }
+
+        responseModal = new bootstrap.Modal(document.getElementById('responseModal'));
+        setupSidebar();
+        loadRatings();
+    </script>
+</body>
+</html>
