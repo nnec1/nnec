@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -14,14 +15,40 @@
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
-        .student-card:hover { transform: translateX(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .filter-box { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .rating-star { color: #f59e0b; font-size: 1.2rem; cursor: pointer; }
-        .rating-star:hover { transform: scale(1.1); }
-        .student-photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+
+        .student-card:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-box {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .rating-star {
+            color: #f59e0b;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .rating-star:hover {
+            transform: scale(1.1);
+        }
+
+        .student-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -34,25 +61,59 @@
             height: 48px;
             border-radius: 14px;
             font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
-            .overlay.show { display: block; }
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
-           <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
                         style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
@@ -68,7 +129,7 @@
                     <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> کارخانگی</a>
 
                     <!-- <a href="transfer-student.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> -->
-                    انتقال شاگرد</a>
+
                     <a href="manage-students.html" class="nav-link "><i class="fa-solid fa-users-gear"></i> مدیریت
                         شاگردان</a>
                     <a href="rate-student.html" class="nav-link"><i class="fa-solid fa-star"></i> امتیاز و شکایت</a>
@@ -83,14 +144,19 @@
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="fa-solid fa-star text-warning me-2"></i> امتیاز و شکایت شاگردان</h3>
+                    <h3 class="section-title"><i class="fa-solid fa-star text-warning me-2"></i> امتیاز و شکایت شاگردان
+                    </h3>
                 </div>
 
                 <div class="filter-box">
                     <div class="row g-3">
-                        <div class="col-md-4"><select id="classFilter" class="form-select" onchange="loadStudents()"><option value="">همه صنف‌ها</option></select></div>
-                        <div class="col-md-4"><input type="text" id="searchStudent" class="form-control" placeholder="جستجوی نام یا آیدی..." oninput="filterStudents()"></div>
-                        <div class="col-md-4"><button class="btn btn-primary w-100" onclick="loadStudents()"><i class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button></div>
+                        <div class="col-md-4"><select id="classFilter" class="form-select" onchange="loadStudents()">
+                                <option value="">همه صنف‌ها</option>
+                            </select></div>
+                        <div class="col-md-4"><input type="text" id="searchStudent" class="form-control"
+                                placeholder="جستجوی نام یا آیدی..." oninput="filterStudents()"></div>
+                        <div class="col-md-4"><button class="btn btn-primary w-100" onclick="loadStudents()"><i
+                                    class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button></div>
                     </div>
                 </div>
 
@@ -109,7 +175,8 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rateStudentId">
-                    <div class="mb-3"><label class="form-label">شاگرد</label><input type="text" id="rateStudentName" class="form-control" disabled></div>
+                    <div class="mb-3"><label class="form-label">شاگرد</label><input type="text" id="rateStudentName"
+                            class="form-control" disabled></div>
                     <div class="mb-3"><label class="form-label">امتیاز (1 تا 10)</label>
                         <div id="ratingStars" class="mb-2">
                             <span class="rating-star" data-value="1">☆</span>
@@ -126,8 +193,11 @@
                         <input type="hidden" id="ratingValue">
                         <small class="text-muted">در صورت تمایل امتیاز دهید</small>
                     </div>
-                    <div class="mb-3"><label class="form-label">متن شکایت / توضیحات</label><textarea id="complaintText" class="form-control" rows="4" placeholder="در صورت وجود مشکل یا شکایت اینجا بنویسید..."></textarea></div>
-                    <button class="btn btn-primary w-100" onclick="submitRating()"><i class="fa-solid fa-paper-plane"></i> ثبت</button>
+                    <div class="mb-3"><label class="form-label">متن شکایت / توضیحات</label><textarea id="complaintText"
+                            class="form-control" rows="4"
+                            placeholder="در صورت وجود مشکل یا شکایت اینجا بنویسید..."></textarea></div>
+                    <button class="btn btn-primary w-100" onclick="submitRating()"><i
+                            class="fa-solid fa-paper-plane"></i> ثبت</button>
                 </div>
             </div>
         </div>
@@ -175,7 +245,7 @@
                 document.getElementById('studentsList').innerHTML = '<div class="col-12"><div class="alert alert-info text-center">هیچ شاگردی یافت نشد</div></div>';
                 return;
             }
-            
+
             let html = '';
             for (const s of students) {
                 html += `
@@ -205,8 +275,8 @@
 
         function filterStudents() {
             const search = document.getElementById('searchStudent').value.toLowerCase();
-            const filtered = allStudents.filter(s => 
-                s.name.toLowerCase().includes(search) || 
+            const filtered = allStudents.filter(s =>
+                s.name.toLowerCase().includes(search) ||
                 (s.student_card_id && s.student_card_id.toLowerCase().includes(search))
             );
             displayStudents(filtered);
@@ -217,19 +287,19 @@
             document.getElementById('rateStudentName').value = studentName;
             document.getElementById('ratingValue').value = '';
             document.getElementById('complaintText').value = '';
-            
+
             // تنظیم ستاره‌ها
             document.querySelectorAll('.rating-star').forEach(star => {
                 star.innerHTML = '☆';
                 star.style.color = '#cbd5e1';
             });
-            
+
             rateModal.show();
         }
 
         // ستاره‌ها
         document.querySelectorAll('.rating-star').forEach(star => {
-            star.addEventListener('click', function() {
+            star.addEventListener('click', function () {
                 const value = parseInt(this.dataset.value);
                 document.getElementById('ratingValue').value = value;
                 document.querySelectorAll('.rating-star').forEach((s, index) => {
@@ -250,16 +320,16 @@
             const rating = document.getElementById('ratingValue').value;
             const complaint = document.getElementById('complaintText').value;
             const classId = allStudents.find(s => s.id == studentId)?.class_id;
-            
+
             if (!rating && !complaint) {
                 alert('❌ لطفاً امتیاز یا متن شکایت را وارد کنید');
                 return;
             }
-            
+
             const submitBtn = event.target;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ثبت...';
-            
+
             try {
                 const res = await fetch('/api/teacher/rate-student', {
                     method: 'POST',
@@ -271,7 +341,7 @@
                         complaint: complaint || null
                     })
                 });
-                
+
                 const data = await res.json();
                 if (res.ok) {
                     alert(`✅ ${rating ? 'امتیاز' : 'شکایت'} با موفقیت ثبت شد`);
@@ -292,7 +362,7 @@
         setupSidebar();
         loadClasses();
         loadStudents();
-        
+
         fetch(`/api/teacher/info/${teacherId}`)
             .then(res => res.json())
             .then(data => {
@@ -300,4 +370,5 @@
             }).catch(err => console.error(err));
     </script>
 </body>
+
 </html>
