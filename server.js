@@ -2975,7 +2975,7 @@ app.get("/api/teacher/homework/:teacherId", authenticate, async (req, res) => {
   }
 });
 
-// ====================== دریافت یک تکلیف خاص ======================
+// ====================== دریافت یک کارخانگی خاص ======================
 app.get("/api/homework/:id", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
@@ -2989,7 +2989,7 @@ app.get("/api/homework/:id", authenticate, async (req, res) => {
     );
 
     if (results.length === 0) {
-      return res.status(404).json({ error: "تکلیف یافت نشد" });
+      return res.status(404).json({ error: "کارخانگی یافت نشد" });
     }
 
     res.json(results[0]);
@@ -2999,7 +2999,7 @@ app.get("/api/homework/:id", authenticate, async (req, res) => {
   }
 });
 
-// ====================== ایجاد تکلیف جدید ======================
+// ====================== ایجاد کارخانگی جدید ======================
 app.post("/api/homework", authenticate, async (req, res) => {
   const { class_id, teacher_id, homework_date, due_date, assignment } =
     req.body;
@@ -3017,14 +3017,14 @@ app.post("/api/homework", authenticate, async (req, res) => {
       [class_id, teacher_id, homework_date, due_date || null, assignment],
     );
 
-    res.json({ id: result.insertId, message: "تکلیف با موفقیت اضافه شد" });
+    res.json({ id: result.insertId, message: "کارخانگی با موفقیت اضافه شد" });
   } catch (err) {
     console.error("❌ Error in POST /api/homework:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ====================== ویرایش تکلیف ======================
+// ====================== ویرایش کارخانگی ======================
 app.put("/api/homework/:id", authenticate, async (req, res) => {
   const { class_id, teacher_id, homework_date, due_date, assignment } =
     req.body;
@@ -3046,18 +3046,18 @@ app.put("/api/homework/:id", authenticate, async (req, res) => {
       ],
     );
 
-    res.json({ message: "تکلیف با موفقیت ویرایش شد" });
+    res.json({ message: "کارخانگی با موفقیت ویرایش شد" });
   } catch (err) {
     console.error("❌ Error in PUT /api/homework/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ====================== حذف تکلیف ======================
+// ====================== حذف کارخانگی ======================
 app.delete("/api/homework/:id", authenticate, async (req, res) => {
   try {
     await db.execute(`DELETE FROM homework WHERE id = ?`, [req.params.id]);
-    res.json({ message: "تکلیف با موفقیت حذف شد" });
+    res.json({ message: "کارخانگی با موفقیت حذف شد" });
   } catch (err) {
     console.error("❌ Error in DELETE /api/homework/:id:", err);
     res.status(500).json({ error: err.message });
