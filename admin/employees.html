@@ -262,25 +262,37 @@
         async function deleteEmployee(id) { if (confirm('حذف شود؟')) { await fetch(`/api/employees/${id}`, { method: 'DELETE' }); loadEmployees(); } }
 
         async function editEmployee(id) {
-            const res = await fetch(`/api/employees/${id}`);
-            const e = await res.json();
-            editEmpId = id;
-            document.getElementById('empName').value = e.name || '';
-            document.getElementById('empFather').value = e.father_name || '';
-            document.getElementById('empPhone').value = e.phone || '';
-            document.getElementById('empEmail').value = e.email || '';
-            document.getElementById('empPosition').value = e.position || 'teacher';
-            document.getElementById('empSalary').value = e.salary || '';
-            document.getElementById('empHireDate').value = e.hire_date || '';
-            document.getElementById('empStatus').value = e.status || 'active';
-            document.getElementById('employeeModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش کارمند';
-            if (employeeModal) employeeModal.show();
+            try {
+                const res = await fetch(`/api/employees/${id}`);
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        alert('کارمند یافت نشد');
+                        return;
+                    }
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+                const e = await res.json();
+                editEmpId = id;
+                document.getElementById('empName').value = e.name || '';
+                document.getElementById('empFather').value = e.father_name || '';
+                document.getElementById('empPhone').value = e.phone || '';
+                document.getElementById('empEmail').value = e.email || '';
+                document.getElementById('empPosition').value = e.position || 'teacher';
+                document.getElementById('empSalary').value = e.salary || '';
+                document.getElementById('empHireDate').value = e.hire_date || '';
+                document.getElementById('empStatus').value = e.status || 'active';
+                document.getElementById('employeeModalLabel').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش کارمند';
+                if (employeeModal) employeeModal.show();
+            } catch (err) {
+                console.error(err);
+                alert('خطا در بارگیری اطلاعات: ' + err.message);
+            }
         }
-
         function resetEmployeeForm() { editEmpId = null; document.getElementById('employeeForm').reset(); document.getElementById('employeeModalLabel').innerHTML = '<i class="fa-solid fa-user-plus"></i> کارمند جدید'; }
 
         document.getElementById('employeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const formData = new FormData();
             formData.append('name', document.getElementById('empName').value);
             formData.append('father_name', document.getElementById('empFather').value);
@@ -290,15 +302,40 @@
             formData.append('salary', document.getElementById('empSalary').value);
             formData.append('hire_date', document.getElementById('empHireDate').value);
             formData.append('status', document.getElementById('empStatus').value);
-            if (document.getElementById('empPhoto').files[0]) formData.append('photo', document.getElementById('empPhoto').files[0]);
-            if (document.getElementById('empPassword').value) formData.append('password', document.getElementById('empPassword').value);
+
+            if (document.getElementById('empPhoto').files[0]) {
+                formData.append('photo', document.getElementById('empPhoto').files[0]);
+            }
+            if (document.getElementById('empPassword').value) {
+                formData.append('password', document.getElementById('empPassword').value);
+            }
+
             const url = editEmpId ? `/api/employees/${editEmpId}` : '/api/employees';
             const method = editEmpId ? 'PUT' : 'POST';
-            const res = await fetch(url, { method, body: formData });
-            if (res.ok) { alert(editEmpId ? 'کارمند ویرایش شد' : 'کارمند اضافه شد'); if (employeeModal) employeeModal.hide(); loadEmployees(); resetEmployeeForm(); }
-            else alert('خطا');
-        });
 
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ذخیره...';
+
+            try {
+                const res = await fetch(url, { method, body: formData });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(editEmpId ? '✅ کارمند ویرایش شد' : '✅ کارمند اضافه شد');
+                    if (employeeModal) employeeModal.hide();
+                    loadEmployees();
+                    resetEmployeeForm();
+                } else {
+                    alert('❌ خطا: ' + (data.error || 'مشخص نیست'));
+                }
+            } catch (err) {
+                alert('❌ خطا در ارتباط با سرور: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-save"></i> ذخیره';
+            }
+        });
         document.addEventListener('DOMContentLoaded', () => { employeeModal = new bootstrap.Modal(document.getElementById('employeeModal')); setupSidebar(); loadEmployees(); });
     </script>
 </body>

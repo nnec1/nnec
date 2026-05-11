@@ -1203,6 +1203,7 @@ app.post(
   },
 );
 
+// ====================== ویرایش کارمند ======================
 app.put(
   "/api/employees/:id",
   authenticate,
@@ -1220,36 +1221,61 @@ app.put(
       status,
     } = req.body;
     let photoPath = req.file ? `/uploads/${req.file.filename}` : null;
-    let setClause = `name=?, father_name=?, phone=?, email=?, position=?, salary=?, hire_date=?, status=?`;
-    let values = [
-      name,
-      toNull(father_name),
-      toNull(phone),
-      email,
-      position,
-      toNull(salary),
-      toNull(hire_date),
-      status,
-    ];
-    if (photoPath) {
-      setClause += `, photo=?`;
-      values.push(photoPath);
+
+    // فقط مدیر و ریس می‌توانند کارمند ویرایش کنند
+    if (req.user.role !== "ceo" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "دسترسی محدود" });
     }
-    if (password && password.trim()) {
-      const hashed = await bcrypt.hash(password, 10);
-      setClause += `, password=?`;
-      values.push(hashed);
+
+    // اگر نقش مدیر است و کاربر ریس نیست
+    if (position === "admin" && req.user.role !== "ceo") {
+      return res
+        .status(403)
+        .json({ error: "فقط ریس می‌تواند مدیر را ویرایش کند" });
     }
-    values.push(req.params.id);
+
     try {
-      await db.execute(`UPDATE employees SET ${setClause} WHERE id=?`, values);
-      res.json({ message: "به‌روز شد" });
+      let setClause = `name=?, father_name=?, phone=?, email=?, position=?, salary=?, hire_date=?, status=?`;
+      let values = [
+        name,
+        toNull(father_name),
+        toNull(phone),
+        email,
+        position,
+        toNull(salary),
+        toNull(hire_date),
+        status,
+      ];
+
+      if (photoPath) {
+        setClause += `, photo=?`;
+        values.push(photoPath);
+      }
+
+      if (password && password.trim()) {
+        const hashed = await bcrypt.hash(password, 10);
+        setClause += `, password=?`;
+        values.push(hashed);
+      }
+
+      values.push(req.params.id);
+
+      const [result] = await db.execute(
+        `UPDATE employees SET ${setClause} WHERE id=?`,
+        values,
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "کارمند یافت نشد" });
+      }
+
+      res.json({ success: true, message: "کارمند با موفقیت به‌روز شد" });
     } catch (err) {
+      console.error("❌ Error in PUT /api/employees/:id:", err);
       res.status(500).json({ error: err.message });
     }
   },
 );
-
 app.delete("/api/employees/:id", authenticate, async (req, res) => {
   if (req.user.role !== "ceo" && req.user.role !== "admin")
     return res.status(403).json({ error: "دسترسی محدود" });
