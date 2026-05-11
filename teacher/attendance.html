@@ -54,6 +54,12 @@
             border-right: 4px solid #f59e0b;
         }
 
+        .expired-row {
+            background-color: #fee2e2 !important;
+            border-right: 4px solid #dc2626;
+            opacity: 0.85;
+        }
+
         .checkbox-group {
             display: flex;
             gap: 15px;
@@ -82,6 +88,15 @@
 
         .fee-warning-badge:hover {
             background: #b91c1c;
+        }
+
+        .expired-tag {
+            background: #dc2626;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
         }
 
         .menu-toggle {
@@ -163,7 +178,6 @@
                         حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> تکالیف</a>
-
                     <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
@@ -213,7 +227,7 @@
                     </div>
                 </div>
             </div>
-            </table>
+            </tr>
             </tbody>
             </table>
         </div>
@@ -243,7 +257,7 @@
 
         function formatDate(dateString) {
             if (!dateString) return '-';
-            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+            try { const d = new Date(dateString); if (isNaN(d.getTime())) return dateString; return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
             catch (e) { return dateString; }
         }
 
@@ -259,16 +273,17 @@
 
         async function loadAttendanceList() {
             const classId = document.getElementById('attendanceClass').value;
-            if (!classId) { document.getElementById('attendanceList').innerHTML = '<table><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div></tr>'; return; }
+            if (!classId) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">لطفاً صنف را انتخاب کنید</div></div></div><tr>'; return; }
             const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
             try {
                 const res = await fetch(`/api/teacher/students/${teacherId}`);
                 let students = await res.json();
                 students = students.filter(s => s.class_id == classId);
-                if (students.length === 0) { document.getElementById('attendanceList').innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">هیچ شاگردی در این صنف وجود ندارد</div></div></div></tr>'; return; }
+                if (students.length === 0) { document.getElementById('attendanceList').innerHTML = '<td><td colspan="8" class="text-center py-5 text-muted">هیچ شاگردی در این صنف وجود ندارد</div></div></div></tr>'; return; }
 
-                // بررسی شاگردان منقضی شده بر اساس due_date
-                feeExpiredStudents = students.filter(s => s.due_date && new Date(s.due_date) < new Date());
+                // بررسی شاگردان منقضی شده بر اساس is_expired
+                feeExpiredStudents = students.filter(s => s.is_expired === true || (s.due_date && new Date(s.due_date) < new Date()));
+
                 if (feeExpiredStudents.length > 0) {
                     document.getElementById('feeWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی شده دارند! لطفاً به دفتر مراجعه کنید.`;
                     document.getElementById('feeWarning').classList.remove('d-none');
@@ -276,16 +291,49 @@
                     document.getElementById('feeWarning').classList.add('d-none');
                 }
 
-                currentAttendance = students.map(s => ({ student_id: s.id, name: s.name, father_name: s.father_name, student_card_id: s.student_card_id, photo: s.photo, fee_expired: s.due_date && new Date(s.due_date) < new Date(), status: 'present', notes: '' }));
+                currentAttendance = students.map(s => ({
+                    student_id: s.id,
+                    name: s.name,
+                    father_name: s.father_name,
+                    student_card_id: s.student_card_id,
+                    photo: s.photo,
+                    is_expired: s.is_expired || (s.due_date && new Date(s.due_date) < new Date()),
+                    due_date: s.due_date,
+                    status: 'present',
+                    notes: ''
+                }));
+
                 await checkExistingAttendance(classId, date);
-                document.getElementById('attendanceList').innerHTML = students.map((s, i) => `<tr id="attendance-row-${i}" class="${currentAttendance[i].status === 'present' ? 'attendance-present-row' : (currentAttendance[i].status === 'absent' ? 'attendance-absent-row' : 'attendance-late-row')}">
-                    <td class="text-center">${i + 1}</div></div></div><td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
-                    <td class="text-dark"><strong>${s.student_card_id || '-'}</strong>${currentAttendance[i].fee_expired ? '<span class="fee-warning-badge" onclick="window.open(\'/admin/fee-management.html\', \'_blank\')"><i class="fa-solid fa-circle-exclamation"></i> فیس منقضی - کلیک کنید</span>' : ''}</div></div></div>
-                    <td class="text-dark"><strong>${s.name}</strong></div></div></div><td class="text-dark">${s.father_name || '-'}</div></div></div>
-                    <td class="text-dark">${s.due_date ? (new Date(s.due_date) < new Date() ? '<span class="text-danger"><i class="fa-regular fa-circle-xmark"></i> منقضی - به دفتر مراجعه کنید</span>' : '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر</span>') : '-'}</div></div></div>
-                    <td class="text-center"><div class="checkbox-group"><label><input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')"> <i class="fa-solid fa-check-circle"></i> حاضر</label><label><input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')"> <i class="fa-solid fa-xmark-circle"></i> غایب</label><label><input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')"> <i class="fa-solid fa-clock"></i> تأخیر</label></div></div></div></div>
-                    <td><input type="text" class="form-control form-control-sm" placeholder="یادداشت..." value="${currentAttendance[i].notes || ''}" onchange="currentAttendance[${i}].notes = this.value"></div></div></div>
-                </div></div></div>`).join('');
+
+                document.getElementById('attendanceList').innerHTML = students.map((s, i) => {
+                    const isExpired = currentAttendance[i].is_expired;
+                    const rowClass = isExpired ? 'expired-row' : (currentAttendance[i].status === 'present' ? 'attendance-present-row' : (currentAttendance[i].status === 'absent' ? 'attendance-absent-row' : 'attendance-late-row'));
+
+                    return `<tr id="attendance-row-${i}" class="${rowClass}">
+                        <td class="text-center">${i + 1}</div></div></div>
+                        <td class="text-center"><img src="${s.photo || '/default-avatar.png'}" class="student-photo-small" onerror="this.src='/default-avatar.png'"></div></div></div>
+                        <td class="text-dark">
+                            <strong>${s.student_card_id || '-'}</strong>
+                            ${isExpired ? '<span class="expired-tag"><i class="fa-solid fa-circle-exclamation"></i> فیس منقضی</span>' : ''}
+                        </div></div></div>
+                        <td class="text-dark"><strong>${s.name}</strong></div></div></div>
+                        <td class="text-dark">${s.father_name || '-'}</div></div></div>
+                        <td class="text-dark">
+                            ${s.due_date ? (new Date(s.due_date) < new Date() ?
+                            '<span class="text-danger fw-bold"><i class="fa-regular fa-circle-xmark"></i> منقضی - به دفتر مراجعه کنید</span>' :
+                            '<span class="text-success"><i class="fa-regular fa-circle-check"></i> معتبر تا ' + formatDate(s.due_date) + '</span>') :
+                            '<span class="text-muted">فاقد فیس</span>'}
+                        </div></div></div>
+                        <td class="text-center">
+                            <div class="checkbox-group">
+                                <label><input type="radio" name="status_${i}" value="present" ${currentAttendance[i].status === 'present' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'present')"> <i class="fa-solid fa-check-circle"></i> حاضر</label>
+                                <label><input type="radio" name="status_${i}" value="absent" ${currentAttendance[i].status === 'absent' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'absent')"> <i class="fa-solid fa-xmark-circle"></i> غایب</label>
+                                <label><input type="radio" name="status_${i}" value="late" ${currentAttendance[i].status === 'late' ? 'checked' : ''} onchange="setAttendanceStatus(${i}, 'late')"> <i class="fa-solid fa-clock"></i> تأخیر</label>
+                            </div>
+                        </div></div></div>
+                        <td class="text-dark"><input type="text" class="form-control form-control-sm" placeholder="یادداشت..." value="${currentAttendance[i].notes || ''}" onchange="currentAttendance[${i}].notes = this.value"></div></div></div>
+                    </div></div></div>`;
+                }).join('');
             } catch (err) { console.error(err); }
         }
 
@@ -293,20 +341,52 @@
             try {
                 const res = await fetch(`/api/attendance/class/${classId}?date=${date}`);
                 const data = await res.json();
-                if (data.exists && data.details) data.details.forEach(detail => { const index = currentAttendance.findIndex(a => a.student_id === detail.student_id); if (index !== -1) { currentAttendance[index].status = detail.status; currentAttendance[index].notes = detail.notes || ''; } });
+                if (data.exists && data.details) data.details.forEach(detail => {
+                    const index = currentAttendance.findIndex(a => a.student_id === detail.student_id);
+                    if (index !== -1) {
+                        currentAttendance[index].status = detail.status;
+                        currentAttendance[index].notes = detail.notes || '';
+                    }
+                });
             } catch (err) { console.error(err); }
         }
 
-        function setAttendanceStatus(index, status) { currentAttendance[index].status = status; const row = document.getElementById(`attendance-row-${index}`); if (row) { row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row'); if (status === 'present') row.classList.add('attendance-present-row'); else if (status === 'absent') row.classList.add('attendance-absent-row'); else row.classList.add('attendance-late-row'); } }
+        function setAttendanceStatus(index, status) {
+            currentAttendance[index].status = status;
+            const row = document.getElementById(`attendance-row-${index}`);
+            if (row) {
+                row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row', 'expired-row');
+                if (currentAttendance[index].is_expired) {
+                    row.classList.add('expired-row');
+                } else if (status === 'present') row.classList.add('attendance-present-row');
+                else if (status === 'absent') row.classList.add('attendance-absent-row');
+                else row.classList.add('attendance-late-row');
+            }
+        }
 
-        function markAllPresent() { for (let i = 0; i < currentAttendance.length; i++) { currentAttendance[i].status = 'present'; const radio = document.querySelector(`input[name="status_${i}"][value="present"]`); if (radio) radio.checked = true; const row = document.getElementById(`attendance-row-${i}`); if (row) { row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row'); row.classList.add('attendance-present-row'); } } alert('همه شاگردان حاضر شدند'); }
+        function markAllPresent() {
+            for (let i = 0; i < currentAttendance.length; i++) {
+                currentAttendance[i].status = 'present';
+                const radio = document.querySelector(`input[name="status_${i}"][value="present"]`);
+                if (radio) radio.checked = true;
+                const row = document.getElementById(`attendance-row-${i}`);
+                if (row) {
+                    row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row', 'expired-row');
+                    if (currentAttendance[i].is_expired) {
+                        row.classList.add('expired-row');
+                    } else {
+                        row.classList.add('attendance-present-row');
+                    }
+                }
+            }
+            alert('همه شاگردان حاضر شدند');
+        }
 
         async function saveAttendance() {
             const classId = document.getElementById('attendanceClass').value;
             if (!classId) { alert('لطفاً صنف را انتخاب کنید'); return; }
             const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
 
-            // بررسی اینکه آیا قبلاً حاضری ثبت شده است (اختیاری - می‌توان قبل از ارسال هم چک کرد)
             const checkRes = await fetch(`/api/attendance/class/${classId}?date=${date}`);
             const checkData = await checkRes.json();
             if (checkData.exists) {
