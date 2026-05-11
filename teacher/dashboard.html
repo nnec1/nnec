@@ -246,7 +246,7 @@
             try {
                 const res = await fetch(`/api/teacher/homework/${teacherId}?limit=3`);
                 const data = await res.json();
-                if (data.length === 0) { document.getElementById('recentHomework').innerHTML = '<div class="alert alert-info text-center">تکلیفی ثبت نشده است</div>'; return; }
+                if (data.length === 0) { document.getElementById('recentHomework').innerHTML = '<div class="alert alert-info text-center">کارخانگیی ثبت نشده است</div>'; return; }
                 document.getElementById('recentHomework').innerHTML = data.map(h => `<div class="border-bottom pb-2 mb-2"><div class="d-flex justify-content-between"><strong>${h.class_name} - ${h.subject_name || 'بدون مضمون'}</strong><small class="text-muted">${h.homework_date}</small></div><p class="mb-0 small">${h.assignment.substring(0, 100)}${h.assignment.length > 100 ? '...' : ''}</p></div>`).join('');
             } catch (err) { console.error(err); }
         }
