@@ -978,42 +978,41 @@ app.get("/api/teacher/students/:teacherId", authenticate, async (req, res) => {
 // ====================== ثبت حاضری استاد ======================
 app.post("/api/teacher/save-attendance", authenticate, async (req, res) => {
   const { teacher_id, class_id, date, attendance } = req.body;
-  
+
   try {
     // ✅ بررسی وجود حاضری تکراری
     const [existing] = await db.execute(
       `SELECT id FROM daily_attendance 
        WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
-      [teacher_id, class_id, date]
+      [teacher_id, class_id, date],
     );
-    
+
     // ✅ اگر حاضری قبلاً ثبت شده است، خطا بده
     if (existing.length > 0) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: "⚠️ شما قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید!",
-        already_exists: true 
+        already_exists: true,
       });
     }
-    
+
     // ✅ ثبت حاضری جدید
     const [result] = await db.execute(
       `INSERT INTO daily_attendance (teacher_id, class_id, attendance_date) VALUES (?, ?, ?)`,
-      [teacher_id, class_id, date]
+      [teacher_id, class_id, date],
     );
     const attId = result.insertId;
-    
+
     for (const a of attendance) {
       await db.execute(
         `INSERT INTO attendance_details (attendance_id, student_id, status, notes) VALUES (?, ?, ?, ?)`,
-        [attId, a.student_id, a.status, toNull(a.notes)]
+        [attId, a.student_id, a.status, toNull(a.notes)],
       );
     }
-    
-    res.json({ 
-      success: true, 
-      message: "حاضری با موفقیت ثبت شد" 
+
+    res.json({
+      success: true,
+      message: "حاضری با موفقیت ثبت شد",
     });
-    
   } catch (err) {
     console.error("❌ Error in /api/teacher/save-attendance:", err);
     res.status(500).json({ error: err.message });
@@ -2312,6 +2311,123 @@ app.get(
       });
     } catch (err) {
       console.error("❌ Error in /api/student/attendance/:studentId:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+// ====================== انتقال شاگرد به صنف دیگر (فقط استاد) ======================
+app.put("/api/transfer-student", authenticate, async (req, res) => {
+  const { student_id, new_class_id } = req.body;
+
+  // فقط استاد می‌تواند شاگرد خود را انتقال دهد
+  if (req.user.role !== "teacher") {
+    return res
+      .status(403)
+      .json({ error: "فقط استاد می‌تواند شاگرد را انتقال دهد" });
+  }
+
+  try {
+    // بررسی وجود شاگرد
+    const [student] = await db.execute(`SELECT * FROM students WHERE id = ?`, [
+      student_id,
+    ]);
+    if (student.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+
+    // بررسی اینکه شاگرد در یکی از صنف‌های این استاد باشد
+    const [checkClass] = await db.execute(
+      `
+      SELECT c.id FROM classes c
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE tc.teacher_id = ? AND c.id = ?
+    `,
+      [req.user.id, student[0].class_id],
+    );
+
+    if (checkClass.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "شما اجازه انتقال این شاگرد را ندارید" });
+    }
+
+    // بررسی وجود صنف مقصد
+    const [targetClass] = await db.execute(
+      `
+      SELECT id, class_name FROM classes WHERE id = ? AND is_active = 1
+    `,
+      [new_class_id],
+    );
+
+    if (targetClass.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "صنف مقصد وجود ندارد یا غیرفعال است" });
+    }
+
+    // انتقال شاگرد
+    await db.execute(`UPDATE students SET class_id = ? WHERE id = ?`, [
+      new_class_id,
+      student_id,
+    ]);
+
+    // ثبت در جدول transfer_log (اختیاری - برای تاریخچه)
+    await db.execute(
+      `
+      INSERT INTO transfer_log (student_id, old_class_id, new_class_id, transferred_by, transfer_date)
+      VALUES (?, ?, ?, ?, NOW())
+    `,
+      [student_id, student[0].class_id, new_class_id, req.user.id],
+    );
+
+    res.json({
+      success: true,
+      message: `شاگرد با موفقیت از صنف قبلی به صنف ${targetClass[0].class_name} منتقل شد`,
+    });
+  } catch (err) {
+    console.error("❌ Error in /api/transfer-student:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== دریافت صنف‌های قابل انتقال (برای استاد) ======================
+app.get(
+  "/api/transfer-available-classes/:studentId",
+  authenticate,
+  async (req, res) => {
+    if (req.user.role !== "teacher") {
+      return res.status(403).json({ error: "دسترسی محدود" });
+    }
+
+    try {
+      const studentId = req.params.studentId;
+
+      // دریافت صنف فعلی شاگرد
+      const [student] = await db.execute(
+        `SELECT class_id FROM students WHERE id = ?`,
+        [studentId],
+      );
+      if (student.length === 0) {
+        return res.status(404).json({ error: "شاگرد یافت نشد" });
+      }
+
+      const currentClassId = student[0].class_id;
+
+      // دریافت صنف‌های دیگر که استاد تدریس می‌کند (به جز صنف فعلی)
+      const [classes] = await db.execute(
+        `
+      SELECT c.id, c.class_name, c.start_time
+      FROM classes c
+      JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE tc.teacher_id = ? AND c.id != ? AND c.is_active = 1
+      ORDER BY c.class_name
+    `,
+        [req.user.id, currentClassId],
+      );
+
+      res.json(classes);
+    } catch (err) {
+      console.error("❌ Error in /api/transfer-available-classes:", err);
       res.status(500).json({ error: err.message });
     }
   },
