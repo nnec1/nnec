@@ -942,35 +942,80 @@ app.get("/api/teacher/students/:teacherId", authenticate, async (req, res) => {
   }
 });
 
+// app.post("/api/teacher/save-attendance", authenticate, async (req, res) => {
+//   const { teacher_id, class_id, date, attendance } = req.body;
+//   try {
+//     const [existing] = await db.execute(
+//       `SELECT id FROM daily_attendance WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
+//       [teacher_id, class_id, date],
+//     );
+//     if (existing.length > 0) {
+//       await db.execute(
+//         `DELETE FROM attendance_details WHERE attendance_id = ?`,
+//         [existing[0].id],
+//       );
+//       await db.execute(`DELETE FROM daily_attendance WHERE id = ?`, [
+//         existing[0].id,
+//       ]);
+//     }
+//     const [result] = await db.execute(
+//       `INSERT INTO daily_attendance (teacher_id, class_id, attendance_date) VALUES (?, ?, ?)`,
+//       [teacher_id, class_id, date],
+//     );
+//     const attId = result.insertId;
+//     for (const a of attendance) {
+//       await db.execute(
+//         `INSERT INTO attendance_details (attendance_id, student_id, status, notes) VALUES (?, ?, ?, ?)`,
+//         [attId, a.student_id, a.status, toNull(a.notes)],
+//       );
+//     }
+//     res.json({ success: true, message: "حاضری با موفقیت ثبت شد" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// ====================== ثبت حاضری استاد ======================
 app.post("/api/teacher/save-attendance", authenticate, async (req, res) => {
   const { teacher_id, class_id, date, attendance } = req.body;
+  
   try {
+    // ✅ بررسی وجود حاضری تکراری
     const [existing] = await db.execute(
-      `SELECT id FROM daily_attendance WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
-      [teacher_id, class_id, date],
+      `SELECT id FROM daily_attendance 
+       WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
+      [teacher_id, class_id, date]
     );
+    
+    // ✅ اگر حاضری قبلاً ثبت شده است، خطا بده
     if (existing.length > 0) {
-      await db.execute(
-        `DELETE FROM attendance_details WHERE attendance_id = ?`,
-        [existing[0].id],
-      );
-      await db.execute(`DELETE FROM daily_attendance WHERE id = ?`, [
-        existing[0].id,
-      ]);
+      return res.status(400).json({ 
+        error: "⚠️ شما قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید!",
+        already_exists: true 
+      });
     }
+    
+    // ✅ ثبت حاضری جدید
     const [result] = await db.execute(
       `INSERT INTO daily_attendance (teacher_id, class_id, attendance_date) VALUES (?, ?, ?)`,
-      [teacher_id, class_id, date],
+      [teacher_id, class_id, date]
     );
     const attId = result.insertId;
+    
     for (const a of attendance) {
       await db.execute(
         `INSERT INTO attendance_details (attendance_id, student_id, status, notes) VALUES (?, ?, ?, ?)`,
-        [attId, a.student_id, a.status, toNull(a.notes)],
+        [attId, a.student_id, a.status, toNull(a.notes)]
       );
     }
-    res.json({ success: true, message: "حاضری با موفقیت ثبت شد" });
+    
+    res.json({ 
+      success: true, 
+      message: "حاضری با موفقیت ثبت شد" 
+    });
+    
   } catch (err) {
+    console.error("❌ Error in /api/teacher/save-attendance:", err);
     res.status(500).json({ error: err.message });
   }
 });
