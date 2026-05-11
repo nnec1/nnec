@@ -302,42 +302,42 @@
         function markAllPresent() { for (let i = 0; i < currentAttendance.length; i++) { currentAttendance[i].status = 'present'; const radio = document.querySelector(`input[name="status_${i}"][value="present"]`); if (radio) radio.checked = true; const row = document.getElementById(`attendance-row-${i}`); if (row) { row.classList.remove('attendance-present-row', 'attendance-absent-row', 'attendance-late-row'); row.classList.add('attendance-present-row'); } } alert('همه شاگردان حاضر شدند'); }
 
         async function saveAttendance() {
-    const classId = document.getElementById('attendanceClass').value;
-    if (!classId) { alert('لطفاً صنف را انتخاب کنید'); return; }
-    const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
-    
-    // بررسی اینکه آیا قبلاً حاضری ثبت شده است (اختیاری - می‌توان قبل از ارسال هم چک کرد)
-    const checkRes = await fetch(`/api/attendance/class/${classId}?date=${date}`);
-    const checkData = await checkRes.json();
-    if (checkData.exists) {
-        if (!confirm('⚠️ قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید. آیا می‌خواهید جایگزین کنید؟')) {
-            return;
-        }
-    }
-    
-    try {
-        const res = await fetch('/api/teacher/save-attendance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ teacher_id: teacherId, class_id: classId, date, attendance: currentAttendance })
-        });
-        
-        const data = await res.json();
-        
-        if (res.ok) {
-            alert('✅ حاضری با موفقیت ذخیره شد');
-            if (feeExpiredStudents.length > 0) {
-                alert(`⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی دارند. لطفاً به مدیریت اطلاع دهید.`);
+            const classId = document.getElementById('attendanceClass').value;
+            if (!classId) { alert('لطفاً صنف را انتخاب کنید'); return; }
+            const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
+
+            // بررسی اینکه آیا قبلاً حاضری ثبت شده است (اختیاری - می‌توان قبل از ارسال هم چک کرد)
+            const checkRes = await fetch(`/api/attendance/class/${classId}?date=${date}`);
+            const checkData = await checkRes.json();
+            if (checkData.exists) {
+                if (!confirm('⚠️ قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید. آیا می‌خواهید جایگزین کنید؟')) {
+                    return;
+                }
             }
-        } else if (data.already_exists) {
-            alert('⚠️ شما قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید!');
-        } else {
-            alert('❌ خطا در ذخیره حاضری: ' + (data.error || 'مشخص نیست'));
+
+            try {
+                const res = await fetch('/api/teacher/save-attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teacher_id: teacherId, class_id: classId, date, attendance: currentAttendance })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✅ حاضری با موفقیت ذخیره شد');
+                    if (feeExpiredStudents.length > 0) {
+                        alert(`⚠️ توجه: ${feeExpiredStudents.length} شاگرد فیس منقضی دارند. لطفاً به مدیریت اطلاع دهید.`);
+                    }
+                } else if (data.already_exists) {
+                    alert('⚠️ شما قبلاً برای این صنف در این تاریخ حاضری ثبت کرده‌اید!');
+                } else {
+                    alert('❌ خطا در ذخیره حاضری: ' + (data.error || 'مشخص نیست'));
+                }
+            } catch (err) {
+                alert('❌ خطا در ارتباط با سرور');
+            }
         }
-    } catch (err) {
-        alert('❌ خطا در ارتباط با سرور');
-    }
-}
 
         document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
         setupSidebar();
