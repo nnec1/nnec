@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>مدیریت تکالیف | آموزشگاه نوی نور</title>
+    <title>مدیریت کارخانگی | آموزشگاه نوی نور</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -87,7 +87,7 @@
                     <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
-                    <a href="homework.html" class="nav-link active"><i class="fa-solid fa-book-open"></i> تکالیف</a>
+                    <a href="homework.html" class="nav-link active"><i class="fa-solid fa-book-open"></i> کارخانگی</a>
                     <a href="timetable.html" class="nav-link"><i class="fa-solid fa-table-list"></i> برنامه زمانی</a>
                     <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
@@ -99,7 +99,8 @@
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
-                    <h3 class="section-title"><i class="fa-solid fa-book-open text-success me-2"></i> مدیریت تکالیف</h3>
+                    <h3 class="section-title"><i class="fa-solid fa-book-open text-success me-2"></i> مدیریت کارخانگی
+                    </h3>
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#hwModal"><i
                             class="fa-solid fa-plus-circle"></i> تکلیف جدید</button>
                 </div>
@@ -164,6 +165,14 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            if (dateString.includes('T')) {
+                return dateString.split('T')[0];
+            }
+            return dateString;
+        }
+
         async function loadClassesForSelect() {
             try {
                 const res = await fetch(`/api/teacher/classes/${teacherId}`);
@@ -197,7 +206,7 @@
                         <div class="d-flex justify-content-between flex-wrap">
                             <div>
                                 <h5><i class="fa-solid fa-book-open text-success"></i> ${h.class_name}</h5>
-                                <small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${h.homework_date} | <i class="fa-regular fa-calendar-clock"></i> سررسید: ${h.due_date || '-'}</small>
+                                <small class="text-muted"><i class="fa-regular fa-calendar"></i> تاریخ: ${formatDate(h.homework_date)} | <i class="fa-regular fa-calendar-clock"></i> سررسید: ${formatDate(h.due_date)}</small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-warning me-1" onclick="editHomework(${h.id})"><i class="fa-solid fa-pencil"></i></button>
@@ -210,7 +219,7 @@
                 `).join('');
             } catch (err) {
                 console.error(err);
-                document.getElementById('homeworksList').innerHTML = '<div class="alert alert-danger">خطا در بارگیری تکالیف</div>';
+                document.getElementById('homeworksList').innerHTML = '<div class="alert alert-danger">خطا در بارگیری کارخانگی</div>';
             }
         }
 
@@ -219,8 +228,8 @@
                 const res = await fetch(`/api/homework/${id}`);
                 const h = await res.json();
                 document.getElementById('hwId').value = h.id;
-                document.getElementById('hwDate').value = h.homework_date;
-                document.getElementById('dueDate').value = h.due_date || '';
+                document.getElementById('hwDate').value = formatDate(h.homework_date);
+                document.getElementById('dueDate').value = formatDate(h.due_date);
                 document.getElementById('hwClass').value = h.class_id;
                 document.getElementById('hwAssignment').value = h.assignment;
                 new bootstrap.Modal(document.getElementById('hwModal')).show();

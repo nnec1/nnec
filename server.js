@@ -1061,13 +1061,16 @@ app.get("/api/attendance/class/:classId", authenticate, async (req, res) => {
   const { classId } = req.params;
   const { date } = req.query;
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT da.id, da.attendance_date, ad.student_id, ad.status, ad.notes, s.name, s.father_name 
       FROM daily_attendance da 
       JOIN attendance_details ad ON da.id = ad.attendance_id 
       JOIN students s ON ad.student_id = s.id 
       WHERE da.class_id = ? AND da.attendance_date = ?
-    `, [classId, date]);
+    `,
+      [classId, date],
+    );
     res.json({ exists: results.length > 0, details: results });
   } catch (err) {
     console.error("❌ Error in /api/attendance/class/:classId:", err);
@@ -2943,11 +2946,11 @@ app.get("/api/admin/disabled-students", authenticate, async (req, res) => {
   }
 });
 
-// ====================== دریافت تکالیف یک استاد ======================
+// ====================== دریافت کارخانگی یک استاد ======================
 app.get("/api/teacher/homework/:teacherId", authenticate, async (req, res) => {
   const { teacherId } = req.params;
   const { class_id } = req.query;
-  
+
   try {
     let query = `
       SELECT h.*, c.class_name 
@@ -2956,14 +2959,14 @@ app.get("/api/teacher/homework/:teacherId", authenticate, async (req, res) => {
       WHERE h.teacher_id = ?
     `;
     let params = [teacherId];
-    
-    if (class_id && class_id !== '') {
+
+    if (class_id && class_id !== "") {
       query += ` AND h.class_id = ?`;
       params.push(class_id);
     }
-    
+
     query += ` ORDER BY h.homework_date DESC`;
-    
+
     const [results] = await db.execute(query, params);
     res.json(results);
   } catch (err) {
@@ -2975,17 +2978,20 @@ app.get("/api/teacher/homework/:teacherId", authenticate, async (req, res) => {
 // ====================== دریافت یک تکلیف خاص ======================
 app.get("/api/homework/:id", authenticate, async (req, res) => {
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT h.*, c.class_name 
       FROM homework h
       JOIN classes c ON h.class_id = c.id
       WHERE h.id = ?
-    `, [req.params.id]);
-    
+    `,
+      [req.params.id],
+    );
+
     if (results.length === 0) {
       return res.status(404).json({ error: "تکلیف یافت نشد" });
     }
-    
+
     res.json(results[0]);
   } catch (err) {
     console.error("❌ Error in GET /api/homework/:id:", err);
@@ -2995,18 +3001,22 @@ app.get("/api/homework/:id", authenticate, async (req, res) => {
 
 // ====================== ایجاد تکلیف جدید ======================
 app.post("/api/homework", authenticate, async (req, res) => {
-  const { class_id, teacher_id, homework_date, due_date, assignment } = req.body;
-  
+  const { class_id, teacher_id, homework_date, due_date, assignment } =
+    req.body;
+
   if (!class_id || !teacher_id || !homework_date || !assignment) {
     return res.status(400).json({ error: "اطلاعات کامل نیست" });
   }
-  
+
   try {
-    const [result] = await db.execute(`
+    const [result] = await db.execute(
+      `
       INSERT INTO homework (class_id, teacher_id, homework_date, due_date, assignment)
       VALUES (?, ?, ?, ?, ?)
-    `, [class_id, teacher_id, homework_date, due_date || null, assignment]);
-    
+    `,
+      [class_id, teacher_id, homework_date, due_date || null, assignment],
+    );
+
     res.json({ id: result.insertId, message: "تکلیف با موفقیت اضافه شد" });
   } catch (err) {
     console.error("❌ Error in POST /api/homework:", err);
@@ -3016,15 +3026,26 @@ app.post("/api/homework", authenticate, async (req, res) => {
 
 // ====================== ویرایش تکلیف ======================
 app.put("/api/homework/:id", authenticate, async (req, res) => {
-  const { class_id, teacher_id, homework_date, due_date, assignment } = req.body;
-  
+  const { class_id, teacher_id, homework_date, due_date, assignment } =
+    req.body;
+
   try {
-    await db.execute(`
+    await db.execute(
+      `
       UPDATE homework 
       SET class_id = ?, teacher_id = ?, homework_date = ?, due_date = ?, assignment = ?
       WHERE id = ?
-    `, [class_id, teacher_id, homework_date, due_date || null, assignment, req.params.id]);
-    
+    `,
+      [
+        class_id,
+        teacher_id,
+        homework_date,
+        due_date || null,
+        assignment,
+        req.params.id,
+      ],
+    );
+
     res.json({ message: "تکلیف با موفقیت ویرایش شد" });
   } catch (err) {
     console.error("❌ Error in PUT /api/homework/:id:", err);
