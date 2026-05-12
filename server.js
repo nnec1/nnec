@@ -2227,37 +2227,7 @@ app.post("/api/teacher/save-group-grade", authenticate, async (req, res) => {
 });
 
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
-app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
-  try {
-    const [results] = await db.execute(
-      `
-      SELECT s.id, s.student_card_id, s.name, s.father_name, s.mother_name, s.phone, 
-             s.class_id, s.status, s.address, s.photo, s.qr_token, s.registration_date,
-             c.class_name
-      FROM students s
-      LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.id = ?
-    `,
-      [req.params.studentId],
-    );
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: "شاگرد یافت نشد" });
-    }
-
-    const student = results[0];
-    if (student.registration_date) {
-      const d = new Date(student.registration_date);
-      if (!isNaN(d.getTime()))
-        student.registration_date = d.toISOString().split("T")[0];
-    }
-
-    res.json(student);
-  } catch (err) {
-    console.error("❌ Error in /api/student/info/:studentId:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // ====================== آمار شاگرد (نمرات و حاضری) ======================
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
@@ -3638,53 +3608,7 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
 
 
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
-app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
-  try {
-    const studentId = req.params.studentId;
-    
-    // بررسی وجود شاگرد
-    const [results] = await db.execute(`
-      SELECT 
-        s.id, 
-        s.student_card_id, 
-        s.name, 
-        s.father_name, 
-        s.mother_name, 
-        s.phone, 
-        s.class_id, 
-        s.status, 
-        s.address, 
-        s.photo, 
-        s.qr_token, 
-        s.registration_date,
-        c.class_name
-      FROM students s
-      LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.id = ?
-    `, [studentId]);
-    
-    if (results.length === 0) {
-      return res.status(404).json({ error: "شاگرد یافت نشد" });
-    }
-    
-    const student = results[0];
-    
-    // فرمت تاریخ ثبت نام
-    if (student.registration_date) {
-      const d = new Date(student.registration_date);
-      if (!isNaN(d.getTime())) {
-        student.registration_date = d.toISOString().split('T')[0];
-      }
-    }
-    
-    console.log(`✅ Student info loaded: ${student.name} (ID: ${student.id})`);
-    res.json(student);
-    
-  } catch (err) {
-    console.error("❌ Error in GET /api/student/info/:studentId:", err);
-    res.status(500).json({ error: err.message, stack: err.stack });
-  }
-});
+
 // ====================== آمار شاگرد (نمرات و حاضری) ======================
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   try {
