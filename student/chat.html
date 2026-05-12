@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -10,303 +9,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 150px);
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .chat-header {
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .admin-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .admin-info {
-            flex: 1;
-        }
-
-        .admin-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .admin-status {
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        .back-btn {
-            color: white;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 30px;
-            padding: 6px 12px;
-            font-size: 12px;
-            text-decoration: none;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #f8fafc;
-        }
-
-        .message {
-            display: flex;
-            max-width: 80%;
-            position: relative;
-        }
-
-        .message-sent {
-            align-self: flex-end;
-        }
-
-        .message-received {
-            align-self: flex-start;
-        }
-
-        .message-bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-        }
-
-        .message-sent .message-bubble {
-            background: #10b981;
-            color: white;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-received .message-bubble {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-time {
-            font-size: 10px;
-            margin-top: 4px;
-            text-align: center;
-            color: #94a3b8;
-        }
-
-        .message-actions {
-            position: absolute;
-            top: 0;
-            display: none;
-            gap: 5px;
-            background: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .message-sent .message-actions {
-            left: -70px;
-        }
-
-        .message:hover .message-actions {
-            display: flex;
-        }
-
-        .message-actions button {
-            background: none;
-            border: none;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .message-actions .edit-btn {
-            color: #f59e0b;
-        }
-
-        .message-actions .delete-btn {
-            color: #dc2626;
-        }
-
-        .edited-badge {
-            font-size: 9px;
-            opacity: 0.7;
-            margin-left: 5px;
-        }
-
-        .chat-input-area {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            border-radius: 30px;
-            padding: 10px 18px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .chat-input-area input:focus {
-            outline: none;
-            border-color: #10b981;
-        }
-
-        .chat-input-area button {
-            background: #10b981;
-            border: none;
-            border-radius: 30px;
-            padding: 0 20px;
-            color: white;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-
-        .chat-input-area button:hover {
-            background: #059669;
-        }
-
-        .empty-chat {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #94a3b8;
-            text-align: center;
-            flex-direction: column;
-        }
-
-        .date-divider {
-            text-align: center;
-            margin: 10px 0;
-        }
-
-        .date-divider span {
-            background: #e2e8f0;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            color: #475569;
-        }
-
-        .notification-badge {
-            background: #dc2626;
-            color: white;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 10px;
-            margin-right: 8px;
-        }
-
-        .unread-indicator {
-            width: 10px;
-            height: 10px;
-            background: #dc2626;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1050;
-            background: white;
-            border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-        }
-
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 150px); background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .chat-header { padding: 15px 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; gap: 12px; }
+        .admin-avatar { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .admin-info { flex: 1; }
+        .admin-name { font-weight: 600; font-size: 16px; }
+        .admin-status { font-size: 11px; opacity: 0.8; }
+        .back-btn { color: white; background: rgba(255,255,255,0.2); border: none; border-radius: 30px; padding: 6px 12px; font-size: 12px; text-decoration: none; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
+        .message { display: flex; max-width: 80%; position: relative; }
+        .message-sent { align-self: flex-end; }
+        .message-received { align-self: flex-start; }
+        .message-bubble { padding: 10px 15px; border-radius: 18px; }
+        .message-sent .message-bubble { background: #10b981; color: white; border-bottom-left-radius: 4px; }
+        .message-received .message-bubble { background: white; border: 1px solid #e2e8f0; border-bottom-right-radius: 4px; }
+        .message-time { font-size: 10px; margin-top: 4px; text-align: center; color: #94a3b8; }
+        .message-actions { position: absolute; top: 0; display: none; gap: 5px; background: white; padding: 2px 8px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .message-sent .message-actions { left: -70px; }
+        .message:hover .message-actions { display: flex; }
+        .message-actions button { background: none; border: none; font-size: 12px; cursor: pointer; }
+        .message-actions .edit-btn { color: #f59e0b; }
+        .message-actions .delete-btn { color: #dc2626; }
+        .chat-input-area { padding: 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; border-radius: 30px; padding: 10px 18px; border: 1px solid #e2e8f0; }
+        .chat-input-area input:focus { outline: none; border-color: #10b981; }
+        .chat-input-area button { background: #10b981; border: none; border-radius: 30px; padding: 0 20px; color: white; font-weight: 600; }
+        .empty-chat { display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; text-align: center; flex-direction: column; }
+        .edited-badge { font-size: 9px; opacity: 0.7; margin-left: 5px; }
+        .date-divider { text-align: center; margin: 10px 0; }
+        .date-divider span { background: #e2e8f0; padding: 4px 12px; border-radius: 20px; font-size: 11px; color: #475569; }
+        .menu-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 1050; background: white; border: none; width: 48px; height: 48px; border-radius: 14px; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; }
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                right: -280px;
-                width: 280px;
-                z-index: 1040;
-                transition: right 0.3s;
-                height: 100%;
-                top: 0;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-
-            .main-content {
-                width: 100%;
-                margin-right: 0;
-                padding: 80px 10px 10px 10px;
-            }
-
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1030;
-                display: none;
-            }
-
-            .overlay.show {
-                display: block;
-            }
-
-            .message {
-                max-width: 90%;
-            }
-
-            .message-actions {
-                display: flex !important;
-                position: static;
-                margin-top: 5px;
-                justify-content: center;
-            }
-
-            .message-sent .message-actions {
-                left: auto;
-            }
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
+            .sidebar.show { right: 0; }
+            .main-content { width: 100%; margin-right: 0; padding: 80px 10px 10px 10px; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
+            .overlay.show { display: block; }
+            .message { max-width: 90%; }
+            .message-actions { display: flex !important; position: static; margin-top: 5px; justify-content: center; }
         }
     </style>
 </head>
-
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -314,8 +58,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل شاگرد</h5>
@@ -330,43 +73,20 @@
                     <a href="chat.html" class="nav-link active"><i class="fa-solid fa-comments"></i> چت با مدیر</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <h3 class="section-title"><i class="fa-solid fa-comments text-success me-2"></i> چت با مدیریت</h3>
-
                 <div class="chat-container">
-                    <!-- هدر چت -->
                     <div class="chat-header">
-                        <div class="admin-avatar">
-                            <i class="fa-solid fa-building"></i>
-                        </div>
-                        <div class="admin-info">
-                            <div class="admin-name">مدیریت آموزشگاه</div>
-                            <div class="admin-status" id="adminStatus">آنلاین</div>
-                        </div>
-                        <a href="dashboard.html" class="back-btn">
-                            <i class="fa-solid fa-arrow-right"></i> بازگشت
-                        </a>
+                        <div class="admin-avatar"><i class="fa-solid fa-building"></i></div>
+                        <div class="admin-info"><div class="admin-name">مدیریت آموزشگاه</div><div class="admin-status" id="adminStatus">آنلاین</div></div>
+                        <a href="dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-right"></i> بازگشت</a>
                     </div>
-
-                    <!-- منطقه پیام‌ها -->
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="empty-chat">
-                            <i class="fa-solid fa-comments fs-1 text-muted"></i>
-                            <p class="mt-2">در حال بارگیری پیام‌ها...</p>
-                        </div>
-                    </div>
-
-                    <!-- ناحیه ورودی -->
-                    <div class="chat-input-area">
-                        <input type="text" id="messageInput" placeholder="پیام خود را بنویسید..."
-                            onkeypress="if(event.keyCode===13) sendMessage()">
-                        <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i> ارسال</button>
-                    </div>
+                    <div class="chat-messages" id="chatMessages"><div class="empty-chat"><i class="fa-solid fa-comments fs-1 text-muted"></i><p class="mt-2">در حال بارگیری پیام‌ها...</p></div></div>
+                    <div class="chat-input-area"><input type="text" id="messageInput" placeholder="پیام خود را بنویسید..." onkeypress="if(event.keyCode===13) sendMessage()"><button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i> ارسال</button></div>
                 </div>
             </div>
         </div>
@@ -376,40 +96,31 @@
     <script src="/main.js"></script>
     <script>
         let studentId = localStorage.getItem('studentId') || localStorage.getItem('userId');
-        let adminId = 2; // آیدی مدیر (معمولاً 2)
+        let adminId = 2;
         let messagesInterval = null;
-        let lastMessageCount = 0;
-        let notificationSound = null;
-        let pageTitle = document.title;
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
             if (!toggleBtn) return;
-            function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
-            function openSidebar() { if (sidebar) sidebar.classList.add('show'); if (overlay) overlay.classList.add('show'); }
+            function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+            function openSidebar() { sidebar.classList.add('show'); overlay.classList.add('show'); }
             toggleBtn.addEventListener('click', openSidebar);
-            if (overlay) overlay.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
         function formatTime(dateString) {
             if (!dateString) return '';
-            try {
-                const d = new Date(dateString);
-                if (isNaN(d.getTime())) return dateString;
-                return d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-            } catch (e) { return dateString; }
+            try { const d = new Date(dateString); return d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }); }
+            catch(e) { return dateString; }
         }
 
         function formatFullDate(dateString) {
             if (!dateString) return '';
-            try {
-                const d = new Date(dateString);
-                if (isNaN(d.getTime())) return dateString;
-                return d.toLocaleDateString('fa-IR');
-            } catch (e) { return dateString; }
+            try { const d = new Date(dateString); return d.toLocaleDateString('fa-IR'); }
+            catch(e) { return dateString; }
         }
 
         function escapeHtml(text) {
@@ -419,102 +130,41 @@
             return div.innerHTML;
         }
 
-        // اعلان پیام جدید (تغییر عنوان صفحه)
-        function notifyNewMessage(message) {
-            // تغییر عنوان صفحه
-            document.title = '📩 پیام جدید! - ' + pageTitle;
-
-            // نمایش نوتیفیکیشن مرورگر (اگر اجازه داده شود)
-            if (Notification.permission === 'granted') {
-                new Notification('پیام جدید از مدیریت', {
-                    body: message,
-                    icon: '/favicon.ico'
-                });
-            } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission();
-            }
-
-            // پخش صدای بوق ملایم
-            try {
-                const audio = new Audio('data:audio/wav;base64,U3RlYWx0aCBzb3VuZA==');
-                audio.volume = 0.3;
-                audio.play().catch(e => console.log('Audio play failed'));
-            } catch (e) { console.log('Sound not supported'); }
-        }
-
-        // بازنشانی عنوان صفحه
-        function resetTitle() {
-            document.title = pageTitle;
-        }
-
-        async function loadStudentInfo() {
-            try {
-                const res = await fetch(`/api/student/info/${studentId}`);
-                const data = await res.json();
-                document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
-            } catch (err) { console.error(err); }
-        }
-
         async function loadMessages() {
             try {
                 const res = await fetch(`/api/messages/conversation/student/${studentId}`);
                 const messages = await res.json();
-
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
-
-                // بررسی پیام جدید
-                if (messages.length > lastMessageCount && lastMessageCount > 0) {
-                    const newMessages = messages.slice(0, messages.length - lastMessageCount);
-                    for (const m of newMessages) {
-                        if (m.sender_type !== 'student') {
-                            notifyNewMessage(m.message.substring(0, 50));
-                            break;
-                        }
-                    }
-                }
-                lastMessageCount = messages.length;
-
+                
                 if (!messages || messages.length === 0) {
                     container.innerHTML = `<div class="empty-chat"><i class="fa-solid fa-comments fs-1 text-muted"></i><p class="mt-2">هیچ پیامی وجود ندارد.</p><p class="small text-muted">اولین پیام را ارسال کنید.</p></div>`;
                     return;
                 }
 
-                let html = '';
-                let lastDate = '';
+                let html = '', lastDate = '';
                 let hasUnread = false;
-
                 for (const m of messages) {
-                    const isOwn = m.sender_type === 'student' && m.sender_id == studentId;
+                    const isOwn = m.sender_type === 'student';
                     const messageDate = formatFullDate(m.created_at);
                     const isUnread = !isOwn && m.is_read == 0;
                     if (isUnread) hasUnread = true;
-
+                    
                     if (lastDate !== messageDate) {
                         html += `<div class="date-divider"><span>${messageDate}</span></div>`;
                         lastDate = messageDate;
                     }
-
                     html += `<div class="message ${isOwn ? 'message-sent' : 'message-received'}">
                         <div class="message-bubble">
                             <div id="msg-text-${m.id}">${escapeHtml(m.message)}${m.is_edited ? '<span class="edited-badge">(ویرایش شده)</span>' : ''}</div>
                             <div class="message-time">${formatTime(m.created_at)}</div>
                         </div>
-                        ${isOwn ? `<div class="message-actions">
-                            <button class="edit-btn" onclick="editMessage(${m.id})"><i class="fa-solid fa-pen"></i></button>
-                            <button class="delete-btn" onclick="deleteMessage(${m.id})"><i class="fa-solid fa-trash"></i></button>
-                        </div>` : ''}
+                        ${isOwn ? `<div class="message-actions"><button class="edit-btn" onclick="editMessage(${m.id})"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="deleteMessage(${m.id})"><i class="fa-solid fa-trash"></i></button></div>` : ''}
                     </div>`;
                 }
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
-
-                // آپدیت وضعیت آنلاین
                 document.getElementById('adminStatus').innerHTML = hasUnread ? '📩 پیام جدید دارد' : '✉️ آنلاین';
-
-                // بازنشانی عنوان صفحه اگر شاگرد در حال چت کردن است
-                resetTitle();
-
             } catch (err) { console.error(err); }
         }
 
@@ -524,83 +174,47 @@
             const oldText = msgDiv.innerText.replace('(ویرایش شده)', '').trim();
             const newText = prompt('ویرایش پیام:', oldText);
             if (!newText || newText === oldText) return;
-
-            try {
-                const res = await fetch(`/api/messages/${messageId}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: newText })
-                });
-                if (res.ok) { await loadMessages(); }
-                else { alert('❌ خطا در ویرایش پیام'); }
-            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
+            const res = await fetch(`/api/messages/${messageId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: newText }) });
+            if (res.ok) loadMessages();
+            else alert('❌ خطا');
         }
 
         async function deleteMessage(messageId) {
             if (!confirm('آیا از حذف این پیام اطمینان دارید؟')) return;
-            try {
-                const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
-                if (res.ok) { await loadMessages(); }
-                else { alert('❌ خطا در حذف پیام'); }
-            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
+            const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
+            if (res.ok) loadMessages();
+            else alert('❌ خطا');
         }
 
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             if (!message) return;
-
             input.disabled = true;
-            try {
-                const res = await fetch('/api/messages', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        receiver_type: 'admin',
-                        receiver_id: adminId,
-                        subject: 'پیام از شاگرد',
-                        message: message
-                    })
-                });
-                if (res.ok) {
-                    input.value = '';
-                    await loadMessages();
-                } else {
-                    alert('❌ خطا در ارسال پیام');
-                }
-            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
-            finally { input.disabled = false; input.focus(); }
+            const res = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver_type: 'admin', receiver_id: adminId, subject: 'پیام از شاگرد', message }) });
+            if (res.ok) { input.value = ''; await loadMessages(); }
+            else alert('❌ خطا');
+            input.disabled = false;
+            input.focus();
         }
 
-        // شروع پولینگ برای دریافت پیام‌های جدید (هر 2 ثانیه)
-        function startPolling() {
-            if (messagesInterval) clearInterval(messagesInterval);
-            messagesInterval = setInterval(loadMessages, 2000);
+        async function loadStudentInfo() {
+            try {
+                const res = await fetch(`/api/student/info/${studentId}`);
+                const data = await res.json();
+                document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+            } catch(err) { console.error(err); }
         }
 
         setupSidebar();
         loadStudentInfo();
         loadMessages();
-        startPolling();
-
-        // توقف پولینگ هنگام خروج از صفحه
-        window.addEventListener('beforeunload', () => {
-            if (messagesInterval) clearInterval(messagesInterval);
-        });
-
-        // بازنشانی عنوان صفحه وقتی صفحه فعال می‌شود
-        window.addEventListener('focus', () => {
-            resetTitle();
-            loadMessages();
-        });
-
+        messagesInterval = setInterval(loadMessages, 3000);
+        window.addEventListener('beforeunload', () => { if (messagesInterval) clearInterval(messagesInterval); });
+        
         window.sendMessage = sendMessage;
         window.editMessage = editMessage;
         window.deleteMessage = deleteMessage;
-
-        // درخواست مجوز نوتیفیکیشن
-        if (Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
     </script>
 </body>
-
 </html>
