@@ -3771,6 +3771,187 @@ app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== آخرین تراکنش‌ها ======================
+app.get("/api/recent-transactions", authenticate, async (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  
+  try {
+    // بررسی وجود جدول fee_payments
+    const [tableCheck] = await db.execute(`
+      SELECT COUNT(*) as count FROM information_schema.tables 
+      WHERE table_schema = DATABASE() AND table_name = 'fee_payments'
+    `);
+    
+    if (tableCheck[0].count === 0) {
+      return res.json([]);
+    }
+    
+    const [results] = await db.execute(`
+      SELECT 
+        fp.id, 
+        fp.amount, 
+        DATE_FORMAT(fp.payment_date, '%Y-%m-%d') as payment_date, 
+        fp.receipt_number,
+        s.id as student_id, 
+        s.name as student_name, 
+        s.student_card_id,
+        c.class_name
+      FROM fee_payments fp 
+      LEFT JOIN students s ON fp.student_id = s.id 
+      LEFT JOIN classes c ON s.class_id = c.id 
+      ORDER BY fp.payment_date DESC, fp.id DESC 
+      LIMIT ?
+    `, [limit]);
+    
+    // اگر نتیجه‌ای وجود نداشت، آرایه خالی برگردان
+    if (!results || results.length === 0) {
+      return res.json([]);
+    }
+    
+    // فرمت کردن داده‌ها
+    const formatted = results.map(row => ({
+      id: row.id,
+      amount: parseFloat(row.amount) || 0,
+      payment_date: row.payment_date || '-',
+      receipt_number: row.receipt_number || '-',
+      student_id: row.student_id,
+      student_name: row.student_name || 'نامشخص',
+      student_card_id: row.student_card_id || '-',
+      class_name: row.class_name || '-'
+    }));
+    
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Error in /api/recent-transactions:", err);
+    // به جای خطای 500، آرایه خالی برگردان تا صفحه از کار نیفتد
+    res.json([]);
+  }
+});
+
+// ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
+app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
+  try {
+    const studentId = req.params.studentId;
+    
+    // اعتبارسنجی studentId
+    if (!studentId || isNaN(parseInt(studentId))) {
+      return res.status(400).json({ error: "شناسه شاگرد نامعتبر است" });
+    }
+    
+    // بررسی وجود شاگرد
+    const [results] = await db.execute(`
+      SELECT 
+        s.id, 
+        s.student_card_id, 
+        s.name, 
+        s.father_name, 
+        COALESCE(s.mother_name, '') as mother_name,
+        COALESCE(s.phone, '') as phone,
+        s.class_id, 
+        s.status, 
+        COALESCE(s.address, '') as address,
+        COALESCE(s.photo, '') as photo, 
+        s.qr_token, 
+        s.registration_date,
+        COALESCE(c.class_name, '') as class_name
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.id = ?
+    `, [studentId]);
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+    
+    const student = results[0];
+    
+    // فرمت تاریخ ثبت نام
+    if (student.registration_date) {
+      const d = new Date(student.registration_date);
+      if (!isNaN(d.getTime())) {
+        student.registration_date = d.toISOString().split('T')[0];
+      }
+    }
+    
+    // اطمینان از وجود مقادیر پیش‌فرض
+    student.mother_name = student.mother_name || '';
+    student.phone = student.phone || '';
+    student.address = student.address || '';
+    student.photo = student.photo || '';
+    student.class_name = student.class_name || '';
+    
+    res.json(student);
+    
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/info/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// ====================== آمار شاگرد (نمرات و حاضری) ======================
+app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
+  try {
+    const studentId = req.params.studentId;
+    
+    if (!studentId || isNaN(parseInt(studentId))) {
+      return res.status(400).json({ error: "شناسه شاگرد نامعتبر است" });
+    }
+    
+    // آمار حاضری (سال جاری)
+    let presentCount = 0, absentCount = 0, lateCount = 0;
+    
+    try {
+      const [present] = await db.execute(`
+        SELECT COUNT(*) as count FROM attendance_details ad 
+        JOIN daily_attendance da ON ad.attendance_id = da.id 
+        WHERE ad.student_id = ? AND ad.status = 'present' 
+        AND YEAR(da.attendance_date) = YEAR(CURDATE())
+      `, [studentId]);
+      presentCount = present[0]?.count || 0;
+      
+      const [absent] = await db.execute(`
+        SELECT COUNT(*) as count FROM attendance_details ad 
+        JOIN daily_attendance da ON ad.attendance_id = da.id 
+        WHERE ad.student_id = ? AND ad.status = 'absent' 
+        AND YEAR(da.attendance_date) = YEAR(CURDATE())
+      `, [studentId]);
+      absentCount = absent[0]?.count || 0;
+      
+      const [late] = await db.execute(`
+        SELECT COUNT(*) as count FROM attendance_details ad 
+        JOIN daily_attendance da ON ad.attendance_id = da.id 
+        WHERE ad.student_id = ? AND ad.status = 'late' 
+        AND YEAR(da.attendance_date) = YEAR(CURDATE())
+      `, [studentId]);
+      lateCount = late[0]?.count || 0;
+    } catch (err) {
+      console.log("Attendance table may not exist:", err.message);
+    }
+    
+    // میانگین نمرات
+    let avgGrade = 0;
+    try {
+      const [grades] = await db.execute(`
+        SELECT AVG((score/max_score)*100) as avg_grade 
+        FROM grades 
+        WHERE student_id = ?
+      `, [studentId]);
+      avgGrade = grades[0]?.avg_grade ? Math.round(grades[0].avg_grade) : 0;
+    } catch (err) {
+      console.log("Grades table may not exist:", err.message);
+    }
+    
+    res.json({
+      present_count: presentCount,
+      absent_count: absentCount,
+      late_count: lateCount,
+      avg_grade: avgGrade
+    });
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/stats/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
