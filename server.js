@@ -4402,6 +4402,73 @@ app.delete("/api/messages/:id", authenticate, async (req, res) => {
   }
 });
 
+// ====================== دریافت تعداد پیام‌های خوانده نشده برای مدیر ======================
+app.get("/api/messages/unread-count", authenticate, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'ceo') {
+    return res.status(403).json({ error: "دسترسی محدود" });
+  }
+  
+  try {
+    const [result] = await db.execute(`
+      SELECT COUNT(*) as count FROM messages 
+      WHERE receiver_type = 'admin' AND receiver_id = ? AND is_read = 0
+    `, [req.user.id]);
+    
+    res.json({ unread_count: result[0]?.count || 0 });
+  } catch (err) {
+    console.error("❌ Error in /api/messages/unread-count:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== دریافت مکالمه شاگرد با مدیر ======================
+app.get("/api/messages/conversation/student/:studentId", authenticate, async (req, res) => {
+  const studentId = req.params.studentId;
+  const userId = req.user.id;
+  
+  // اگر کاربر شاگرد است، فقط می‌تواند پیام‌های خودش را ببیند
+  if (req.user.role === 'student' && userId != studentId) {
+    return res.status(403).json({ error: "شما فقط می‌توانید پیام‌های خود را مشاهده کنید" });
+  }
+  
+  try {
+    const [results] = await db.execute(`
+      SELECT m.*, 
+        CASE 
+          WHEN m.sender_type = 'student' THEN (SELECT name FROM students WHERE id = m.sender_id)
+          ELSE (SELECT name FROM employees WHERE id = m.sender_id)
+        END as sender_name,
+        CASE 
+          WHEN m.receiver_type = 'student' THEN (SELECT name FROM students WHERE id = m.receiver_id)
+          ELSE (SELECT name FROM employees WHERE id = m.receiver_id)
+        END as receiver_name
+      FROM messages m
+      WHERE (m.sender_type = 'admin' AND m.receiver_type = 'student' AND m.receiver_id = ?)
+         OR (m.sender_type = 'student' AND m.sender_id = ? AND m.receiver_type = 'admin')
+      ORDER BY m.created_at ASC
+    `, [studentId, studentId]);
+    
+    // مارک پیام‌های دریافتی به عنوان خوانده شده
+    let unreadCount = 0;
+    for (const msg of results) {
+      if (msg.receiver_type === 'student' && msg.receiver_id == studentId && msg.is_read == 0) {
+        await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [msg.id]);
+        unreadCount++;
+      }
+    }
+    
+    // اگر پیام خوانده نشده بود، لاگ کن (برای اعلان به مدیر بعداً)
+    if (unreadCount > 0) {
+      console.log(`📩 ${unreadCount} new messages for student ${studentId}`);
+    }
+    
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in /api/messages/conversation/student/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ====================== صفحات ======================
 
 app.use((req, res) => {
