@@ -3830,6 +3830,7 @@ app.get("/api/recent-transactions", authenticate, async (req, res) => {
 });
 
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
+// ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
 app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
@@ -3839,14 +3840,13 @@ app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
       return res.status(400).json({ error: "شناسه شاگرد نامعتبر است" });
     }
     
-    // بررسی وجود شاگرد
+    // حذف mother_name از کوئری
     const [results] = await db.execute(`
       SELECT 
         s.id, 
         s.student_card_id, 
         s.name, 
         s.father_name, 
-        COALESCE(s.mother_name, '') as mother_name,
         COALESCE(s.phone, '') as phone,
         s.class_id, 
         s.status, 
@@ -3875,7 +3875,6 @@ app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
     }
     
     // اطمینان از وجود مقادیر پیش‌فرض
-    student.mother_name = student.mother_name || '';
     student.phone = student.phone || '';
     student.address = student.address || '';
     student.photo = student.photo || '';

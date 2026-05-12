@@ -107,7 +107,7 @@
                 </div>
                 <nav class="nav flex-column mt-2">
                     <a href="dashboard.html" class="nav-link active"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
-                   
+
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> فیس</a>
@@ -194,12 +194,18 @@
         async function loadStudentInfo() {
             try {
                 const res = await fetch(`/api/student/info/${studentId}`);
+                if (!res.ok) {
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
                 const data = await res.json();
                 document.getElementById('studentCardId').innerText = data.student_card_id || '-';
                 document.getElementById('studentName').innerText = data.name || '-';
                 document.getElementById('studentClass').innerText = data.class_name || '-';
                 document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('studentNameSidebar').innerText = 'شاگرد';
+            }
         }
 
         async function loadStats() {
