@@ -42,6 +42,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            position: relative;
         }
         .student-item:hover { background: #e0f2fe; }
         .student-item.active { background: #dcfce7; border-right: 3px solid #10b981; }
@@ -59,6 +60,15 @@
         .student-info { flex: 1; }
         .student-name { font-weight: 600; font-size: 14px; }
         .last-message { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+        .unread-badge {
+            background: #dc2626;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 10px;
+            min-width: 22px;
+            text-align: center;
+        }
         .chat-main {
             flex: 1;
             display: flex;
@@ -154,6 +164,21 @@
             flex-direction: column;
         }
         .edited-badge { font-size: 9px; opacity: 0.7; margin-left: 5px; }
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 1100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
         .menu-toggle {
             display: none;
             position: fixed;
@@ -229,6 +254,12 @@
         </div>
     </div>
 
+    <!-- توست اعلان -->
+    <div id="notificationToast" class="notification-toast" onclick="goToLastUnread()">
+        <i class="fa-solid fa-envelope"></i>
+        <span id="toastMessage">پیام جدید از <strong></strong></span>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/main.js"></script>
     <script>
@@ -236,6 +267,9 @@
         let currentStudent = null;
         let allStudents = [];
         let messagesInterval = null;
+        let unreadCounts = {};
+        let lastMessages = {};
+        let toastTimeout = null;
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
@@ -284,11 +318,54 @@
             return Math.abs(hash);
         }
 
+        function showNotification(studentName, message) {
+            const toast = document.getElementById('notificationToast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.innerHTML = `پیام جدید از <strong>${escapeHtml(studentName)}</strong>`;
+            toast.style.display = 'flex';
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 5000);
+            
+            // تغییر عنوان صفحه
+            document.title = `📩 پیام جدید - ${studentName}`;
+            setTimeout(() => {
+                if (!document.hidden) document.title = 'چت با شاگردان | آموزشگاه نوی نور';
+            }, 10000);
+        }
+
+        function goToLastUnread() {
+            if (currentStudent) return;
+            // پیدا کردن شاگردی که پیام خوانده نشده دارد
+            for (const s of allStudents) {
+                if (unreadCounts[s.id] > 0) {
+                    selectStudent(s.id);
+                    document.getElementById('notificationToast').style.display = 'none';
+                    break;
+                }
+            }
+        }
+
         async function loadStudents() {
             try {
                 const res = await fetch('/api/students');
                 let students = await res.json();
                 allStudents = students.filter(s => s.status === 'active');
+                
+                // دریافت آخرین پیام و تعداد خوانده نشده برای هر شاگرد
+                for (const s of allStudents) {
+                    const msgRes = await fetch(`/api/messages/conversation/${s.id}`);
+                    const messages = await msgRes.json();
+                    if (messages.length > 0) {
+                        lastMessages[s.id] = messages[messages.length - 1];
+                        const unread = messages.filter(m => m.receiver_type === 'admin' && m.receiver_id == adminId && m.is_read == 0).length;
+                        unreadCounts[s.id] = unread;
+                    } else {
+                        lastMessages[s.id] = null;
+                        unreadCounts[s.id] = 0;
+                    }
+                }
                 displayStudents();
             } catch (err) { console.error(err); }
         }
@@ -305,9 +382,16 @@
             for (const s of filtered) {
                 const isActive = currentStudent && currentStudent.id === s.id;
                 const initial = s.name ? s.name.charAt(0) : '?';
+                const lastMsg = lastMessages[s.id];
+                const unread = unreadCounts[s.id] || 0;
+                const lastMsgText = lastMsg ? (lastMsg.sender_type === 'student' ? `شاگرد: ${lastMsg.message.substring(0, 30)}` : `شما: ${lastMsg.message.substring(0, 30)}`) : 'بدون پیام';
                 html += `<div class="student-item ${isActive ? 'active' : ''}" onclick="selectStudent(${s.id})">
                     <div class="student-avatar" style="background: #${hashCode(s.name) % 0xFFFFFF}">${escapeHtml(initial)}</div>
-                    <div class="student-info"><div class="student-name">${escapeHtml(s.name)}</div><div class="last-message">${escapeHtml(s.class_name) || 'بدون صنف'}</div></div>
+                    <div class="student-info">
+                        <div class="student-name">${escapeHtml(s.name)}</div>
+                        <div class="last-message">${escapeHtml(lastMsgText)}</div>
+                    </div>
+                    ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
                 </div>`;
             }
             document.getElementById('studentList').innerHTML = html;
@@ -320,7 +404,11 @@
             const student = allStudents.find(s => s.id == studentId);
             if (!student) return;
             currentStudent = student;
+            
+            // بازنشانی تعداد خوانده نشده
+            unreadCounts[student.id] = 0;
             displayStudents();
+            
             document.getElementById('chatMain').innerHTML = `
                 <div class="chat-header">
                     <div class="student-avatar" style="background: #${hashCode(student.name) % 0xFFFFFF}">${escapeHtml(student.name ? student.name.charAt(0) : '?')}</div>
@@ -340,6 +428,13 @@
                 const messages = await res.json();
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
+                
+                // بررسی پیام جدید از شاگرد
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.sender_type !== 'admin' && lastMessage.is_read == 0) {
+                    showNotification(currentStudent.name, lastMessage.message);
+                }
+                
                 if (messages.length === 0) { 
                     container.innerHTML = '<div class="text-center py-4 text-muted">هیچ پیامی وجود ندارد. اولین پیام را ارسال کنید.</div>'; 
                     return; 
@@ -409,10 +504,19 @@
             finally { input.disabled = false; input.focus(); }
         }
 
+        // بارگذاری اولیه و شروع پولینگ برای به‌روزرسانی لیست شاگردان
+        async function loadAllData() {
+            await loadStudents();
+            if (messagesInterval) clearInterval(messagesInterval);
+            messagesInterval = setInterval(async () => {
+                await loadStudents();
+                if (currentStudent) await loadMessages();
+            }, 5000);
+        }
+
         setupSidebar();
-        loadStudents();
+        loadAllData();
         
-        // تنظیم نام مدیر
         const adminName = localStorage.getItem('userName') || 'مدیر';
         document.getElementById('adminName').innerText = adminName;
         
@@ -420,6 +524,13 @@
         window.sendMessage = sendMessage;
         window.editMessage = editMessage;
         window.deleteMessage = deleteMessage;
+        window.goToLastUnread = goToLastUnread;
+        
+        // بازنشانی عنوان صفحه وقتی صفحه فعال می‌شود
+        window.addEventListener('focus', () => {
+            document.title = 'چت با شاگردان | آموزشگاه نوی نور';
+            loadAllData();
+        });
     </script>
 </body>
 </html>
