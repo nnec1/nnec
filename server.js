@@ -4055,6 +4055,159 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== ارسال پیام ======================
+app.post("/api/messages", authenticate, async (req, res) => {
+    const { receiver_type, receiver_id, subject, message, reply_to_id } = req.body;
+    const sender_type = req.user.role === "student" ? "student" : "admin";
+    const sender_id = req.user.id;
+    
+    if (!receiver_type || !receiver_id || !subject || !message) {
+        return res.status(400).json({ error: "اطلاعات کامل نیست" });
+    }
+    
+    try {
+        const [result] = await db.execute(`
+            INSERT INTO messages (sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id || null]);
+        
+        res.json({ success: true, id: result.insertId, message: "پیام با موفقیت ارسال شد" });
+    } catch (err) {
+        console.error("❌ Error in POST /api/messages:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== دریافت پیام‌های کاربر ======================
+app.get("/api/messages", authenticate, async (req, res) => {
+    const userId = req.user.id;
+    const userRole = req.user.role === "student" ? "student" : "admin";
+    
+    try {
+        const [results] = await db.execute(`
+            SELECT 
+                m.*,
+                CASE 
+                    WHEN m.sender_type = 'student' THEN (SELECT name FROM students WHERE id = m.sender_id)
+                    ELSE (SELECT name FROM employees WHERE id = m.sender_id)
+                END as sender_name,
+                CASE 
+                    WHEN m.receiver_type = 'student' THEN (SELECT name FROM students WHERE id = m.receiver_id)
+                    ELSE (SELECT name FROM employees WHERE id = m.receiver_id)
+                END as receiver_name,
+                DATE_FORMAT(m.created_at, '%Y-%m-%d %H:%i') as created_date
+            FROM messages m
+            WHERE (m.sender_type = ? AND m.sender_id = ?) OR (m.receiver_type = ? AND m.receiver_id = ?)
+            ORDER BY m.created_at DESC
+        `, [userRole, userId, userRole, userId]);
+        
+        res.json(results);
+    } catch (err) {
+        console.error("❌ Error in GET /api/messages:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== دریافت یک پیام خاص ======================
+app.get("/api/messages/:id", authenticate, async (req, res) => {
+    try {
+        const [results] = await db.execute(`
+            SELECT 
+                m.*,
+                CASE 
+                    WHEN m.sender_type = 'student' THEN (SELECT name FROM students WHERE id = m.sender_id)
+                    ELSE (SELECT name FROM employees WHERE id = m.sender_id)
+                END as sender_name,
+                CASE 
+                    WHEN m.receiver_type = 'student' THEN (SELECT name FROM students WHERE id = m.receiver_id)
+                    ELSE (SELECT name FROM employees WHERE id = m.receiver_id)
+                END as receiver_name,
+                DATE_FORMAT(m.created_at, '%Y-%m-%d %H:%i') as created_date
+            FROM messages m
+            WHERE m.id = ?
+        `, [req.params.id]);
+        
+        if (results.length === 0) {
+            return res.status(404).json({ error: "پیام یافت نشد" });
+        }
+        
+        // علامت‌گذاری به عنوان خوانده شده
+        if (results[0].receiver_type === (req.user.role === "student" ? "student" : "admin") && 
+            results[0].receiver_id == req.user.id && results[0].is_read == 0) {
+            await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [req.params.id]);
+        }
+        
+        res.json(results[0]);
+    } catch (err) {
+        console.error("❌ Error in GET /api/messages/:id:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== پاسخ به پیام ======================
+app.post("/api/messages/:id/reply", authenticate, async (req, res) => {
+    const parentId = req.params.id;
+    const { message } = req.body;
+    
+    try {
+        const [parent] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [parentId]);
+        if (parent.length === 0) {
+            return res.status(404).json({ error: "پیام اصلی یافت نشد" });
+        }
+        
+        const replyData = {
+            sender_type: req.user.role === "student" ? "student" : "admin",
+            sender_id: req.user.id,
+            receiver_type: parent[0].sender_type,
+            receiver_id: parent[0].sender_id,
+            subject: `پاسخ: ${parent[0].subject}`,
+            message: message,
+            reply_to_id: parentId
+        };
+        
+        await db.execute(`
+            INSERT INTO messages (sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [replyData.sender_type, replyData.sender_id, replyData.receiver_type, replyData.receiver_id, replyData.subject, replyData.message, replyData.reply_to_id]);
+        
+        await db.execute(`UPDATE messages SET status = 'replied' WHERE id = ?`, [parentId]);
+        
+        res.json({ success: true, message: "پاسخ با موفقیت ارسال شد" });
+    } catch (err) {
+        console.error("❌ Error in POST /api/messages/:id/reply:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== تعداد پیام‌های خوانده نشده ======================
+app.get("/api/messages/unread-count", authenticate, async (req, res) => {
+    const userId = req.user.id;
+    const userRole = req.user.role === "student" ? "student" : "admin";
+    
+    try {
+        const [results] = await db.execute(`
+            SELECT COUNT(*) as count FROM messages
+            WHERE receiver_type = ? AND receiver_id = ? AND is_read = 0
+        `, [userRole, userId]);
+        
+        res.json({ unread_count: results[0]?.count || 0 });
+    } catch (err) {
+        console.error("❌ Error in GET /api/messages/unread-count:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ====================== علامت گذاری پیام به عنوان خوانده شده ======================
+app.put("/api/messages/:id/read", authenticate, async (req, res) => {
+  try {
+    await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("❌ Error in PUT /api/messages/:id/read:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {

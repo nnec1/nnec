@@ -112,6 +112,7 @@
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> فیس</a>
                     <a href="ratings.html" class="nav-link"><i class="fa-solid fa-star"></i> امتیازات</a>
+                    <a href="messages.html" class="nav-link"><i class="fa-solid fa-envelope"></i> پیام‌ها</a>
                     <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
@@ -192,28 +193,28 @@
         }
 
         async function loadStudentInfo() {
-    try {
-        const res = await fetch(`/api/student/info/${studentId}`);
-        
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error('Server response:', errorText);
-            throw new Error('خطا در دریافت اطلاعات');
+            try {
+                const res = await fetch(`/api/student/info/${studentId}`);
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('Server response:', errorText);
+                    throw new Error('خطا در دریافت اطلاعات');
+                }
+
+                const data = await res.json();
+                document.getElementById('studentCardId').innerText = data.student_card_id || '-';
+                document.getElementById('studentName').innerText = data.name || '-';
+                document.getElementById('studentClass').innerText = data.class_name || '-';
+                document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+            } catch (err) {
+                console.error('Error loading student info:', err);
+                document.getElementById('studentNameSidebar').innerText = 'شاگرد';
+                document.getElementById('studentCardId').innerText = '-';
+                document.getElementById('studentName').innerText = '-';
+                document.getElementById('studentClass').innerText = '-';
+            }
         }
-        
-        const data = await res.json();
-        document.getElementById('studentCardId').innerText = data.student_card_id || '-';
-        document.getElementById('studentName').innerText = data.name || '-';
-        document.getElementById('studentClass').innerText = data.class_name || '-';
-        document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
-    } catch (err) { 
-        console.error('Error loading student info:', err);
-        document.getElementById('studentNameSidebar').innerText = 'شاگرد';
-        document.getElementById('studentCardId').innerText = '-';
-        document.getElementById('studentName').innerText = '-';
-        document.getElementById('studentClass').innerText = '-';
-    }
-}
 
         async function loadStats() {
             try {
