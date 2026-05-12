@@ -3635,6 +3635,142 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
+app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
+  try {
+    const studentId = req.params.studentId;
+    
+    // بررسی وجود شاگرد
+    const [results] = await db.execute(`
+      SELECT 
+        s.id, 
+        s.student_card_id, 
+        s.name, 
+        s.father_name, 
+        s.mother_name, 
+        s.phone, 
+        s.class_id, 
+        s.status, 
+        s.address, 
+        s.photo, 
+        s.qr_token, 
+        s.registration_date,
+        c.class_name
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.id = ?
+    `, [studentId]);
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
+    }
+    
+    const student = results[0];
+    
+    // فرمت تاریخ ثبت نام
+    if (student.registration_date) {
+      const d = new Date(student.registration_date);
+      if (!isNaN(d.getTime())) {
+        student.registration_date = d.toISOString().split('T')[0];
+      }
+    }
+    
+    console.log(`✅ Student info loaded: ${student.name} (ID: ${student.id})`);
+    res.json(student);
+    
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/info/:studentId:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+// ====================== آمار شاگرد (نمرات و حاضری) ======================
+app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
+  try {
+    const studentId = req.params.studentId;
+    
+    // آمار حاضری (سال جاری)
+    const [presentCount] = await db.execute(`
+      SELECT COUNT(*) as count FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ? AND ad.status = 'present' 
+      AND YEAR(da.attendance_date) = YEAR(CURDATE())
+    `, [studentId]);
+    
+    const [absentCount] = await db.execute(`
+      SELECT COUNT(*) as count FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ? AND ad.status = 'absent' 
+      AND YEAR(da.attendance_date) = YEAR(CURDATE())
+    `, [studentId]);
+    
+    const [lateCount] = await db.execute(`
+      SELECT COUNT(*) as count FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ? AND ad.status = 'late' 
+      AND YEAR(da.attendance_date) = YEAR(CURDATE())
+    `, [studentId]);
+    
+    // میانگین نمرات
+    const [grades] = await db.execute(`
+      SELECT AVG((score/max_score)*100) as avg_grade 
+      FROM grades 
+      WHERE student_id = ?
+    `, [studentId]);
+    
+    const avgGrade = grades[0]?.avg_grade ? Math.round(grades[0].avg_grade) : 0;
+    
+    console.log(`✅ Student stats loaded for student ${studentId}: Present=${presentCount[0]?.count}, Absent=${absentCount[0]?.count}, Late=${lateCount[0]?.count}, AvgGrade=${avgGrade}`);
+    
+    res.json({
+      present_count: presentCount[0]?.count || 0,
+      absent_count: absentCount[0]?.count || 0,
+      late_count: lateCount[0]?.count || 0,
+      avg_grade: avgGrade
+    });
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/stats/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ====================== وضعیت فیس شاگرد ======================
+app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
+  try {
+    const studentId = req.params.studentId;
+    
+    // دریافت آخرین پرداخت شاگرد
+    const [payments] = await db.execute(`
+      SELECT 
+        COALESCE(SUM(amount), 0) as total_paid,
+        MAX(total_fee) as total_fee,
+        MAX(due_date) as due_date,
+        MAX(payment_date) as last_payment_date
+      FROM fee_payments 
+      WHERE student_id = ?
+    `, [studentId]);
+    
+    const lastPayment = payments[0] || {};
+    const totalFee = parseFloat(lastPayment.total_fee) || 0;
+    const paidFee = parseFloat(lastPayment.total_paid) || 0;
+    const remainingFee = totalFee - paidFee;
+    
+    console.log(`✅ Student fees loaded for student ${studentId}: Total=${totalFee}, Paid=${paidFee}, Remaining=${remainingFee}`);
+    
+    res.json({
+      total_fee: totalFee,
+      paid_fee: paidFee,
+      remaining_fee: remainingFee > 0 ? remainingFee : 0,
+      due_date: lastPayment.due_date ? new Date(lastPayment.due_date).toISOString().split('T')[0] : null,
+      last_payment_date: lastPayment.last_payment_date ? new Date(lastPayment.last_payment_date).toISOString().split('T')[0] : null
+    });
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/fees/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
