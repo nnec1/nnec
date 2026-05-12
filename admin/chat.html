@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -9,31 +10,61 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
         .chat-container {
             display: flex;
             height: calc(100vh - 150px);
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         }
+
         .chat-sidebar {
-            width: 300px;
+            width: 320px;
             background: #f8fafc;
             border-left: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
         }
+
         .chat-sidebar-header {
             padding: 15px;
             background: white;
             border-bottom: 1px solid #e2e8f0;
         }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
         .student-list {
             flex: 1;
             overflow-y: auto;
         }
+
         .student-item {
             padding: 12px 15px;
             border-bottom: 1px solid #e2e8f0;
@@ -44,8 +75,25 @@
             gap: 10px;
             position: relative;
         }
-        .student-item:hover { background: #e0f2fe; }
-        .student-item.active { background: #dcfce7; border-right: 3px solid #10b981; }
+
+        .student-item:hover {
+            background: #e0f2fe;
+        }
+
+        .student-item.active {
+            background: #dcfce7;
+            border-right: 3px solid #10b981;
+        }
+
+        .student-item.has-unread {
+            background: #fff7e6;
+            border-right: 3px solid #f59e0b;
+        }
+
+        .student-item.has-unread:hover {
+            background: #ffefc4;
+        }
+
         .student-avatar {
             width: 40px;
             height: 40px;
@@ -57,9 +105,25 @@
             color: white;
             font-weight: bold;
         }
-        .student-info { flex: 1; }
-        .student-name { font-weight: 600; font-size: 14px; }
-        .last-message { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .last-message {
+            font-size: 11px;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+        }
+
         .unread-badge {
             background: #dc2626;
             color: white;
@@ -68,13 +132,16 @@
             font-size: 10px;
             min-width: 22px;
             text-align: center;
+            font-weight: bold;
         }
+
         .chat-main {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: #f1f5f9;
         }
+
         .chat-header {
             padding: 15px 20px;
             background: white;
@@ -83,8 +150,17 @@
             align-items: center;
             gap: 10px;
         }
-        .chat-header .student-name { font-size: 16px; font-weight: 600; }
-        .chat-header .student-class { font-size: 12px; color: #64748b; }
+
+        .chat-header .student-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chat-header .student-class {
+            font-size: 12px;
+            color: #64748b;
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -93,29 +169,46 @@
             flex-direction: column;
             gap: 12px;
         }
+
         .message {
             display: flex;
             max-width: 70%;
             position: relative;
         }
-        .message-sent { align-self: flex-end; }
-        .message-received { align-self: flex-start; }
+
+        .message-sent {
+            align-self: flex-end;
+        }
+
+        .message-received {
+            align-self: flex-start;
+        }
+
         .message-bubble {
             padding: 10px 15px;
             border-radius: 18px;
             position: relative;
         }
+
         .message-sent .message-bubble {
             background: #10b981;
             color: white;
             border-bottom-left-radius: 4px;
         }
+
         .message-received .message-bubble {
             background: white;
             border: 1px solid #e2e8f0;
             border-bottom-right-radius: 4px;
         }
-        .message-time { font-size: 10px; margin-top: 4px; text-align: center; color: #94a3b8; }
+
+        .message-time {
+            font-size: 10px;
+            margin-top: 4px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
         .message-actions {
             position: absolute;
             top: 0;
@@ -124,14 +217,36 @@
             background: white;
             padding: 2px 8px;
             border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .message-sent .message-actions { left: -70px; }
-        .message-received .message-actions { right: -70px; }
-        .message:hover .message-actions { display: flex; }
-        .message-actions button { background: none; border: none; font-size: 12px; cursor: pointer; }
-        .message-actions .edit-btn { color: #f59e0b; }
-        .message-actions .delete-btn { color: #dc2626; }
+
+        .message-sent .message-actions {
+            left: -70px;
+        }
+
+        .message-received .message-actions {
+            right: -70px;
+        }
+
+        .message:hover .message-actions {
+            display: flex;
+        }
+
+        .message-actions button {
+            background: none;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .message-actions .edit-btn {
+            color: #f59e0b;
+        }
+
+        .message-actions .delete-btn {
+            color: #dc2626;
+        }
+
         .chat-input-area {
             padding: 15px;
             background: white;
@@ -139,13 +254,19 @@
             display: flex;
             gap: 10px;
         }
+
         .chat-input-area input {
             flex: 1;
             border-radius: 30px;
             padding: 10px 18px;
             border: 1px solid #e2e8f0;
         }
-        .chat-input-area input:focus { outline: none; border-color: #10b981; }
+
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
         .chat-input-area button {
             background: #10b981;
             border: none;
@@ -154,6 +275,7 @@
             color: white;
             font-weight: 600;
         }
+
         .empty-chat {
             display: flex;
             align-items: center;
@@ -163,12 +285,18 @@
             text-align: center;
             flex-direction: column;
         }
-        .edited-badge { font-size: 9px; opacity: 0.7; margin-left: 5px; }
+
+        .edited-badge {
+            font-size: 9px;
+            opacity: 0.7;
+            margin-left: 5px;
+        }
+
         .notification-toast {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            background: #10b981;
+            background: #f59e0b;
             color: white;
             padding: 10px 20px;
             border-radius: 30px;
@@ -176,9 +304,10 @@
             align-items: center;
             gap: 10px;
             z-index: 1100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             cursor: pointer;
         }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -191,23 +320,80 @@
             height: 48px;
             border-radius: 14px;
             font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
+        .unread-header {
+            background: #fef3c7;
+            padding: 8px 15px;
+            font-size: 12px;
+            color: #b45309;
+            border-bottom: 1px solid #fde68a;
+        }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 10px 10px 10px; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
-            .overlay.show { display: block; }
-            .message { max-width: 85%; }
-            .message-actions { display: flex !important; position: static; margin-top: 5px; justify-content: center; }
-            .message-sent .message-actions { left: auto; }
-            .message-received .message-actions { right: auto; }
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 10px 10px 10px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .message-actions {
+                display: flex !important;
+                position: static;
+                margin-top: 5px;
+                justify-content: center;
+            }
+
+            .message-sent .message-actions {
+                left: auto;
+            }
+
+            .message-received .message-actions {
+                right: auto;
+            }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -215,7 +401,8 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-building fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل مدیریت</h5>
@@ -226,14 +413,16 @@
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
-                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
+                        فیس</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="reports.html" class="nav-link"><i class="fa-solid fa-file-alt"></i> گزارشات</a>
                     <a href="chat.html" class="nav-link active"><i class="fa-solid fa-comments"></i> چت</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
@@ -242,19 +431,30 @@
                 <div class="chat-container">
                     <div class="chat-sidebar">
                         <div class="chat-sidebar-header">
-                            <input type="text" id="searchStudent" class="form-control" placeholder="جستجوی شاگرد..." oninput="filterStudents()">
+                            <input type="text" id="searchStudent" class="form-control" placeholder="جستجوی شاگرد..."
+                                oninput="filterStudents()">
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="setFilter('all')">همه</button>
+                                <button class="filter-btn" data-filter="unread" onclick="setFilter('unread')">📩
+                                    پیام‌های خوانده نشده</button>
+                            </div>
                         </div>
-                        <div class="student-list" id="studentList"><div class="text-center py-4">در حال بارگیری...</div></div>
+                        <div class="student-list" id="studentList">
+                            <div class="text-center py-4">در حال بارگیری...</div>
+                        </div>
                     </div>
                     <div class="chat-main" id="chatMain">
-                        <div class="empty-chat"><i class="fa-solid fa-comments fs-1 text-muted"></i><p class="mt-2">یک شاگرد را انتخاب کنید</p></div>
+                        <div class="empty-chat"><i class="fa-solid fa-comments fs-1 text-muted"></i>
+                            <p class="mt-2">یک شاگرد را انتخاب کنید</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- توست اعلان -->
+    <!-- توست اعلان پیام جدید -->
     <div id="notificationToast" class="notification-toast" onclick="goToLastUnread()">
         <i class="fa-solid fa-envelope"></i>
         <span id="toastMessage">پیام جدید از <strong></strong></span>
@@ -270,6 +470,8 @@
         let unreadCounts = {};
         let lastMessages = {};
         let toastTimeout = null;
+        let currentFilter = 'all';
+        let lastMessageCount = 0;
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
@@ -283,13 +485,22 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            displayStudents();
+        }
+
         function formatTime(dateString) {
             if (!dateString) return '';
             try {
                 const d = new Date(dateString);
                 if (isNaN(d.getTime())) return dateString;
                 return d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-            } catch(e) { return dateString; }
+            } catch (e) { return dateString; }
         }
 
         function formatFullDate(dateString) {
@@ -298,7 +509,7 @@
                 const d = new Date(dateString);
                 if (isNaN(d.getTime())) return dateString;
                 return d.toLocaleDateString('fa-IR');
-            } catch(e) { return dateString; }
+            } catch (e) { return dateString; }
         }
 
         function escapeHtml(text) {
@@ -318,7 +529,7 @@
             return Math.abs(hash);
         }
 
-        function showNotification(studentName, message) {
+        function showNotification(studentName) {
             const toast = document.getElementById('notificationToast');
             const toastMsg = document.getElementById('toastMessage');
             toastMsg.innerHTML = `پیام جدید از <strong>${escapeHtml(studentName)}</strong>`;
@@ -326,24 +537,28 @@
             if (toastTimeout) clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.style.display = 'none';
-            }, 5000);
-            
-            // تغییر عنوان صفحه
-            document.title = `📩 پیام جدید - ${studentName}`;
+            }, 8000);
+
+            // تغییر عنوان صفحه و پخش صدا
+            document.title = `📩 پیام جدید از ${studentName}`;
+
+            // پخش صدای اعلان (اختیاری)
+            try {
+                const audio = new Audio('/notification.mp3');
+                audio.play().catch(e => console.log('صدا پخش نشد'));
+            } catch (e) { }
+
             setTimeout(() => {
                 if (!document.hidden) document.title = 'چت با شاگردان | آموزشگاه نوی نور';
-            }, 10000);
+            }, 15000);
         }
 
         function goToLastUnread() {
-            if (currentStudent) return;
             // پیدا کردن شاگردی که پیام خوانده نشده دارد
-            for (const s of allStudents) {
-                if (unreadCounts[s.id] > 0) {
-                    selectStudent(s.id);
-                    document.getElementById('notificationToast').style.display = 'none';
-                    break;
-                }
+            const unreadStudents = allStudents.filter(s => unreadCounts[s.id] > 0);
+            if (unreadStudents.length > 0) {
+                selectStudent(unreadStudents[0].id);
+                document.getElementById('notificationToast').style.display = 'none';
             }
         }
 
@@ -352,7 +567,8 @@
                 const res = await fetch('/api/students');
                 let students = await res.json();
                 allStudents = students.filter(s => s.status === 'active');
-                
+
+                let totalUnread = 0;
                 // دریافت آخرین پیام و تعداد خوانده نشده برای هر شاگرد
                 for (const s of allStudents) {
                     const msgRes = await fetch(`/api/messages/conversation/${s.id}`);
@@ -361,37 +577,69 @@
                         lastMessages[s.id] = messages[messages.length - 1];
                         const unread = messages.filter(m => m.receiver_type === 'admin' && m.receiver_id == adminId && m.is_read == 0).length;
                         unreadCounts[s.id] = unread;
+                        totalUnread += unread;
                     } else {
                         lastMessages[s.id] = null;
                         unreadCounts[s.id] = 0;
                     }
                 }
+
+                // آپدیت عنوان صفحه با تعداد پیام‌های خوانده نشده
+                if (totalUnread > 0) {
+                    document.title = `📬 (${totalUnread}) چت با شاگردان`;
+                } else if (document.title.includes('📬')) {
+                    document.title = 'چت با شاگردان | آموزشگاه نوی نور';
+                }
+
                 displayStudents();
-            } catch (err) { console.error(err); }
+                return totalUnread;
+            } catch (err) { console.error(err); return 0; }
         }
 
         function displayStudents() {
+            let filtered = [...allStudents];
+
+            // فیلتر بر اساس انتخاب
+            if (currentFilter === 'unread') {
+                filtered = filtered.filter(s => unreadCounts[s.id] > 0);
+            }
+
             const search = document.getElementById('searchStudent').value.toLowerCase();
-            let filtered = allStudents;
-            if (search) filtered = allStudents.filter(s => s.name.toLowerCase().includes(search));
+            if (search) filtered = filtered.filter(s => s.name.toLowerCase().includes(search));
+
             if (filtered.length === 0) {
-                document.getElementById('studentList').innerHTML = '<div class="text-center py-4 text-muted">هیچ شاگردی یافت نشد</div>';
+                let emptyMsg = currentFilter === 'unread' ? 'هیچ پیام خوانده نشده‌ای وجود ندارد' : 'هیچ شاگردی یافت نشد';
+                document.getElementById('studentList').innerHTML = `<div class="text-center py-4 text-muted">${emptyMsg}</div>`;
                 return;
             }
+
             let html = '';
             for (const s of filtered) {
                 const isActive = currentStudent && currentStudent.id === s.id;
+                const isUnread = unreadCounts[s.id] > 0;
                 const initial = s.name ? s.name.charAt(0) : '?';
                 const lastMsg = lastMessages[s.id];
-                const unread = unreadCounts[s.id] || 0;
-                const lastMsgText = lastMsg ? (lastMsg.sender_type === 'student' ? `شاگرد: ${lastMsg.message.substring(0, 30)}` : `شما: ${lastMsg.message.substring(0, 30)}`) : 'بدون پیام';
-                html += `<div class="student-item ${isActive ? 'active' : ''}" onclick="selectStudent(${s.id})">
+                let lastMsgText = 'بدون پیام';
+                if (lastMsg) {
+                    if (lastMsg.sender_type === 'student') {
+                        lastMsgText = `📨 شاگرد: ${lastMsg.message.substring(0, 35)}`;
+                    } else {
+                        lastMsgText = `📤 شما: ${lastMsg.message.substring(0, 35)}`;
+                    }
+                }
+                const unreadCount = unreadCounts[s.id] || 0;
+
+                let rowClass = '';
+                if (isActive) rowClass = 'active';
+                else if (isUnread) rowClass = 'has-unread';
+
+                html += `<div class="student-item ${rowClass}" onclick="selectStudent(${s.id})">
                     <div class="student-avatar" style="background: #${hashCode(s.name) % 0xFFFFFF}">${escapeHtml(initial)}</div>
                     <div class="student-info">
                         <div class="student-name">${escapeHtml(s.name)}</div>
                         <div class="last-message">${escapeHtml(lastMsgText)}</div>
                     </div>
-                    ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
+                    ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : ''}
                 </div>`;
             }
             document.getElementById('studentList').innerHTML = html;
@@ -404,11 +652,18 @@
             const student = allStudents.find(s => s.id == studentId);
             if (!student) return;
             currentStudent = student;
-            
-            // بازنشانی تعداد خوانده نشده
-            unreadCounts[student.id] = 0;
-            displayStudents();
-            
+
+            // علامت‌گذاری پیام‌های این شاگرد به عنوان خوانده شده
+            if (unreadCounts[student.id] > 0) {
+                await fetch(`/api/messages/mark-read/${student.id}`, { method: 'POST' });
+                unreadCounts[student.id] = 0;
+
+                // به‌روزرسانی لیست و عنوان صفحه
+                const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+                if (totalUnread === 0) document.title = 'چت با شاگردان | آموزشگاه نوی نور';
+                displayStudents();
+            }
+
             document.getElementById('chatMain').innerHTML = `
                 <div class="chat-header">
                     <div class="student-avatar" style="background: #${hashCode(student.name) % 0xFFFFFF}">${escapeHtml(student.name ? student.name.charAt(0) : '?')}</div>
@@ -428,24 +683,33 @@
                 const messages = await res.json();
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
-                
-                // بررسی پیام جدید از شاگرد
-                const lastMessage = messages[messages.length - 1];
-                if (lastMessage && lastMessage.sender_type !== 'admin' && lastMessage.is_read == 0) {
-                    showNotification(currentStudent.name, lastMessage.message);
+
+                // بررسی پیام جدید از شاگرد (برای نوتیفیکیشن)
+                if (messages.length > 0) {
+                    const latestMsg = messages[messages.length - 1];
+                    if (latestMsg.sender_type !== 'admin' && latestMsg.is_read == 0) {
+                        if (!currentStudent || currentStudent.id == latestMsg.sender_id) {
+                            // اگر همین شاگرد باز است، علامت بخوان
+                            await fetch(`/api/messages/mark-read/${currentStudent.id}`, { method: 'POST' });
+                            unreadCounts[currentStudent.id] = 0;
+                        } else {
+                            showNotification(currentStudent.name);
+                        }
+                    }
                 }
-                
-                if (messages.length === 0) { 
-                    container.innerHTML = '<div class="text-center py-4 text-muted">هیچ پیامی وجود ندارد. اولین پیام را ارسال کنید.</div>'; 
-                    return; 
+
+                if (messages.length === 0) {
+                    container.innerHTML = '<div class="text-center py-4 text-muted">هیچ پیامی وجود ندارد. اولین پیام را ارسال کنید.</div>';
+                    return;
                 }
+
                 let html = '', lastDate = '';
                 for (const m of messages) {
                     const isOwn = m.sender_type === 'admin' && m.sender_id == adminId;
                     const messageDate = formatFullDate(m.created_at);
-                    if (lastDate !== messageDate) { 
-                        html += `<div class="text-center my-2"><span class="badge bg-light text-muted">${messageDate}</span></div>`; 
-                        lastDate = messageDate; 
+                    if (lastDate !== messageDate) {
+                        html += `<div class="text-center my-2"><span class="badge bg-light text-muted">${messageDate}</span></div>`;
+                        lastDate = messageDate;
                     }
                     html += `<div class="message ${isOwn ? 'message-sent' : 'message-received'}">
                         <div class="message-bubble">
@@ -504,33 +768,50 @@
             finally { input.disabled = false; input.focus(); }
         }
 
-        // بارگذاری اولیه و شروع پولینگ برای به‌روزرسانی لیست شاگردان
+        // چک کردن پیام‌های جدید در پس‌زمینه
+        async function checkNewMessages() {
+            const newTotalUnread = await loadStudents();
+            if (currentStudent && unreadCounts[currentStudent.id] === 0) {
+                await fetch(`/api/messages/mark-read/${currentStudent.id}`, { method: 'POST' });
+            }
+            if (currentStudent) await loadMessages();
+        }
+
+        // بارگذاری اولیه
         async function loadAllData() {
             await loadStudents();
             if (messagesInterval) clearInterval(messagesInterval);
-            messagesInterval = setInterval(async () => {
-                await loadStudents();
-                if (currentStudent) await loadMessages();
-            }, 5000);
+            messagesInterval = setInterval(checkNewMessages, 5000);
         }
 
         setupSidebar();
         loadAllData();
-        
+
         const adminName = localStorage.getItem('userName') || 'مدیر';
         document.getElementById('adminName').innerText = adminName;
-        
+
         window.selectStudent = selectStudent;
         window.sendMessage = sendMessage;
         window.editMessage = editMessage;
         window.deleteMessage = deleteMessage;
         window.goToLastUnread = goToLastUnread;
-        
+        window.setFilter = setFilter;
+        window.filterStudents = filterStudents;
+
         // بازنشانی عنوان صفحه وقتی صفحه فعال می‌شود
         window.addEventListener('focus', () => {
-            document.title = 'چت با شاگردان | آموزشگاه نوی نور';
             loadAllData();
+            const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+            if (totalUnread === 0) document.title = 'چت با شاگردان | آموزشگاه نوی نور';
+        });
+
+        window.addEventListener('blur', () => {
+            const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+            if (totalUnread > 0) {
+                document.title = `📬 (${totalUnread}) پیام جدید در چت`;
+            }
         });
     </script>
 </body>
+
 </html>

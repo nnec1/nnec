@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -14,14 +15,29 @@
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        .message-card:hover { transform: translateX(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .message-sent { border-right: 4px solid #10b981; }
-        .message-received { border-right: 4px solid #3b82f6; background: #f8fafc; }
-        .message-unread { background: #e0f2fe; }
+
+        .message-card:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-sent {
+            border-right: 4px solid #10b981;
+        }
+
+        .message-received {
+            border-right: 4px solid #3b82f6;
+            background: #f8fafc;
+        }
+
+        .message-unread {
+            background: #e0f2fe;
+        }
+
         .reply-box {
             background: #f1f5f9;
             border-radius: 16px;
@@ -29,13 +45,15 @@
             margin-top: 15px;
             display: none;
         }
+
         .filter-box {
             background: white;
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -48,19 +66,53 @@
             height: 48px;
             border-radius: 14px;
             font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { position: fixed; right: -280px; width: 280px; z-index: 1040; transition: right 0.3s; height: 100%; top: 0; }
-            .sidebar.show { right: 0; }
-            .main-content { width: 100%; margin-right: 0; padding: 80px 15px 25px 15px; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
-            .overlay.show { display: block; }
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                right: -280px;
+                width: 280px;
+                z-index: 1040;
+                transition: right 0.3s;
+                height: 100%;
+                top: 0;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-right: 0;
+                padding: 80px 15px 25px 15px;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+
+            .overlay.show {
+                display: block;
+            }
         }
     </style>
 </head>
+
 <body>
     <button class="menu-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     <div class="overlay" id="overlay"></div>
@@ -68,14 +120,15 @@
         <div class="row">
             <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <div class="text-center py-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,#10b981,#059669)">
                         <i class="fa-solid fa-graduation-cap fs-1 text-white"></i>
                     </div>
                     <h5 class="text-white mb-0">پنل شاگرد</h5>
                     <small class="text-muted" id="studentNameSidebar">نام شاگرد</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="fees.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> فیس</a>
@@ -83,14 +136,16 @@
                     <a href="complaints.html" class="nav-link"><i class="fa-solid fa-message"></i> شکایات</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> پروفایل</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+                        خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-4">
                     <h3 class="section-title"><i class="fa-solid fa-envelope text-success me-2"></i> پیام‌ها</h3>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newMessageModal"><i class="fa-solid fa-plus-circle"></i> پیام جدید</button>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newMessageModal"><i
+                            class="fa-solid fa-plus-circle"></i> پیام جدید</button>
                 </div>
 
                 <div class="filter-box">
@@ -104,7 +159,8 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <button class="btn btn-primary w-100" onclick="loadMessages()"><i class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button>
+                            <button class="btn btn-primary w-100" onclick="loadMessages()"><i
+                                    class="fa-solid fa-arrow-rotate-right"></i> بروزرسانی</button>
                         </div>
                     </div>
                 </div>
@@ -124,9 +180,12 @@
                 </div>
                 <div class="modal-body">
                     <form id="messageForm">
-                        <div class="mb-3"><label class="form-label">موضوع</label><input type="text" class="form-control" id="messageSubject" required></div>
-                        <div class="mb-3"><label class="form-label">متن پیام</label><textarea class="form-control" id="messageText" rows="5" required></textarea></div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-paper-plane"></i> ارسال پیام</button>
+                        <div class="mb-3"><label class="form-label">موضوع</label><input type="text" class="form-control"
+                                id="messageSubject" required></div>
+                        <div class="mb-3"><label class="form-label">متن پیام</label><textarea class="form-control"
+                                id="messageText" rows="5" required></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-paper-plane"></i>
+                            ارسال پیام</button>
                     </form>
                 </div>
             </div>
@@ -144,8 +203,10 @@
                 <div class="modal-body">
                     <input type="hidden" id="replyToId">
                     <div id="originalMessage" class="alert alert-secondary mb-3"></div>
-                    <div class="mb-3"><label class="form-label">متن پاسخ</label><textarea class="form-control" id="replyText" rows="4" required></textarea></div>
-                    <button class="btn btn-primary w-100" onclick="sendReply()"><i class="fa-solid fa-paper-plane"></i> ارسال پاسخ</button>
+                    <div class="mb-3"><label class="form-label">متن پاسخ</label><textarea class="form-control"
+                            id="replyText" rows="4" required></textarea></div>
+                    <button class="btn btn-primary w-100" onclick="sendReply()"><i class="fa-solid fa-paper-plane"></i>
+                        ارسال پاسخ</button>
                 </div>
             </div>
         </div>
@@ -179,7 +240,7 @@
         function filterMessages() {
             const filterType = document.getElementById('filterType').value;
             let filtered = [...allMessages];
-            
+
             if (filterType === 'sent') {
                 filtered = filtered.filter(m => m.sender_type === 'student' && m.sender_id == studentId);
             } else if (filterType === 'received') {
@@ -187,17 +248,17 @@
             } else if (filterType === 'unread') {
                 filtered = filtered.filter(m => m.receiver_type === 'student' && m.receiver_id == studentId && m.is_read == 0);
             }
-            
+
             if (filtered.length === 0) {
                 document.getElementById('messagesList').innerHTML = '<div class="alert alert-info text-center">هیچ پیامی وجود ندارد</div>';
                 return;
             }
-            
+
             let html = '';
             for (const m of filtered) {
                 const isOutgoing = m.sender_type === 'student' && m.sender_id == studentId;
                 const isUnread = !isOutgoing && m.is_read == 0;
-                
+
                 html += `
                     <div class="message-card ${isOutgoing ? 'message-sent' : 'message-received'} ${isUnread ? 'message-unread' : ''}" onclick="showMessageDetail(${m.id})">
                         <div class="d-flex justify-content-between flex-wrap">
@@ -225,9 +286,9 @@
             try {
                 const res = await fetch(`/api/messages/${messageId}`);
                 const m = await res.json();
-                
+
                 const isOutgoing = m.sender_type === 'student' && m.sender_id == studentId;
-                
+
                 let html = `
                     <div class="modal fade" id="detailModal" tabindex="-1">
                         <div class="modal-dialog modal-dialog-centered">
@@ -257,16 +318,16 @@
                         </div>
                     </div>
                 `;
-                
+
                 // حذف مودال قبلی اگر وجود دارد
                 const existingModal = document.getElementById('detailModal');
                 if (existingModal) existingModal.remove();
-                
+
                 document.body.insertAdjacentHTML('beforeend', html);
                 const modal = new bootstrap.Modal(document.getElementById('detailModal'));
                 modal.show();
-                
-                document.getElementById('detailModal').addEventListener('hidden.bs.modal', function() {
+
+                document.getElementById('detailModal').addEventListener('hidden.bs.modal', function () {
                     this.remove();
                     loadMessages();
                 });
@@ -283,23 +344,23 @@
         async function sendReply() {
             const messageId = document.getElementById('replyToId').value;
             const replyText = document.getElementById('replyText').value;
-            
+
             if (!replyText.trim()) {
                 alert('لطفاً متن پاسخ را وارد کنید');
                 return;
             }
-            
+
             const btn = event.target;
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ارسال...';
-            
+
             try {
                 const res = await fetch(`/api/messages/${messageId}/reply`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: replyText })
                 });
-                
+
                 if (res.ok) {
                     alert('✅ پاسخ با موفقیت ارسال شد');
                     bootstrap.Modal.getInstance(document.getElementById('replyModal')).hide();
@@ -319,16 +380,16 @@
             e.preventDefault();
             const subject = document.getElementById('messageSubject').value;
             const message = document.getElementById('messageText').value;
-            
+
             if (!subject.trim() || !message.trim()) {
                 alert('لطفاً موضوع و متن پیام را وارد کنید');
                 return;
             }
-            
+
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> در حال ارسال...';
-            
+
             try {
                 const res = await fetch('/api/messages', {
                     method: 'POST',
@@ -340,7 +401,7 @@
                         message: message
                     })
                 });
-                
+
                 if (res.ok) {
                     alert('✅ پیام با موفقیت ارسال شد');
                     bootstrap.Modal.getInstance(document.getElementById('newMessageModal')).hide();
@@ -360,7 +421,7 @@
         let replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
         setupSidebar();
         loadMessages();
-        
+
         fetch(`/api/student/info/${studentId}`)
             .then(res => res.json())
             .then(data => {
@@ -368,4 +429,5 @@
             }).catch(err => console.error(err));
     </script>
 </body>
+
 </html>
