@@ -16,6 +16,44 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .text-success {
+            color: #15803d !important;
+        }
+
+        .text-danger {
+            color: #dc2626 !important;
         }
 
         .menu-toggle {
@@ -108,52 +146,34 @@
                 <h3 class="section-title"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> وضعیت فیس من
                 </h3>
 
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="stat-card text-center"><i class="fa-solid fa-receipt fs-1 text-primary"></i>
-                            <h3 id="feeMain">0</h3><small>فیس کل</small>
-                        </div>
+                <!-- هشدار منقضی شدن -->
+                <div id="overdueWarning" class="alert alert-danger d-none mb-4">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <strong>⚠️ هشدار!</strong> فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.
+                </div>
+
+                <!-- کارت اصلی -->
+                <div class="info-card">
+                    <h5 class="mb-3"><i class="fa-solid fa-receipt text-primary"></i> آخرین وضعیت پرداخت</h5>
+                    <div class="info-row">
+                        <span class="info-label">تاریخ آخرین پرداخت:</span>
+                        <span class="info-value" id="lastPaymentDate">-</span>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card text-center"><i class="fa-solid fa-circle-check fs-1 text-success"></i>
-                            <h3 id="feePaid">0</h3><small>پرداخت شده</small>
-                        </div>
+                    <div class="info-row">
+                        <span class="info-label">تاریخ انقضای فیس:</span>
+                        <span class="info-value" id="expiryDate">-</span>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card text-center"><i
-                                class="fa-solid fa-triangle-exclamation fs-1 text-danger"></i>
-                            <h3 id="feeRemaining">0</h3><small>باقی مانده</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card text-center"><i
-                                class="fa-regular fa-calendar-circle-exclamation fs-1 text-warning"></i>
-                            <h4 id="feeExpiry">-</h4><small>تاریخ انقضا</small>
-                        </div>
+                    <div class="info-row">
+                        <span class="info-label">وضعیت فیس:</span>
+                        <span class="info-value" id="feeStatus">-</span>
                     </div>
                 </div>
 
-                <div id="overdueWarning" class="alert alert-danger d-none"></div>
-
-                <div class="table-container">
-                    <h5><i class="fa-solid fa-clock-rotate-left"></i> تاریخچه پرداخت‌ها</h5>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>تاریخ</th>
-                                    <th>مبلغ</th>
-                                    <th>فیس کل</th>
-                                    <th>پرداخت شده (کل)</th>
-                                    <th>باقی مانده</th>
-                                    <th>تاریخ انقضا</th>
-                                    <th>شماره رسید</th>
-                                    <th>یادداشت</th>
-                                </tr>
-                            </thead>
-                            <tbody id="paymentHistory"></tbody>
-                        </table>
-                    </div>
+                <!-- کارت راهنما -->
+                <div class="alert alert-light mt-3">
+                    <i class="fa-solid fa-info-circle text-info"></i>
+                    <strong>توضیح:</strong>
+                    پس از هر بار پرداخت فیس، تاریخ انقضای جدید به اندازه یک ماه افزایش می‌یابد.
                 </div>
             </div>
         </div>
@@ -178,38 +198,64 @@
 
         function formatDate(dateString) {
             if (!dateString) return '-';
-            try { const d = new Date(dateString); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-            catch (e) { return dateString; }
+            try {
+                const d = new Date(dateString);
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            } catch (e) { return dateString; }
         }
 
         async function loadFeeStatus() {
             try {
-                const res = await fetch(`/api/student/fees/${studentId}`);
-                const data = await res.json();
-                document.getElementById('feeMain').innerText = (data.total_fee || 0).toLocaleString();
-                document.getElementById('feePaid').innerText = (data.paid_fee || 0).toLocaleString();
-                document.getElementById('feeRemaining').innerText = (data.remaining_fee || 0).toLocaleString();
-                document.getElementById('feeExpiry').innerText = formatDate(data.due_date) || '-';
-                if (data.due_date && new Date(data.due_date) < new Date() && data.remaining_fee > 0) {
-                    document.getElementById('overdueWarning').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ⚠️ هشدار! فیس شما منقضی شده است. لطفاً هرچه سریعتر پرداخت کنید.`;
-                    document.getElementById('overdueWarning').classList.remove('d-none');
-                }
-            } catch (err) { console.error(err); }
-        }
+                // دریافت آخرین پرداخت شاگرد
+                const paymentsRes = await fetch(`/api/student/payments/${studentId}`);
+                let payments = await paymentsRes.json();
 
-        async function loadPaymentHistory() {
-            try {
-                const res = await fetch(`/api/student/payments/${studentId}`);
-                const payments = await res.json();
-                if (payments.length === 0) { document.getElementById('paymentHistory').innerHTML = '<td><td colspan="8" class="text-center text-muted py-4">هیچ پرداختی ثبت نشده است</div></div></div></td>'; return; }
-                document.getElementById('paymentHistory').innerHTML = payments.map(p => `<tr><td class="text-dark">${formatDate(p.payment_date)}</div></div></div><td class="text-success">${(p.amount || 0).toLocaleString()} AFN</div></div></div><td class="text-dark">${(p.total_fee || 0).toLocaleString()} AFN</div></div></div><td class="text-success">${(p.paid_fee || 0).toLocaleString()} AFN</div></div></div><td class="${(p.remaining_after || 0) > 0 ? 'text-danger' : 'text-success'}">${(p.remaining_after || 0).toLocaleString()} AFN</div></div></div><td class="text-dark">${formatDate(p.due_date)}</div></div></div><td class="text-dark">${p.receipt_number || '-'}</div></div></div><td class="text-dark">${p.notes || '-'}</div></div></div></tr>`).join('');
-            } catch (err) { console.error(err); }
+                if (!Array.isArray(payments)) payments = [];
+
+                const lastPayment = payments.length > 0 ? payments[0] : null;
+
+                if (lastPayment) {
+                    // نمایش تاریخ آخرین پرداخت
+                    document.getElementById('lastPaymentDate').innerHTML = formatDate(lastPayment.payment_date) || '-';
+                    document.getElementById('expiryDate').innerHTML = formatDate(lastPayment.due_date) || '-';
+
+                    // بررسی وضعیت فیس (منقضی شده یا معتبر)
+                    const today = new Date();
+                    const expiryDate = lastPayment.due_date ? new Date(lastPayment.due_date) : null;
+
+                    if (expiryDate && expiryDate < today) {
+                        document.getElementById('feeStatus').innerHTML = '<span class="text-danger fw-bold">⚠️ منقضی شده</span>';
+                        document.getElementById('overdueWarning').classList.remove('d-none');
+                    } else if (expiryDate) {
+                        document.getElementById('feeStatus').innerHTML = '<span class="text-success fw-bold">✅ معتبر</span>';
+                        document.getElementById('overdueWarning').classList.add('d-none');
+                    } else {
+                        document.getElementById('feeStatus').innerHTML = '<span class="text-muted">فاقد فیس</span>';
+                    }
+                } else {
+                    document.getElementById('lastPaymentDate').innerHTML = 'هیچ پرداختی ثبت نشده';
+                    document.getElementById('expiryDate').innerHTML = '-';
+                    document.getElementById('feeStatus').innerHTML = '<span class="text-muted">فاقد فیس</span>';
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('lastPaymentDate').innerHTML = 'خطا در بارگیری';
+                document.getElementById('expiryDate').innerHTML = '-';
+                document.getElementById('feeStatus').innerHTML = '<span class="text-danger">خطا</span>';
+            }
         }
 
         setupSidebar();
         loadFeeStatus();
-        loadPaymentHistory();
-        setInterval(loadFeeStatus, 30000);
+
+        // بارگذاری نام شاگرد در سایدبار
+        fetch(`/api/student/info/${studentId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+            })
+            .catch(err => console.error(err));
     </script>
 </body>
 
