@@ -192,21 +192,28 @@
         }
 
         async function loadStudentInfo() {
-            try {
-                const res = await fetch(`/api/student/info/${studentId}`);
-                if (!res.ok) {
-                    throw new Error('خطا در دریافت اطلاعات');
-                }
-                const data = await res.json();
-                document.getElementById('studentCardId').innerText = data.student_card_id || '-';
-                document.getElementById('studentName').innerText = data.name || '-';
-                document.getElementById('studentClass').innerText = data.class_name || '-';
-                document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
-            } catch (err) {
-                console.error(err);
-                document.getElementById('studentNameSidebar').innerText = 'شاگرد';
-            }
+    try {
+        const res = await fetch(`/api/student/info/${studentId}`);
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Server response:', errorText);
+            throw new Error('خطا در دریافت اطلاعات');
         }
+        
+        const data = await res.json();
+        document.getElementById('studentCardId').innerText = data.student_card_id || '-';
+        document.getElementById('studentName').innerText = data.name || '-';
+        document.getElementById('studentClass').innerText = data.class_name || '-';
+        document.getElementById('studentNameSidebar').innerText = data.name || 'شاگرد';
+    } catch (err) { 
+        console.error('Error loading student info:', err);
+        document.getElementById('studentNameSidebar').innerText = 'شاگرد';
+        document.getElementById('studentCardId').innerText = '-';
+        document.getElementById('studentName').innerText = '-';
+        document.getElementById('studentClass').innerText = '-';
+    }
+}
 
         async function loadStats() {
             try {

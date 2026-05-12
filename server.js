@@ -2228,7 +2228,6 @@ app.post("/api/teacher/save-group-grade", authenticate, async (req, res) => {
 
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
 
-
 // ====================== آمار شاگرد (نمرات و حاضری) ======================
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   try {
@@ -3035,55 +3034,64 @@ app.delete("/api/homework/:id", authenticate, async (req, res) => {
 });
 // ====================== ثبت امتیاز یا شکایت توسط استاد ======================
 app.post("/api/teacher/rate-student", authenticate, async (req, res) => {
-    const { student_id, class_id, rating, complaint } = req.body;
-    const teacher_id = req.user.id;
-    
-    if (req.user.role !== "teacher") {
-        return res.status(403).json({ error: "فقط استاد می‌تواند امتیاز ثبت کند" });
-    }
-    
-    if (!student_id || !class_id) {
-        return res.status(400).json({ error: "اطلاعات کامل نیست" });
-    }
-    
-    try {
-        // بررسی اینکه شاگرد در صنف استاد باشد
-        const [check] = await db.execute(`
+  const { student_id, class_id, rating, complaint } = req.body;
+  const teacher_id = req.user.id;
+
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند امتیاز ثبت کند" });
+  }
+
+  if (!student_id || !class_id) {
+    return res.status(400).json({ error: "اطلاعات کامل نیست" });
+  }
+
+  try {
+    // بررسی اینکه شاگرد در صنف استاد باشد
+    const [check] = await db.execute(
+      `
             SELECT s.id FROM students s
             JOIN teacher_classes tc ON s.class_id = tc.class_id
             WHERE s.id = ? AND tc.teacher_id = ?
-        `, [student_id, teacher_id]);
-        
-        if (check.length === 0) {
-            return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
-        }
-        
-        const [result] = await db.execute(`
+        `,
+      [student_id, teacher_id],
+    );
+
+    if (check.length === 0) {
+      return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
+    }
+
+    const [result] = await db.execute(
+      `
             INSERT INTO ratings (student_id, teacher_id, class_id, rating, complaint, status)
             VALUES (?, ?, ?, ?, ?, 'pending')
-        `, [student_id, teacher_id, class_id, rating || null, complaint || null]);
-        
-        res.json({ 
-            success: true, 
-            id: result.insertId,
-            message: rating ? "امتیاز با موفقیت ثبت شد" : "شکایت با موفقیت ثبت شد" 
-        });
-    } catch (err) {
-        console.error("❌ Error in POST /api/teacher/rate-student:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [student_id, teacher_id, class_id, rating || null, complaint || null],
+    );
+
+    res.json({
+      success: true,
+      id: result.insertId,
+      message: rating ? "امتیاز با موفقیت ثبت شد" : "شکایت با موفقیت ثبت شد",
+    });
+  } catch (err) {
+    console.error("❌ Error in POST /api/teacher/rate-student:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== دریافت امتیازات و شکایات یک شاگرد (برای شاگرد) ======================
 app.get("/api/student/ratings/:studentId", authenticate, async (req, res) => {
-    const studentId = req.params.studentId;
-    
-    if (req.user.role === "student" && req.user.id != studentId) {
-        return res.status(403).json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
-    }
-    
-    try {
-        const [results] = await db.execute(`
+  const studentId = req.params.studentId;
+
+  if (req.user.role === "student" && req.user.id != studentId) {
+    return res
+      .status(403)
+      .json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
+  }
+
+  try {
+    const [results] = await db.execute(
+      `
             SELECT r.*, e.name as teacher_name, c.class_name,
                    DATE_FORMAT(r.created_at, '%Y-%m-%d') as created_date
             FROM ratings r
@@ -3091,23 +3099,25 @@ app.get("/api/student/ratings/:studentId", authenticate, async (req, res) => {
             JOIN classes c ON r.class_id = c.id
             WHERE r.student_id = ?
             ORDER BY r.created_at DESC
-        `, [studentId]);
-        
-        res.json(results);
-    } catch (err) {
-        console.error("❌ Error in GET /api/student/ratings/:studentId:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [studentId],
+    );
+
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/ratings/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== دریافت تمام امتیازات و شکایات (برای مدیر) ======================
 app.get("/api/admin/all-ratings", authenticate, async (req, res) => {
-    if (req.user.role !== "admin" && req.user.role !== "ceo") {
-        return res.status(403).json({ error: "دسترسی محدود" });
-    }
-    
-    try {
-        const [results] = await db.execute(`
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "دسترسی محدود" });
+  }
+
+  try {
+    const [results] = await db.execute(`
             SELECT r.*, s.name as student_name, s.student_card_id, e.name as teacher_name, c.class_name,
                    DATE_FORMAT(r.created_at, '%Y-%m-%d') as created_date
             FROM ratings r
@@ -3116,122 +3126,143 @@ app.get("/api/admin/all-ratings", authenticate, async (req, res) => {
             JOIN classes c ON r.class_id = c.id
             ORDER BY r.created_at DESC
         `);
-        
-        res.json(results);
-    } catch (err) {
-        console.error("❌ Error in GET /api/admin/all-ratings:", err);
-        res.status(500).json({ error: err.message });
-    }
+
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in GET /api/admin/all-ratings:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== پاسخ به شکایت توسط مدیر ======================
 app.put("/api/admin/respond-rating/:id", authenticate, async (req, res) => {
-    const { response } = req.body;
-    const ratingId = req.params.id;
-    
-    if (req.user.role !== "admin" && req.user.role !== "ceo") {
-        return res.status(403).json({ error: "فقط مدیر می‌تواند پاسخ دهد" });
-    }
-    
-    try {
-        await db.execute(`
+  const { response } = req.body;
+  const ratingId = req.params.id;
+
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "فقط مدیر می‌تواند پاسخ دهد" });
+  }
+
+  try {
+    await db.execute(
+      `
             UPDATE ratings SET response = ?, status = 'responded', updated_at = NOW()
             WHERE id = ?
-        `, [response, ratingId]);
-        
-        res.json({ success: true, message: "پاسخ با موفقیت ثبت شد" });
-    } catch (err) {
-        console.error("❌ Error in PUT /api/admin/respond-rating/:id:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [response, ratingId],
+    );
+
+    res.json({ success: true, message: "پاسخ با موفقیت ثبت شد" });
+  } catch (err) {
+    console.error("❌ Error in PUT /api/admin/respond-rating/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
-
-
 
 // ====================== ثبت امتیاز توسط استاد ======================
 app.post("/api/teacher/rate-student", authenticate, async (req, res) => {
-    const { student_id, class_id, rating, notes } = req.body;
-    const teacher_id = req.user.id;
-    
-    if (req.user.role !== "teacher") {
-        return res.status(403).json({ error: "فقط استاد می‌تواند امتیاز ثبت کند" });
-    }
-    
-    if (!student_id || !class_id || !rating) {
-        return res.status(400).json({ error: "اطلاعات کامل نیست" });
-    }
-    
-    if (rating < 1 || rating > 10) {
-        return res.status(400).json({ error: "امتیاز باید بین 1 تا 10 باشد" });
-    }
-    
-    try {
-        const [check] = await db.execute(`
+  const { student_id, class_id, rating, notes } = req.body;
+  const teacher_id = req.user.id;
+
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند امتیاز ثبت کند" });
+  }
+
+  if (!student_id || !class_id || !rating) {
+    return res.status(400).json({ error: "اطلاعات کامل نیست" });
+  }
+
+  if (rating < 1 || rating > 10) {
+    return res.status(400).json({ error: "امتیاز باید بین 1 تا 10 باشد" });
+  }
+
+  try {
+    const [check] = await db.execute(
+      `
             SELECT s.id FROM students s
             JOIN teacher_classes tc ON s.class_id = tc.class_id
             WHERE s.id = ? AND tc.teacher_id = ?
-        `, [student_id, teacher_id]);
-        
-        if (check.length === 0) {
-            return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
-        }
-        
-        const [result] = await db.execute(`
+        `,
+      [student_id, teacher_id],
+    );
+
+    if (check.length === 0) {
+      return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
+    }
+
+    const [result] = await db.execute(
+      `
             INSERT INTO ratings (student_id, teacher_id, class_id, rating, complaint, status)
             VALUES (?, ?, ?, ?, NULL, 'pending')
-        `, [student_id, teacher_id, class_id, rating]);
-        
-        res.json({ success: true, id: result.insertId, message: "امتیاز با موفقیت ثبت شد" });
-    } catch (err) {
-        console.error("❌ Error in POST /api/teacher/rate-student:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [student_id, teacher_id, class_id, rating],
+    );
+
+    res.json({
+      success: true,
+      id: result.insertId,
+      message: "امتیاز با موفقیت ثبت شد",
+    });
+  } catch (err) {
+    console.error("❌ Error in POST /api/teacher/rate-student:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== ثبت شکایت توسط استاد ======================
 app.post("/api/teacher/complaint-student", authenticate, async (req, res) => {
-    const { student_id, class_id, complaint } = req.body;
-    const teacher_id = req.user.id;
-    
-    if (req.user.role !== "teacher") {
-        return res.status(403).json({ error: "فقط استاد می‌تواند شکایت ثبت کند" });
-    }
-    
-    if (!student_id || !class_id || !complaint) {
-        return res.status(400).json({ error: "اطلاعات کامل نیست" });
-    }
-    
-    try {
-        const [check] = await db.execute(`
+  const { student_id, class_id, complaint } = req.body;
+  const teacher_id = req.user.id;
+
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({ error: "فقط استاد می‌تواند شکایت ثبت کند" });
+  }
+
+  if (!student_id || !class_id || !complaint) {
+    return res.status(400).json({ error: "اطلاعات کامل نیست" });
+  }
+
+  try {
+    const [check] = await db.execute(
+      `
             SELECT s.id FROM students s
             JOIN teacher_classes tc ON s.class_id = tc.class_id
             WHERE s.id = ? AND tc.teacher_id = ?
-        `, [student_id, teacher_id]);
-        
-        if (check.length === 0) {
-            return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
-        }
-        
-        const [result] = await db.execute(`
+        `,
+      [student_id, teacher_id],
+    );
+
+    if (check.length === 0) {
+      return res.status(403).json({ error: "شما دسترسی به این شاگرد ندارید" });
+    }
+
+    const [result] = await db.execute(
+      `
             INSERT INTO ratings (student_id, teacher_id, class_id, rating, complaint, status)
             VALUES (?, ?, ?, NULL, ?, 'pending')
-        `, [student_id, teacher_id, class_id, complaint]);
-        
-        res.json({ success: true, id: result.insertId, message: "شکایت با موفقیت ثبت شد" });
-    } catch (err) {
-        console.error("❌ Error in POST /api/teacher/complaint-student:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [student_id, teacher_id, class_id, complaint],
+    );
+
+    res.json({
+      success: true,
+      id: result.insertId,
+      message: "شکایت با موفقیت ثبت شد",
+    });
+  } catch (err) {
+    console.error("❌ Error in POST /api/teacher/complaint-student:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== دریافت همه امتیازات و شکایات (برای مدیر) ======================
 app.get("/api/admin/all-ratings", authenticate, async (req, res) => {
-    if (req.user.role !== "admin" && req.user.role !== "ceo") {
-        return res.status(403).json({ error: "دسترسی محدود" });
-    }
-    
-    try {
-        const [results] = await db.execute(`
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "دسترسی محدود" });
+  }
+
+  try {
+    const [results] = await db.execute(`
             SELECT r.*, 
                    s.name as student_name, s.student_card_id, 
                    e.name as teacher_name, 
@@ -3243,24 +3274,30 @@ app.get("/api/admin/all-ratings", authenticate, async (req, res) => {
             JOIN classes c ON r.class_id = c.id
             ORDER BY r.created_at DESC
         `);
-        
-        res.json(results);
-    } catch (err) {
-        console.error("❌ Error in GET /api/admin/all-ratings:", err);
-        res.status(500).json({ error: err.message });
-    }
+
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in GET /api/admin/all-ratings:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== دریافت امتیازات و شکایات یک استاد ======================
-app.get("/api/teacher/my-ratings/:teacherId", authenticate, async (req, res) => {
+app.get(
+  "/api/teacher/my-ratings/:teacherId",
+  authenticate,
+  async (req, res) => {
     const teacherId = req.params.teacherId;
-    
+
     if (req.user.role !== "teacher" || req.user.id != teacherId) {
-        return res.status(403).json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
+      return res
+        .status(403)
+        .json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
     }
-    
+
     try {
-        const [results] = await db.execute(`
+      const [results] = await db.execute(
+        `
             SELECT r.*, s.name as student_name, s.student_card_id, c.class_name,
                    DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') as created_date
             FROM ratings r
@@ -3268,25 +3305,31 @@ app.get("/api/teacher/my-ratings/:teacherId", authenticate, async (req, res) => 
             JOIN classes c ON r.class_id = c.id
             WHERE r.teacher_id = ?
             ORDER BY r.created_at DESC
-        `, [teacherId]);
-        
-        res.json(results);
+        `,
+        [teacherId],
+      );
+
+      res.json(results);
     } catch (err) {
-        console.error("❌ Error in GET /api/teacher/my-ratings/:teacherId:", err);
-        res.status(500).json({ error: err.message });
+      console.error("❌ Error in GET /api/teacher/my-ratings/:teacherId:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // ====================== دریافت امتیازات و شکایات یک شاگرد ======================
 app.get("/api/student/ratings/:studentId", authenticate, async (req, res) => {
-    const studentId = req.params.studentId;
-    
-    if (req.user.role === "student" && req.user.id != studentId) {
-        return res.status(403).json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
-    }
-    
-    try {
-        const [results] = await db.execute(`
+  const studentId = req.params.studentId;
+
+  if (req.user.role === "student" && req.user.id != studentId) {
+    return res
+      .status(403)
+      .json({ error: "شما فقط می‌توانید امتیازات خود را ببینید" });
+  }
+
+  try {
+    const [results] = await db.execute(
+      `
             SELECT r.*, e.name as teacher_name, c.class_name,
                    DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') as created_date
             FROM ratings r
@@ -3294,64 +3337,64 @@ app.get("/api/student/ratings/:studentId", authenticate, async (req, res) => {
             JOIN classes c ON r.class_id = c.id
             WHERE r.student_id = ?
             ORDER BY r.created_at DESC
-        `, [studentId]);
-        
-        res.json(results);
-    } catch (err) {
-        console.error("❌ Error in GET /api/student/ratings/:studentId:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [studentId],
+    );
+
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in GET /api/student/ratings/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== پاسخ به شکایت توسط مدیر ======================
 app.put("/api/admin/respond-rating/:id", authenticate, async (req, res) => {
-    const { response } = req.body;
-    const ratingId = req.params.id;
-    
-    if (req.user.role !== "admin" && req.user.role !== "ceo") {
-        return res.status(403).json({ error: "فقط مدیر می‌تواند پاسخ دهد" });
-    }
-    
-    try {
-        await db.execute(`
+  const { response } = req.body;
+  const ratingId = req.params.id;
+
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
+    return res.status(403).json({ error: "فقط مدیر می‌تواند پاسخ دهد" });
+  }
+
+  try {
+    await db.execute(
+      `
             UPDATE ratings SET response = ?, status = 'responded', updated_at = NOW()
             WHERE id = ?
-        `, [response, ratingId]);
-        
-        res.json({ success: true, message: "پاسخ با موفقیت ثبت شد" });
-    } catch (err) {
-        console.error("❌ Error in PUT /api/admin/respond-rating/:id:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [response, ratingId],
+    );
+
+    res.json({ success: true, message: "پاسخ با موفقیت ثبت شد" });
+  } catch (err) {
+    console.error("❌ Error in PUT /api/admin/respond-rating/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
-
-
-
-
-
-
-
 
 // ====================== گزارشات مالی ======================
 app.get("/api/financial-reports", authenticate, async (req, res) => {
   const { period, start_date, end_date } = req.query;
-  let periods = [], incomes = [], expenses = [];
+  let periods = [],
+    incomes = [],
+    expenses = [];
 
   try {
     if (period === "daily") {
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = date.toISOString().split("T")[0];
         periods.push(dateStr);
 
         const [income] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE DATE(payment_date) = ?`,
-          [dateStr]
+          [dateStr],
         );
         const [expense] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE DATE(expense_date) = ?`,
-          [dateStr]
+          [dateStr],
         );
         incomes.push(income[0]?.total || 0);
         expenses.push(expense[0]?.total || 0);
@@ -3360,19 +3403,21 @@ app.get("/api/financial-reports", authenticate, async (req, res) => {
       for (let i = 11; i >= 0; i--) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
-        const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
         periods.push(monthStr);
 
-        const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
-        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+        const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+          .toISOString()
+          .split("T")[0];
 
         const [income] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
-          [startDate, endDate]
+          [startDate, endDate],
         );
         const [expense] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
-          [startDate, endDate]
+          [startDate, endDate],
         );
         incomes.push(income[0]?.total || 0);
         expenses.push(expense[0]?.total || 0);
@@ -3388,11 +3433,11 @@ app.get("/api/financial-reports", authenticate, async (req, res) => {
 
         const [income] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
-          [startDate, endDate]
+          [startDate, endDate],
         );
         const [expense] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
-          [startDate, endDate]
+          [startDate, endDate],
         );
         incomes.push(income[0]?.total || 0);
         expenses.push(expense[0]?.total || 0);
@@ -3401,16 +3446,16 @@ app.get("/api/financial-reports", authenticate, async (req, res) => {
       let current = new Date(start_date);
       const end = new Date(end_date);
       while (current <= end) {
-        const dateStr = current.toISOString().split('T')[0];
+        const dateStr = current.toISOString().split("T")[0];
         periods.push(dateStr);
 
         const [income] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
-          [dateStr]
+          [dateStr],
         );
         const [expense] = await db.execute(
           `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
-          [dateStr]
+          [dateStr],
         );
         incomes.push(income[0]?.total || 0);
         expenses.push(expense[0]?.total || 0);
@@ -3427,7 +3472,7 @@ app.get("/api/financial-reports", authenticate, async (req, res) => {
       expenses,
       total_income,
       total_expense,
-      net_profit: total_income - total_expense
+      net_profit: total_income - total_expense,
     });
   } catch (err) {
     console.error("❌ Error in /api/financial-reports:", err);
@@ -3453,17 +3498,20 @@ app.get("/api/complaints", authenticate, async (req, res) => {
 
 app.post("/api/complaints", authenticate, async (req, res) => {
   const { student_id, subject, message } = req.body;
-  
+
   if (!student_id || !subject || !message) {
     return res.status(400).json({ error: "اطلاعات کامل نیست" });
   }
-  
+
   try {
-    const [result] = await db.execute(`
+    const [result] = await db.execute(
+      `
       INSERT INTO complaints (student_id, subject, message, status)
       VALUES (?, ?, ?, 'pending')
-    `, [student_id, subject, message]);
-    
+    `,
+      [student_id, subject, message],
+    );
+
     res.json({ id: result.insertId, message: "شکایت با موفقیت ثبت شد" });
   } catch (err) {
     console.error("❌ Error in POST /api/complaints:", err);
@@ -3474,14 +3522,17 @@ app.post("/api/complaints", authenticate, async (req, res) => {
 app.put("/api/complaints/:id", authenticate, async (req, res) => {
   const { response } = req.body;
   const complaintId = req.params.id;
-  
+
   try {
-    await db.execute(`
+    await db.execute(
+      `
       UPDATE complaints 
       SET response = ?, status = 'resolved', resolved_at = NOW()
       WHERE id = ?
-    `, [response, complaintId]);
-    
+    `,
+      [response, complaintId],
+    );
+
     res.json({ message: "پاسخ با موفقیت ثبت شد" });
   } catch (err) {
     console.error("❌ Error in PUT /api/complaints/:id:", err);
@@ -3492,18 +3543,28 @@ app.put("/api/complaints/:id", authenticate, async (req, res) => {
 // ====================== آمار داشبورد مدیر ======================
 app.get("/api/dashboard-stats", authenticate, async (req, res) => {
   try {
-    const [students] = await db.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'active'`);
-    const [teachers] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`);
-    const [debtors] = await db.execute(`SELECT COUNT(*) as total FROM fee_debtors WHERE remaining_fee > 0`);
-    const [revenue] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`);
-    const [pendingComplaints] = await db.execute(`SELECT COUNT(*) as total FROM complaints WHERE status = 'pending'`);
-    
+    const [students] = await db.execute(
+      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+    );
+    const [teachers] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+    const [debtors] = await db.execute(
+      `SELECT COUNT(*) as total FROM fee_debtors WHERE remaining_fee > 0`,
+    );
+    const [revenue] = await db.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
+    );
+    const [pendingComplaints] = await db.execute(
+      `SELECT COUNT(*) as total FROM complaints WHERE status = 'pending'`,
+    );
+
     res.json({
       total_students: students[0]?.total || 0,
       total_teachers: teachers[0]?.total || 0,
       total_debtors: debtors[0]?.total || 0,
       monthly_revenue: revenue[0]?.total || 0,
-      pending_complaints: pendingComplaints[0]?.total || 0
+      pending_complaints: pendingComplaints[0]?.total || 0,
     });
   } catch (err) {
     console.error("❌ Error in /api/dashboard-stats:", err);
@@ -3514,39 +3575,59 @@ app.get("/api/dashboard-stats", authenticate, async (req, res) => {
 // ====================== خلاصه مالی ======================
 app.get("/api/financial-summary", authenticate, async (req, res) => {
   const { start_date, end_date, period } = req.query;
-  
+
   try {
     let total_income = 0;
     let total_expense = 0;
-    
+
     if (period === "daily" || (!start_date && !end_date && !period)) {
-      const today = new Date().toISOString().split('T')[0];
-      const [income] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`, [today]);
-      const [expense] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`, [today]);
+      const today = new Date().toISOString().split("T")[0];
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date = ?`,
+        [today],
+      );
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date = ?`,
+        [today],
+      );
       total_income = income[0]?.total || 0;
       total_expense = expense[0]?.total || 0;
     } else if (period === "monthly") {
-      const [income] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`);
-      const [expense] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())`);
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())`,
+      );
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())`,
+      );
       total_income = income[0]?.total || 0;
       total_expense = expense[0]?.total || 0;
     } else if (period === "yearly") {
-      const [income] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE YEAR(payment_date) = YEAR(CURDATE())`);
-      const [expense] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE YEAR(expense_date) = YEAR(CURDATE())`);
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE YEAR(payment_date) = YEAR(CURDATE())`,
+      );
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE YEAR(expense_date) = YEAR(CURDATE())`,
+      );
       total_income = income[0]?.total || 0;
       total_expense = expense[0]?.total || 0;
     } else if (start_date && end_date) {
-      const [income] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`, [start_date, end_date]);
-      const [expense] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`, [start_date, end_date]);
+      const [income] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE payment_date BETWEEN ? AND ?`,
+        [start_date, end_date],
+      );
+      const [expense] = await db.execute(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE expense_date BETWEEN ? AND ?`,
+        [start_date, end_date],
+      );
       total_income = income[0]?.total || 0;
       total_expense = expense[0]?.total || 0;
     }
-    
+
     res.json({
       total_income,
       total_expense,
       net_profit: total_income - total_expense,
-      transaction_count: 0
+      transaction_count: 0,
     });
   } catch (err) {
     console.error("❌ Error in /api/financial-summary:", err);
@@ -3558,7 +3639,8 @@ app.get("/api/financial-summary", authenticate, async (req, res) => {
 app.get("/api/recent-transactions", authenticate, async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   try {
-    const [results] = await db.execute(`
+    const [results] = await db.execute(
+      `
       SELECT 
         fp.id, 
         fp.amount, 
@@ -3573,8 +3655,10 @@ app.get("/api/recent-transactions", authenticate, async (req, res) => {
       JOIN classes c ON s.class_id = c.id 
       ORDER BY fp.payment_date DESC, fp.id DESC 
       LIMIT ?
-    `, [limit]);
-    
+    `,
+      [limit],
+    );
+
     res.json(results);
   } catch (err) {
     console.error("❌ Error in /api/recent-transactions:", err);
@@ -3587,18 +3671,26 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
   if (req.user.role !== "ceo") {
     return res.status(403).json({ error: "دسترسی محدود به ریس سیستم" });
   }
-  
+
   try {
-    const [admins] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'admin' AND status = 'active'`);
-    const [teachers] = await db.execute(`SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`);
-    const [students] = await db.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'active'`);
-    const [yearlyIncome] = await db.execute(`SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE YEAR(payment_date) = YEAR(CURDATE())`);
-    
+    const [admins] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'admin' AND status = 'active'`,
+    );
+    const [teachers] = await db.execute(
+      `SELECT COUNT(*) as total FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+    const [students] = await db.execute(
+      `SELECT COUNT(*) as total FROM students WHERE status = 'active'`,
+    );
+    const [yearlyIncome] = await db.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE YEAR(payment_date) = YEAR(CURDATE())`,
+    );
+
     res.json({
       total_admins: admins[0]?.total || 0,
       total_teachers: teachers[0]?.total || 0,
       total_students: students[0]?.total || 0,
-      yearly_income: yearlyIncome[0]?.total || 0
+      yearly_income: yearlyIncome[0]?.total || 0,
     });
   } catch (err) {
     console.error("❌ Error in /api/ceo/dashboard-stats:", err);
@@ -3606,52 +3698,65 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
   }
 });
 
-
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
 
 // ====================== آمار شاگرد (نمرات و حاضری) ======================
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
-    
+
     // آمار حاضری (سال جاری)
-    const [presentCount] = await db.execute(`
+    const [presentCount] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM attendance_details ad 
       JOIN daily_attendance da ON ad.attendance_id = da.id 
       WHERE ad.student_id = ? AND ad.status = 'present' 
       AND YEAR(da.attendance_date) = YEAR(CURDATE())
-    `, [studentId]);
-    
-    const [absentCount] = await db.execute(`
+    `,
+      [studentId],
+    );
+
+    const [absentCount] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM attendance_details ad 
       JOIN daily_attendance da ON ad.attendance_id = da.id 
       WHERE ad.student_id = ? AND ad.status = 'absent' 
       AND YEAR(da.attendance_date) = YEAR(CURDATE())
-    `, [studentId]);
-    
-    const [lateCount] = await db.execute(`
+    `,
+      [studentId],
+    );
+
+    const [lateCount] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM attendance_details ad 
       JOIN daily_attendance da ON ad.attendance_id = da.id 
       WHERE ad.student_id = ? AND ad.status = 'late' 
       AND YEAR(da.attendance_date) = YEAR(CURDATE())
-    `, [studentId]);
-    
+    `,
+      [studentId],
+    );
+
     // میانگین نمرات
-    const [grades] = await db.execute(`
+    const [grades] = await db.execute(
+      `
       SELECT AVG((score/max_score)*100) as avg_grade 
       FROM grades 
       WHERE student_id = ?
-    `, [studentId]);
-    
+    `,
+      [studentId],
+    );
+
     const avgGrade = grades[0]?.avg_grade ? Math.round(grades[0].avg_grade) : 0;
-    
-    console.log(`✅ Student stats loaded for student ${studentId}: Present=${presentCount[0]?.count}, Absent=${absentCount[0]?.count}, Late=${lateCount[0]?.count}, AvgGrade=${avgGrade}`);
-    
+
+    console.log(
+      `✅ Student stats loaded for student ${studentId}: Present=${presentCount[0]?.count}, Absent=${absentCount[0]?.count}, Late=${lateCount[0]?.count}, AvgGrade=${avgGrade}`,
+    );
+
     res.json({
       present_count: presentCount[0]?.count || 0,
       absent_count: absentCount[0]?.count || 0,
       late_count: lateCount[0]?.count || 0,
-      avg_grade: avgGrade
+      avg_grade: avgGrade,
     });
   } catch (err) {
     console.error("❌ Error in GET /api/student/stats/:studentId:", err);
@@ -3659,14 +3764,14 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   }
 });
 
-
 // ====================== وضعیت فیس شاگرد ======================
 app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
-    
+
     // دریافت آخرین پرداخت شاگرد
-    const [payments] = await db.execute(`
+    const [payments] = await db.execute(
+      `
       SELECT 
         COALESCE(SUM(amount), 0) as total_paid,
         MAX(total_fee) as total_fee,
@@ -3674,21 +3779,29 @@ app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
         MAX(payment_date) as last_payment_date
       FROM fee_payments 
       WHERE student_id = ?
-    `, [studentId]);
-    
+    `,
+      [studentId],
+    );
+
     const lastPayment = payments[0] || {};
     const totalFee = parseFloat(lastPayment.total_fee) || 0;
     const paidFee = parseFloat(lastPayment.total_paid) || 0;
     const remainingFee = totalFee - paidFee;
-    
-    console.log(`✅ Student fees loaded for student ${studentId}: Total=${totalFee}, Paid=${paidFee}, Remaining=${remainingFee}`);
-    
+
+    console.log(
+      `✅ Student fees loaded for student ${studentId}: Total=${totalFee}, Paid=${paidFee}, Remaining=${remainingFee}`,
+    );
+
     res.json({
       total_fee: totalFee,
       paid_fee: paidFee,
       remaining_fee: remainingFee > 0 ? remainingFee : 0,
-      due_date: lastPayment.due_date ? new Date(lastPayment.due_date).toISOString().split('T')[0] : null,
-      last_payment_date: lastPayment.last_payment_date ? new Date(lastPayment.last_payment_date).toISOString().split('T')[0] : null
+      due_date: lastPayment.due_date
+        ? new Date(lastPayment.due_date).toISOString().split("T")[0]
+        : null,
+      last_payment_date: lastPayment.last_payment_date
+        ? new Date(lastPayment.last_payment_date).toISOString().split("T")[0]
+        : null,
     });
   } catch (err) {
     console.error("❌ Error in GET /api/student/fees/:studentId:", err);
@@ -3699,19 +3812,20 @@ app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
 // ====================== آخرین تراکنش‌ها ======================
 app.get("/api/recent-transactions", authenticate, async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
-  
+
   try {
     // بررسی وجود جدول fee_payments
     const [tableCheck] = await db.execute(`
       SELECT COUNT(*) as count FROM information_schema.tables 
       WHERE table_schema = DATABASE() AND table_name = 'fee_payments'
     `);
-    
+
     if (tableCheck[0].count === 0) {
       return res.json([]);
     }
-    
-    const [results] = await db.execute(`
+
+    const [results] = await db.execute(
+      `
       SELECT 
         fp.id, 
         fp.amount, 
@@ -3726,25 +3840,27 @@ app.get("/api/recent-transactions", authenticate, async (req, res) => {
       LEFT JOIN classes c ON s.class_id = c.id 
       ORDER BY fp.payment_date DESC, fp.id DESC 
       LIMIT ?
-    `, [limit]);
-    
+    `,
+      [limit],
+    );
+
     // اگر نتیجه‌ای وجود نداشت، آرایه خالی برگردان
     if (!results || results.length === 0) {
       return res.json([]);
     }
-    
+
     // فرمت کردن داده‌ها
-    const formatted = results.map(row => ({
+    const formatted = results.map((row) => ({
       id: row.id,
       amount: parseFloat(row.amount) || 0,
-      payment_date: row.payment_date || '-',
-      receipt_number: row.receipt_number || '-',
+      payment_date: row.payment_date || "-",
+      receipt_number: row.receipt_number || "-",
       student_id: row.student_id,
-      student_name: row.student_name || 'نامشخص',
-      student_card_id: row.student_card_id || '-',
-      class_name: row.class_name || '-'
+      student_name: row.student_name || "نامشخص",
+      student_card_id: row.student_card_id || "-",
+      class_name: row.class_name || "-",
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in /api/recent-transactions:", err);
@@ -3755,57 +3871,107 @@ app.get("/api/recent-transactions", authenticate, async (req, res) => {
 
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
 // ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
+// ====================== اطلاعات شاگرد (برای پنل شاگرد) ======================
 app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
-    
+
     // اعتبارسنجی studentId
     if (!studentId || isNaN(parseInt(studentId))) {
       return res.status(400).json({ error: "شناسه شاگرد نامعتبر است" });
     }
-    
-    // حذف mother_name از کوئری
-    const [results] = await db.execute(`
-      SELECT 
-        s.id, 
-        s.student_card_id, 
-        s.name, 
-        s.father_name, 
-        COALESCE(s.phone, '') as phone,
-        s.class_id, 
-        s.status, 
-        COALESCE(s.address, '') as address,
-        COALESCE(s.photo, '') as photo, 
-        s.qr_token, 
-        s.registration_date,
-        COALESCE(c.class_name, '') as class_name
+
+    // اول ساختار جدول students را بررسی کن
+    const [columns] = await db.execute(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'students' AND TABLE_SCHEMA = DATABASE()
+    `);
+
+    const columnNames = columns.map((c) => c.COLUMN_NAME);
+
+    // ساخت کوئری داینامیک بر اساس ستون‌های موجود
+    let selectFields = `
+      s.id, 
+      s.student_card_id, 
+      s.name, 
+      s.father_name
+    `;
+
+    if (columnNames.includes("mother_name")) {
+      selectFields += `, s.mother_name`;
+    } else {
+      selectFields += `, '' as mother_name`;
+    }
+
+    if (columnNames.includes("phone")) {
+      selectFields += `, COALESCE(s.phone, '') as phone`;
+    } else {
+      selectFields += `, '' as phone`;
+    }
+
+    if (columnNames.includes("class_id")) {
+      selectFields += `, s.class_id`;
+    } else {
+      selectFields += `, NULL as class_id`;
+    }
+
+    if (columnNames.includes("status")) {
+      selectFields += `, s.status`;
+    } else {
+      selectFields += `, 'active' as status`;
+    }
+
+    if (columnNames.includes("address")) {
+      selectFields += `, COALESCE(s.address, '') as address`;
+    } else {
+      selectFields += `, '' as address`;
+    }
+
+    if (columnNames.includes("photo")) {
+      selectFields += `, COALESCE(s.photo, '') as photo`;
+    } else {
+      selectFields += `, '' as photo`;
+    }
+
+    if (columnNames.includes("qr_token")) {
+      selectFields += `, s.qr_token`;
+    } else {
+      selectFields += `, '' as qr_token`;
+    }
+
+    if (columnNames.includes("registration_date")) {
+      selectFields += `, s.registration_date`;
+    } else {
+      selectFields += `, NULL as registration_date`;
+    }
+
+    const [results] = await db.execute(
+      `
+      SELECT ${selectFields}, COALESCE(c.class_name, '') as class_name
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.id = ?
-    `, [studentId]);
-    
+    `,
+      [studentId],
+    );
+
     if (results.length === 0) {
       return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
-    
+
     const student = results[0];
-    
+
     // فرمت تاریخ ثبت نام
     if (student.registration_date) {
       const d = new Date(student.registration_date);
       if (!isNaN(d.getTime())) {
-        student.registration_date = d.toISOString().split('T')[0];
+        student.registration_date = d.toISOString().split("T")[0];
       }
     }
-    
-    // اطمینان از وجود مقادیر پیش‌فرض
-    student.phone = student.phone || '';
-    student.address = student.address || '';
-    student.photo = student.photo || '';
-    student.class_name = student.class_name || '';
-    
+
+    console.log(`✅ Student info loaded: ${student.name} (ID: ${student.id})`);
     res.json(student);
-    
   } catch (err) {
     console.error("❌ Error in GET /api/student/info/:studentId:", err);
     res.status(500).json({ error: err.message });
@@ -3815,60 +3981,74 @@ app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   try {
     const studentId = req.params.studentId;
-    
+
     if (!studentId || isNaN(parseInt(studentId))) {
       return res.status(400).json({ error: "شناسه شاگرد نامعتبر است" });
     }
-    
+
     // آمار حاضری (سال جاری)
-    let presentCount = 0, absentCount = 0, lateCount = 0;
-    
+    let presentCount = 0,
+      absentCount = 0,
+      lateCount = 0;
+
     try {
-      const [present] = await db.execute(`
+      const [present] = await db.execute(
+        `
         SELECT COUNT(*) as count FROM attendance_details ad 
         JOIN daily_attendance da ON ad.attendance_id = da.id 
         WHERE ad.student_id = ? AND ad.status = 'present' 
         AND YEAR(da.attendance_date) = YEAR(CURDATE())
-      `, [studentId]);
+      `,
+        [studentId],
+      );
       presentCount = present[0]?.count || 0;
-      
-      const [absent] = await db.execute(`
+
+      const [absent] = await db.execute(
+        `
         SELECT COUNT(*) as count FROM attendance_details ad 
         JOIN daily_attendance da ON ad.attendance_id = da.id 
         WHERE ad.student_id = ? AND ad.status = 'absent' 
         AND YEAR(da.attendance_date) = YEAR(CURDATE())
-      `, [studentId]);
+      `,
+        [studentId],
+      );
       absentCount = absent[0]?.count || 0;
-      
-      const [late] = await db.execute(`
+
+      const [late] = await db.execute(
+        `
         SELECT COUNT(*) as count FROM attendance_details ad 
         JOIN daily_attendance da ON ad.attendance_id = da.id 
         WHERE ad.student_id = ? AND ad.status = 'late' 
         AND YEAR(da.attendance_date) = YEAR(CURDATE())
-      `, [studentId]);
+      `,
+        [studentId],
+      );
       lateCount = late[0]?.count || 0;
     } catch (err) {
       console.log("Attendance table may not exist:", err.message);
     }
-    
+
     // میانگین نمرات
     let avgGrade = 0;
     try {
-      const [grades] = await db.execute(`
+      const [grades] = await db.execute(
+        `
         SELECT AVG((score/max_score)*100) as avg_grade 
         FROM grades 
         WHERE student_id = ?
-      `, [studentId]);
+      `,
+        [studentId],
+      );
       avgGrade = grades[0]?.avg_grade ? Math.round(grades[0].avg_grade) : 0;
     } catch (err) {
       console.log("Grades table may not exist:", err.message);
     }
-    
+
     res.json({
       present_count: presentCount,
       absent_count: absentCount,
       late_count: lateCount,
-      avg_grade: avgGrade
+      avg_grade: avgGrade,
     });
   } catch (err) {
     console.error("❌ Error in GET /api/student/stats/:studentId:", err);
