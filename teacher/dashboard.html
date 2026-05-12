@@ -152,7 +152,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="stat-card text-center"><i class="fa-solid fa-star fs-1 text-success"></i>
-                            <h2 id="avgGrade">0</h2><small>میانگین نمرات شاگردان</small>
+                            <h2 id="avgGrade">0</h2><small>اوسط نمرات شاگردان</small>
                         </div>
                     </div>
                 </div>
@@ -212,7 +212,7 @@
                 let students = await studentsRes.json();
                 document.getElementById('totalStudents').innerText = students.length || 0;
 
-                // میانگین نمرات
+                // اوسط نمرات
                 let totalGrades = 0, gradeCount = 0;
                 for (const s of students) {
                     const gradesRes = await fetch(`/api/student/grades/${s.id}`);
