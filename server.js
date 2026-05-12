@@ -2262,7 +2262,7 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
       [req.params.studentId],
     );
 
-    // میانگین نمرات
+    // اوسط نمرات
     const [grades] = await db.execute(
       `
       SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?
@@ -3736,7 +3736,7 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
       [studentId],
     );
 
-    // میانگین نمرات
+    // اوسط نمرات
     const [grades] = await db.execute(
       `
       SELECT AVG((score/max_score)*100) as avg_grade 
@@ -4028,7 +4028,7 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
       console.log("Attendance table may not exist:", err.message);
     }
 
-    // میانگین نمرات
+    // اوسط نمرات
     let avgGrade = 0;
     try {
       const [grades] = await db.execute(
@@ -4311,17 +4311,23 @@ app.get(
 );
 
 // ====================== دریافت مکالمه شاگرد با مدیر ======================
-app.get("/api/messages/conversation/student/:studentId", authenticate, async (req, res) => {
-  const studentId = req.params.studentId;
-  const userId = req.user.id;
-  
-  // اگر کاربر شاگرد است، فقط می‌تواند پیام‌های خودش را ببیند
-  if (req.user.role === 'student' && userId != studentId) {
-    return res.status(403).json({ error: "شما فقط می‌توانید پیام‌های خود را مشاهده کنید" });
-  }
-  
-  try {
-    const [results] = await db.execute(`
+app.get(
+  "/api/messages/conversation/student/:studentId",
+  authenticate,
+  async (req, res) => {
+    const studentId = req.params.studentId;
+    const userId = req.user.id;
+
+    // اگر کاربر شاگرد است، فقط می‌تواند پیام‌های خودش را ببیند
+    if (req.user.role === "student" && userId != studentId) {
+      return res
+        .status(403)
+        .json({ error: "شما فقط می‌توانید پیام‌های خود را مشاهده کنید" });
+    }
+
+    try {
+      const [results] = await db.execute(
+        `
       SELECT m.*, 
         CASE 
           WHEN m.sender_type = 'student' THEN (SELECT name FROM students WHERE id = m.sender_id)
@@ -4335,41 +4341,61 @@ app.get("/api/messages/conversation/student/:studentId", authenticate, async (re
       WHERE (m.sender_type = 'admin' AND m.receiver_type = 'student' AND m.receiver_id = ?)
          OR (m.sender_type = 'student' AND m.sender_id = ? AND m.receiver_type = 'admin')
       ORDER BY m.created_at ASC
-    `, [studentId, studentId]);
-    
-    // مارک پیام‌های دریافتی به عنوان خوانده شده
-    for (const msg of results) {
-      if (msg.receiver_type === 'student' && msg.receiver_id == studentId && msg.is_read == 0) {
-        await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [msg.id]);
+    `,
+        [studentId, studentId],
+      );
+
+      // مارک پیام‌های دریافتی به عنوان خوانده شده
+      for (const msg of results) {
+        if (
+          msg.receiver_type === "student" &&
+          msg.receiver_id == studentId &&
+          msg.is_read == 0
+        ) {
+          await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [
+            msg.id,
+          ]);
+        }
       }
+
+      res.json(results);
+    } catch (err) {
+      console.error(
+        "❌ Error in /api/messages/conversation/student/:studentId:",
+        err,
+      );
+      res.status(500).json({ error: err.message });
     }
-    
-    res.json(results);
-  } catch (err) {
-    console.error("❌ Error in /api/messages/conversation/student/:studentId:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+  },
+);
 
 // ====================== ویرایش پیام ======================
 app.put("/api/messages/:id", authenticate, async (req, res) => {
   const messageId = req.params.id;
   const { message } = req.body;
   const userId = req.user.id;
-  
+
   try {
     // بررسی وجود پیام و دسترسی
-    const [check] = await db.execute(`
+    const [check] = await db.execute(
+      `
       SELECT * FROM messages WHERE id = ? 
       AND ((sender_type = ? AND sender_id = ?) OR (receiver_type = ? AND receiver_id = ?))
-    `, [messageId, req.user.role, userId, req.user.role, userId]);
-    
+    `,
+      [messageId, req.user.role, userId, req.user.role, userId],
+    );
+
     if (check.length === 0) {
-      return res.status(403).json({ error: "شما اجازه ویرایش این پیام را ندارید" });
+      return res
+        .status(403)
+        .json({ error: "شما اجازه ویرایش این پیام را ندارید" });
     }
-    
-    await db.execute(`UPDATE messages SET message = ?, is_edited = 1 WHERE id = ?`, [message, messageId]);
-    
+
+    await db.execute(
+      `UPDATE messages SET message = ?, is_edited = 1 WHERE id = ?`,
+      [message, messageId],
+    );
+
     res.json({ success: true, message: "پیام با موفقیت ویرایش شد" });
   } catch (err) {
     console.error("❌ Error in PUT /api/messages/:id:", err);
@@ -4381,20 +4407,25 @@ app.put("/api/messages/:id", authenticate, async (req, res) => {
 app.delete("/api/messages/:id", authenticate, async (req, res) => {
   const messageId = req.params.id;
   const userId = req.user.id;
-  
+
   try {
     // بررسی وجود پیام و دسترسی
-    const [check] = await db.execute(`
+    const [check] = await db.execute(
+      `
       SELECT * FROM messages WHERE id = ? 
       AND ((sender_type = ? AND sender_id = ?) OR (receiver_type = ? AND receiver_id = ?))
-    `, [messageId, req.user.role, userId, req.user.role, userId]);
-    
+    `,
+      [messageId, req.user.role, userId, req.user.role, userId],
+    );
+
     if (check.length === 0) {
-      return res.status(403).json({ error: "شما اجازه حذف این پیام را ندارید" });
+      return res
+        .status(403)
+        .json({ error: "شما اجازه حذف این پیام را ندارید" });
     }
-    
+
     await db.execute(`DELETE FROM messages WHERE id = ?`, [messageId]);
-    
+
     res.json({ success: true, message: "پیام با موفقیت حذف شد" });
   } catch (err) {
     console.error("❌ Error in DELETE /api/messages/:id:", err);
@@ -4404,16 +4435,19 @@ app.delete("/api/messages/:id", authenticate, async (req, res) => {
 
 // ====================== دریافت تعداد پیام‌های خوانده نشده برای مدیر ======================
 app.get("/api/messages/unread-count", authenticate, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'ceo') {
+  if (req.user.role !== "admin" && req.user.role !== "ceo") {
     return res.status(403).json({ error: "دسترسی محدود" });
   }
-  
+
   try {
-    const [result] = await db.execute(`
+    const [result] = await db.execute(
+      `
       SELECT COUNT(*) as count FROM messages 
       WHERE receiver_type = 'admin' AND receiver_id = ? AND is_read = 0
-    `, [req.user.id]);
-    
+    `,
+      [req.user.id],
+    );
+
     res.json({ unread_count: result[0]?.count || 0 });
   } catch (err) {
     console.error("❌ Error in /api/messages/unread-count:", err);
@@ -4422,17 +4456,23 @@ app.get("/api/messages/unread-count", authenticate, async (req, res) => {
 });
 
 // ====================== دریافت مکالمه شاگرد با مدیر ======================
-app.get("/api/messages/conversation/student/:studentId", authenticate, async (req, res) => {
-  const studentId = req.params.studentId;
-  const userId = req.user.id;
-  
-  // اگر کاربر شاگرد است، فقط می‌تواند پیام‌های خودش را ببیند
-  if (req.user.role === 'student' && userId != studentId) {
-    return res.status(403).json({ error: "شما فقط می‌توانید پیام‌های خود را مشاهده کنید" });
-  }
-  
-  try {
-    const [results] = await db.execute(`
+app.get(
+  "/api/messages/conversation/student/:studentId",
+  authenticate,
+  async (req, res) => {
+    const studentId = req.params.studentId;
+    const userId = req.user.id;
+
+    // اگر کاربر شاگرد است، فقط می‌تواند پیام‌های خودش را ببیند
+    if (req.user.role === "student" && userId != studentId) {
+      return res
+        .status(403)
+        .json({ error: "شما فقط می‌توانید پیام‌های خود را مشاهده کنید" });
+    }
+
+    try {
+      const [results] = await db.execute(
+        `
       SELECT m.*, 
         CASE 
           WHEN m.sender_type = 'student' THEN (SELECT name FROM students WHERE id = m.sender_id)
@@ -4446,229 +4486,359 @@ app.get("/api/messages/conversation/student/:studentId", authenticate, async (re
       WHERE (m.sender_type = 'admin' AND m.receiver_type = 'student' AND m.receiver_id = ?)
          OR (m.sender_type = 'student' AND m.sender_id = ? AND m.receiver_type = 'admin')
       ORDER BY m.created_at ASC
-    `, [studentId, studentId]);
-    
-    // مارک پیام‌های دریافتی به عنوان خوانده شده
-    let unreadCount = 0;
-    for (const msg of results) {
-      if (msg.receiver_type === 'student' && msg.receiver_id == studentId && msg.is_read == 0) {
-        await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [msg.id]);
-        unreadCount++;
-      }
-    }
-    
-    // اگر پیام خوانده نشده بود، لاگ کن (برای اعلان به مدیر بعداً)
-    if (unreadCount > 0) {
-      console.log(`📩 ${unreadCount} new messages for student ${studentId}`);
-    }
-    
-    res.json(results);
-  } catch (err) {
-    console.error("❌ Error in /api/messages/conversation/student/:studentId:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+    `,
+        [studentId, studentId],
+      );
 
+      // مارک پیام‌های دریافتی به عنوان خوانده شده
+      let unreadCount = 0;
+      for (const msg of results) {
+        if (
+          msg.receiver_type === "student" &&
+          msg.receiver_id == studentId &&
+          msg.is_read == 0
+        ) {
+          await db.execute(`UPDATE messages SET is_read = 1 WHERE id = ?`, [
+            msg.id,
+          ]);
+          unreadCount++;
+        }
+      }
+
+      // اگر پیام خوانده نشده بود، لاگ کن (برای اعلان به مدیر بعداً)
+      if (unreadCount > 0) {
+        console.log(`📩 ${unreadCount} new messages for student ${studentId}`);
+      }
+
+      res.json(results);
+    } catch (err) {
+      console.error(
+        "❌ Error in /api/messages/conversation/student/:studentId:",
+        err,
+      );
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ====================== API چت (پیام‌ها) ======================
 
 // دریافت مکالمه بین دو کاربر
-app.get("/api/messages/conversation/:userId", authenticate, async (req, res) => {
+app.get(
+  "/api/messages/conversation/:userId",
+  authenticate,
+  async (req, res) => {
     const otherUserId = parseInt(req.params.userId);
     const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
+    const currentUserRole =
+      req.user.role === "student"
+        ? "student"
+        : req.user.role === "admin"
+          ? "admin"
+          : "teacher";
+
     let otherUserRole = "student";
     // اگر کاربر جاری شاگرد است، طرف مقابل مدیر است
     if (currentUserRole === "student") {
-        otherUserRole = "admin";
+      otherUserRole = "admin";
     } else if (currentUserRole === "admin") {
-        otherUserRole = "student";
+      otherUserRole = "student";
     }
-    
+
     try {
-        const [messages] = await db.execute(`
+      const [messages] = await db.execute(
+        `
             SELECT * FROM messages 
             WHERE (sender_type = ? AND sender_id = ? AND receiver_type = ? AND receiver_id = ?)
                OR (sender_type = ? AND sender_id = ? AND receiver_type = ? AND receiver_id = ?)
             ORDER BY created_at ASC
-        `, [
-            currentUserRole, currentUserId, otherUserRole, otherUserId,
-            otherUserRole, otherUserId, currentUserRole, currentUserId
-        ]);
-        
-        res.json(messages);
+        `,
+        [
+          currentUserRole,
+          currentUserId,
+          otherUserRole,
+          otherUserId,
+          otherUserRole,
+          otherUserId,
+          currentUserRole,
+          currentUserId,
+        ],
+      );
+
+      res.json(messages);
     } catch (err) {
-        console.error("Error in /api/messages/conversation/:userId:", err);
-        res.status(500).json({ error: err.message });
+      console.error("Error in /api/messages/conversation/:userId:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // دریافت مکالمه برای شاگرد (نمای ساده)
-app.get("/api/messages/conversation/student/:studentId", authenticate, async (req, res) => {
+app.get(
+  "/api/messages/conversation/student/:studentId",
+  authenticate,
+  async (req, res) => {
     const studentId = parseInt(req.params.studentId);
     const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
+    const currentUserRole =
+      req.user.role === "student"
+        ? "student"
+        : req.user.role === "admin"
+          ? "admin"
+          : "teacher";
+
     let adminId = 2; // آیدی مدیر (از دیتابیس بگیر)
     try {
-        const [admin] = await db.execute(`SELECT id FROM employees WHERE position = 'admin' LIMIT 1`);
-        if (admin.length > 0) adminId = admin[0].id;
-    } catch(e) {}
-    
+      const [admin] = await db.execute(
+        `SELECT id FROM employees WHERE position = 'admin' LIMIT 1`,
+      );
+      if (admin.length > 0) adminId = admin[0].id;
+    } catch (e) {}
+
     try {
-        const [messages] = await db.execute(`
+      const [messages] = await db.execute(
+        `
             SELECT * FROM messages 
             WHERE (sender_type = 'student' AND sender_id = ? AND receiver_type = 'admin' AND receiver_id = ?)
                OR (sender_type = 'admin' AND sender_id = ? AND receiver_type = 'student' AND receiver_id = ?)
             ORDER BY created_at ASC
-        `, [studentId, adminId, adminId, studentId]);
-        
-        res.json(messages);
+        `,
+        [studentId, adminId, adminId, studentId],
+      );
+
+      res.json(messages);
     } catch (err) {
-        console.error("Error in /api/messages/conversation/student/:studentId:", err);
-        res.status(500).json({ error: err.message });
+      console.error(
+        "Error in /api/messages/conversation/student/:studentId:",
+        err,
+      );
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // ارسال پیام جدید
 app.post("/api/messages", authenticate, async (req, res) => {
-    const { receiver_type, receiver_id, subject, message, reply_to_id } = req.body;
-    const sender_type = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    const sender_id = req.user.id;
-    
-    if (!message || message.trim() === "") {
-        return res.status(400).json({ error: "متن پیام نمی‌تواند خالی باشد" });
+  const { receiver_type, receiver_id, subject, message, reply_to_id } =
+    req.body;
+  const sender_type =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+  const sender_id = req.user.id;
+
+  if (!message || message.trim() === "") {
+    return res.status(400).json({ error: "متن پیام نمی‌تواند خالی باشد" });
+  }
+
+  try {
+    // بررسی وجود گیرنده
+    if (receiver_type === "student") {
+      const [check] = await db.execute(
+        `SELECT id FROM students WHERE id = ? AND status = 'active'`,
+        [receiver_id],
+      );
+      if (check.length === 0)
+        return res.status(404).json({ error: "شاگرد مورد نظر یافت نشد" });
+    } else if (receiver_type === "admin") {
+      const [check] = await db.execute(
+        `SELECT id FROM employees WHERE id = ? AND position = 'admin'`,
+        [receiver_id],
+      );
+      if (check.length === 0)
+        return res.status(404).json({ error: "مدیر مورد نظر یافت نشد" });
     }
-    
-    try {
-        // بررسی وجود گیرنده
-        if (receiver_type === "student") {
-            const [check] = await db.execute(`SELECT id FROM students WHERE id = ? AND status = 'active'`, [receiver_id]);
-            if (check.length === 0) return res.status(404).json({ error: "شاگرد مورد نظر یافت نشد" });
-        } else if (receiver_type === "admin") {
-            const [check] = await db.execute(`SELECT id FROM employees WHERE id = ? AND position = 'admin'`, [receiver_id]);
-            if (check.length === 0) return res.status(404).json({ error: "مدیر مورد نظر یافت نشد" });
-        }
-        
-        const [result] = await db.execute(`
+
+    const [result] = await db.execute(
+      `
             INSERT INTO messages (sender_type, sender_id, receiver_type, receiver_id, subject, message, reply_to_id, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
-        `, [sender_type, sender_id, receiver_type, receiver_id, subject || 'پیام جدید', message.trim(), reply_to_id || null]);
-        
-        res.json({ success: true, id: result.insertId, message: "پیام با موفقیت ارسال شد" });
-    } catch (err) {
-        console.error("Error in POST /api/messages:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [
+        sender_type,
+        sender_id,
+        receiver_type,
+        receiver_id,
+        subject || "پیام جدید",
+        message.trim(),
+        reply_to_id || null,
+      ],
+    );
+
+    res.json({
+      success: true,
+      id: result.insertId,
+      message: "پیام با موفقیت ارسال شد",
+    });
+  } catch (err) {
+    console.error("Error in POST /api/messages:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ویرایش پیام (فقط مالک می‌تواند ویرایش کند)
 app.put("/api/messages/:id", authenticate, async (req, res) => {
-    const messageId = req.params.id;
-    const { message } = req.body;
-    const userId = req.user.id;
-    const userRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
-    if (!message || message.trim() === "") {
-        return res.status(400).json({ error: "متن پیام نمی‌تواند خالی باشد" });
+  const messageId = req.params.id;
+  const { message } = req.body;
+  const userId = req.user.id;
+  const userRole =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+
+  if (!message || message.trim() === "") {
+    return res.status(400).json({ error: "متن پیام نمی‌تواند خالی باشد" });
+  }
+
+  try {
+    const [existing] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [
+      messageId,
+    ]);
+    if (existing.length === 0)
+      return res.status(404).json({ error: "پیام یافت نشد" });
+
+    // بررسی مالکیت پیام
+    if (
+      existing[0].sender_id !== userId ||
+      existing[0].sender_type !== userRole
+    ) {
+      return res
+        .status(403)
+        .json({ error: "شما اجازه ویرایش این پیام را ندارید" });
     }
-    
-    try {
-        const [existing] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [messageId]);
-        if (existing.length === 0) return res.status(404).json({ error: "پیام یافت نشد" });
-        
-        // بررسی مالکیت پیام
-        if (existing[0].sender_id !== userId || existing[0].sender_type !== userRole) {
-            return res.status(403).json({ error: "شما اجازه ویرایش این پیام را ندارید" });
-        }
-        
-        await db.execute(`UPDATE messages SET message = ?, is_edited = 1, updated_at = NOW() WHERE id = ?`, [message.trim(), messageId]);
-        res.json({ success: true, message: "پیام با موفقیت ویرایش شد" });
-    } catch (err) {
-        console.error("Error in PUT /api/messages/:id:", err);
-        res.status(500).json({ error: err.message });
-    }
+
+    await db.execute(
+      `UPDATE messages SET message = ?, is_edited = 1, updated_at = NOW() WHERE id = ?`,
+      [message.trim(), messageId],
+    );
+    res.json({ success: true, message: "پیام با موفقیت ویرایش شد" });
+  } catch (err) {
+    console.error("Error in PUT /api/messages/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // حذف پیام (فقط مالک می‌تواند حذف کند)
 app.delete("/api/messages/:id", authenticate, async (req, res) => {
-    const messageId = req.params.id;
-    const userId = req.user.id;
-    const userRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
-    try {
-        const [existing] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [messageId]);
-        if (existing.length === 0) return res.status(404).json({ error: "پیام یافت نشد" });
-        
-        // بررسی مالکیت پیام
-        if (existing[0].sender_id !== userId || existing[0].sender_type !== userRole) {
-            return res.status(403).json({ error: "شما اجازه حذف این پیام را ندارید" });
-        }
-        
-        await db.execute(`DELETE FROM messages WHERE id = ?`, [messageId]);
-        res.json({ success: true, message: "پیام با موفقیت حذف شد" });
-    } catch (err) {
-        console.error("Error in DELETE /api/messages/:id:", err);
-        res.status(500).json({ error: err.message });
+  const messageId = req.params.id;
+  const userId = req.user.id;
+  const userRole =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+
+  try {
+    const [existing] = await db.execute(`SELECT * FROM messages WHERE id = ?`, [
+      messageId,
+    ]);
+    if (existing.length === 0)
+      return res.status(404).json({ error: "پیام یافت نشد" });
+
+    // بررسی مالکیت پیام
+    if (
+      existing[0].sender_id !== userId ||
+      existing[0].sender_type !== userRole
+    ) {
+      return res
+        .status(403)
+        .json({ error: "شما اجازه حذف این پیام را ندارید" });
     }
+
+    await db.execute(`DELETE FROM messages WHERE id = ?`, [messageId]);
+    res.json({ success: true, message: "پیام با موفقیت حذف شد" });
+  } catch (err) {
+    console.error("Error in DELETE /api/messages/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // علامت گذاری پیام‌های یک کاربر به عنوان خوانده شده
-app.post("/api/messages/mark-read/:senderId", authenticate, async (req, res) => {
+app.post(
+  "/api/messages/mark-read/:senderId",
+  authenticate,
+  async (req, res) => {
     const senderId = req.params.senderId;
     const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
+    const currentUserRole =
+      req.user.role === "student"
+        ? "student"
+        : req.user.role === "admin"
+          ? "admin"
+          : "teacher";
+
     let senderRole = "student";
     if (currentUserRole === "student") senderRole = "admin";
     else if (currentUserRole === "admin") senderRole = "student";
-    
+
     try {
-        await db.execute(`
+      await db.execute(
+        `
             UPDATE messages 
             SET is_read = 1 
             WHERE sender_type = ? AND sender_id = ? 
               AND receiver_type = ? AND receiver_id = ? 
               AND is_read = 0
-        `, [senderRole, senderId, currentUserRole, currentUserId]);
-        
-        res.json({ success: true });
+        `,
+        [senderRole, senderId, currentUserRole, currentUserId],
+      );
+
+      res.json({ success: true });
     } catch (err) {
-        console.error("Error in POST /api/messages/mark-read/:senderId:", err);
-        res.status(500).json({ error: err.message });
+      console.error("Error in POST /api/messages/mark-read/:senderId:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // دریافت تعداد پیام‌های خوانده نشده برای کاربر جاری
 app.get("/api/messages/unread-count", authenticate, async (req, res) => {
-    const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
-    try {
-        const [result] = await db.execute(`
+  const currentUserId = req.user.id;
+  const currentUserRole =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+
+  try {
+    const [result] = await db.execute(
+      `
             SELECT COUNT(*) as count FROM messages 
             WHERE receiver_type = ? AND receiver_id = ? AND is_read = 0
-        `, [currentUserRole, currentUserId]);
-        
-        res.json({ unread_count: result[0]?.count || 0 });
-    } catch (err) {
-        console.error("Error in GET /api/messages/unread-count:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [currentUserRole, currentUserId],
+    );
+
+    res.json({ unread_count: result[0]?.count || 0 });
+  } catch (err) {
+    console.error("Error in GET /api/messages/unread-count:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت لیست گفتگوها (برای مدیر - لیست شاگردانی که پیام دارند)
 app.get("/api/messages/conversations", authenticate, async (req, res) => {
-    const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
-    if (currentUserRole !== "admin") {
-        return res.status(403).json({ error: "دسترسی محدود" });
-    }
-    
-    try {
-        const [conversations] = await db.execute(`
+  const currentUserId = req.user.id;
+  const currentUserRole =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+
+  if (currentUserRole !== "admin") {
+    return res.status(403).json({ error: "دسترسی محدود" });
+  }
+
+  try {
+    const [conversations] = await db.execute(
+      `
             SELECT DISTINCT 
                 CASE 
                     WHEN sender_type = 'student' THEN sender_id
@@ -4681,45 +4851,56 @@ app.get("/api/messages/conversations", authenticate, async (req, res) => {
                OR (receiver_type = 'student' AND sender_type = 'admin')
             GROUP BY student_id
             ORDER BY last_message_time DESC
-        `, [currentUserId]);
-        
-        // دریافت اطلاعات شاگردان
-        const students = [];
-        for (const conv of conversations) {
-            if (conv.student_id) {
-                const [student] = await db.execute(`SELECT id, name, student_card_id, class_id FROM students WHERE id = ?`, [conv.student_id]);
-                if (student.length > 0) {
-                    students.push({
-                        ...student[0],
-                        last_message_time: conv.last_message_time,
-                        unread_count: conv.unread_count
-                    });
-                }
-            }
+        `,
+      [currentUserId],
+    );
+
+    // دریافت اطلاعات شاگردان
+    const students = [];
+    for (const conv of conversations) {
+      if (conv.student_id) {
+        const [student] = await db.execute(
+          `SELECT id, name, student_card_id, class_id FROM students WHERE id = ?`,
+          [conv.student_id],
+        );
+        if (student.length > 0) {
+          students.push({
+            ...student[0],
+            last_message_time: conv.last_message_time,
+            unread_count: conv.unread_count,
+          });
         }
-        
-        res.json(students);
-    } catch (err) {
-        console.error("Error in GET /api/messages/conversations:", err);
-        res.status(500).json({ error: err.message });
+      }
     }
+
+    res.json(students);
+  } catch (err) {
+    console.error("Error in GET /api/messages/conversations:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ====================== API چت (پیام‌ها) ======================
 
 // دریافت لیست گفتگوها (برای مدیر - لیست شاگردانی که پیام دارند)
 app.get("/api/messages/conversations", authenticate, async (req, res) => {
-    const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
-    // فقط مدیر می‌تواند لیست گفتگوها را ببیند
-    if (currentUserRole !== "admin") {
-        return res.status(403).json({ error: "دسترسی محدود به مدیر" });
-    }
-    
-    try {
-        // دریافت تمام شاگردانی که حداقل یک پیام با مدیر داشته‌اند
-        const [conversations] = await db.execute(`
+  const currentUserId = req.user.id;
+  const currentUserRole =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+
+  // فقط مدیر می‌تواند لیست گفتگوها را ببیند
+  if (currentUserRole !== "admin") {
+    return res.status(403).json({ error: "دسترسی محدود به مدیر" });
+  }
+
+  try {
+    // دریافت تمام شاگردانی که حداقل یک پیام با مدیر داشته‌اند
+    const [conversations] = await db.execute(
+      `
             SELECT DISTINCT 
                 CASE 
                     WHEN sender_type = 'student' THEN sender_id
@@ -4740,81 +4921,271 @@ app.get("/api/messages/conversations", authenticate, async (req, res) => {
                OR (receiver_type = 'student' AND sender_type = 'admin')
             GROUP BY student_id
             ORDER BY last_message_time DESC
-        `, [currentUserId]);
-        
-        // دریافت اطلاعات کامل شاگردان
-        const students = [];
-        for (const conv of conversations) {
-            if (conv.student_id) {
-                const [student] = await db.execute(`
+        `,
+      [currentUserId],
+    );
+
+    // دریافت اطلاعات کامل شاگردان
+    const students = [];
+    for (const conv of conversations) {
+      if (conv.student_id) {
+        const [student] = await db.execute(
+          `
                     SELECT s.id, s.name, s.student_card_id, s.class_id, c.class_name 
                     FROM students s 
                     LEFT JOIN classes c ON s.class_id = c.id 
                     WHERE s.id = ?
-                `, [conv.student_id]);
-                if (student.length > 0) {
-                    students.push({
-                        id: student[0].id,
-                        name: student[0].name,
-                        student_card_id: student[0].student_card_id,
-                        class_id: student[0].class_id,
-                        class_name: student[0].class_name,
-                        last_message_time: conv.last_message_time,
-                        unread_count: conv.unread_count || 0,
-                        last_message: conv.last_message || '',
-                        last_sender_type: conv.last_sender_type
-                    });
-                }
-            }
+                `,
+          [conv.student_id],
+        );
+        if (student.length > 0) {
+          students.push({
+            id: student[0].id,
+            name: student[0].name,
+            student_card_id: student[0].student_card_id,
+            class_id: student[0].class_id,
+            class_name: student[0].class_name,
+            last_message_time: conv.last_message_time,
+            unread_count: conv.unread_count || 0,
+            last_message: conv.last_message || "",
+            last_sender_type: conv.last_sender_type,
+          });
         }
-        
-        res.json(students);
-    } catch (err) {
-        console.error("Error in GET /api/messages/conversations:", err);
-        res.status(500).json({ error: err.message });
+      }
     }
+
+    res.json(students);
+  } catch (err) {
+    console.error("Error in GET /api/messages/conversations:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت تعداد پیام‌های خوانده نشده برای کاربر جاری
 app.get("/api/messages/unread-count", authenticate, async (req, res) => {
-    const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
-    try {
-        const [result] = await db.execute(`
+  const currentUserId = req.user.id;
+  const currentUserRole =
+    req.user.role === "student"
+      ? "student"
+      : req.user.role === "admin"
+        ? "admin"
+        : "teacher";
+
+  try {
+    const [result] = await db.execute(
+      `
             SELECT COUNT(*) as count FROM messages 
             WHERE receiver_type = ? AND receiver_id = ? AND is_read = 0
-        `, [currentUserRole, currentUserId]);
-        
-        res.json({ unread_count: result[0]?.count || 0 });
-    } catch (err) {
-        console.error("Error in GET /api/messages/unread-count:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [currentUserRole, currentUserId],
+    );
+
+    res.json({ unread_count: result[0]?.count || 0 });
+  } catch (err) {
+    console.error("Error in GET /api/messages/unread-count:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // علامت گذاری پیام‌های یک کاربر به عنوان خوانده شده
-app.post("/api/messages/mark-read/:senderId", authenticate, async (req, res) => {
+app.post(
+  "/api/messages/mark-read/:senderId",
+  authenticate,
+  async (req, res) => {
     const senderId = req.params.senderId;
     const currentUserId = req.user.id;
-    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
-    
+    const currentUserRole =
+      req.user.role === "student"
+        ? "student"
+        : req.user.role === "admin"
+          ? "admin"
+          : "teacher";
+
     let senderRole = "student";
     if (currentUserRole === "student") senderRole = "admin";
     else if (currentUserRole === "admin") senderRole = "student";
-    
+
     try {
-        await db.execute(`
+      await db.execute(
+        `
             UPDATE messages 
             SET is_read = 1 
             WHERE sender_type = ? AND sender_id = ? 
               AND receiver_type = ? AND receiver_id = ? 
               AND is_read = 0
-        `, [senderRole, senderId, currentUserRole, currentUserId]);
-        
-        res.json({ success: true });
+        `,
+        [senderRole, senderId, currentUserRole, currentUserId],
+      );
+
+      res.json({ success: true });
     } catch (err) {
-        console.error("Error in POST /api/messages/mark-read/:senderId:", err);
+      console.error("Error in POST /api/messages/mark-read/:senderId:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ====================== API اطلاعات شاگرد ======================
+
+// دریافت اطلاعات کامل شاگرد برای پنل شاگرد
+app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
+    try {
+        const [results] = await db.execute(`
+            SELECT s.*, c.class_name 
+            FROM students s 
+            LEFT JOIN classes c ON s.class_id = c.id 
+            WHERE s.id = ?
+        `, [req.params.studentId]);
+        
+        if (results.length === 0) {
+            return res.status(404).json({ error: "شاگرد یافت نشد" });
+        }
+        
+        const student = results[0];
+        if (student.due_date) {
+            const d = new Date(student.due_date);
+            if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
+        }
+        if (student.registration_date) {
+            const d = new Date(student.registration_date);
+            if (!isNaN(d.getTime())) student.registration_date = d.toISOString().split("T")[0];
+        }
+        
+        res.json(student);
+    } catch (err) {
+        console.error("Error in /api/student/info/:studentId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// دریافت آمار شاگرد (حاضری و نمرات)
+app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
+    try {
+        const [presentCount] = await db.execute(`
+            SELECT COUNT(*) as count FROM attendance_details ad 
+            JOIN daily_attendance da ON ad.attendance_id = da.id 
+            WHERE ad.student_id = ? AND ad.status = 'present' 
+            AND YEAR(da.attendance_date) = YEAR(CURDATE())
+        `, [req.params.studentId]);
+        
+        const [absentCount] = await db.execute(`
+            SELECT COUNT(*) as count FROM attendance_details ad 
+            JOIN daily_attendance da ON ad.attendance_id = da.id 
+            WHERE ad.student_id = ? AND ad.status = 'absent' 
+            AND YEAR(da.attendance_date) = YEAR(CURDATE())
+        `, [req.params.studentId]);
+        
+        const [lateCount] = await db.execute(`
+            SELECT COUNT(*) as count FROM attendance_details ad 
+            JOIN daily_attendance da ON ad.attendance_id = da.id 
+            WHERE ad.student_id = ? AND ad.status = 'late' 
+            AND YEAR(da.attendance_date) = YEAR(CURDATE())
+        `, [req.params.studentId]);
+        
+        const [grades] = await db.execute(`
+            SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?
+        `, [req.params.studentId]);
+        
+        res.json({
+            present_count: presentCount[0]?.count || 0,
+            absent_count: absentCount[0]?.count || 0,
+            late_count: lateCount[0]?.count || 0,
+            avg_grade: Math.round(grades[0]?.avg_grade || 0)
+        });
+    } catch (err) {
+        console.error("Error in /api/student/stats/:studentId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// دریافت وضعیت فیس شاگرد
+app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
+    try {
+        const [results] = await db.execute(`
+            SELECT 
+                COALESCE(SUM(fp.amount), 0) as paid_fee,
+                s.due_date
+            FROM students s
+            LEFT JOIN fee_payments fp ON s.id = fp.student_id
+            WHERE s.id = ?
+            GROUP BY s.id, s.due_date
+        `, [req.params.studentId]);
+        
+        const student = results[0] || { paid_fee: 0, due_date: null };
+        res.json({
+            total_fee: 0,
+            paid_fee: student.paid_fee || 0,
+            remaining_fee: 0,
+            due_date: student.due_date
+        });
+    } catch (err) {
+        console.error("Error in /api/student/fees/:studentId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// دریافت نمرات شاگرد
+app.get("/api/student/grades/:studentId", authenticate, async (req, res) => {
+    try {
+        const [results] = await db.execute(`
+            SELECT g.*, 'مضمون' as subject_name 
+            FROM grades g 
+            WHERE g.student_id = ? 
+            ORDER BY g.exam_date DESC
+        `, [req.params.studentId]);
+        
+        const formatted = results.map((g) => {
+            if (g.exam_date) {
+                const d = new Date(g.exam_date);
+                if (!isNaN(d.getTime())) g.exam_date = d.toISOString().split("T")[0];
+            }
+            return g;
+        });
+        
+        res.json(formatted);
+    } catch (err) {
+        console.error("Error in /api/student/grades/:studentId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// دریافت تاریخچه حاضری شاگرد
+app.get("/api/student/attendance/:studentId", authenticate, async (req, res) => {
+    const { month, year } = req.query;
+    try {
+        let query = `
+            SELECT ad.status, ad.notes, da.attendance_date as date
+            FROM attendance_details ad
+            JOIN daily_attendance da ON ad.attendance_id = da.id
+            WHERE ad.student_id = ?
+        `;
+        let params = [req.params.studentId];
+        
+        if (month && month !== 'all' && year) {
+            query += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
+            params.push(month, year);
+        }
+        
+        query += ` ORDER BY da.attendance_date DESC`;
+        
+        const [details] = await db.execute(query, params);
+        
+        const present = details.filter((d) => d.status === "present").length;
+        const absent = details.filter((d) => d.status === "absent").length;
+        const late = details.filter((d) => d.status === "late").length;
+        
+        res.json({
+            present,
+            absent,
+            late,
+            details: details.map((d) => ({
+                date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
+                status: d.status,
+                notes: d.notes,
+            })),
+        });
+    } catch (err) {
+        console.error("Error in /api/student/attendance/:studentId:", err);
         res.status(500).json({ error: err.message });
     }
 });

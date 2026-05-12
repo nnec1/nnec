@@ -199,20 +199,32 @@
             }
         }
 
-        async function loadConversations() {
+        // بارگذاری لیست شاگردان (بدون API conversations)
+        async function loadAllStudents() {
             try {
-                const res = await fetch('/api/messages/conversations');
-                const conversations = await res.json();
-                allStudents = conversations;
+                const res = await fetch('/api/students');
+                let students = await res.json();
+                allStudents = students.filter(s => s.status === 'active');
                 
                 let totalUnread = 0;
+                // دریافت وضعیت پیام‌ها برای هر شاگرد
                 for (const s of allStudents) {
-                    unreadCounts[s.id] = s.unread_count || 0;
-                    totalUnread += unreadCounts[s.id];
-                    // دریافت آخرین پیام
-                    const msgRes = await fetch(`/api/messages/conversation/${s.id}`);
-                    const messages = await msgRes.json();
-                    lastMessages[s.id] = messages.length > 0 ? messages[messages.length - 1] : null;
+                    try {
+                        const msgRes = await fetch(`/api/messages/conversation/${s.id}`);
+                        const messages = await msgRes.json();
+                        if (messages.length > 0) {
+                            lastMessages[s.id] = messages[messages.length - 1];
+                            const unread = messages.filter(m => m.receiver_type === 'admin' && m.receiver_id == adminId && m.is_read == 0).length;
+                            unreadCounts[s.id] = unread;
+                            totalUnread += unread;
+                        } else {
+                            lastMessages[s.id] = null;
+                            unreadCounts[s.id] = 0;
+                        }
+                    } catch(e) {
+                        lastMessages[s.id] = null;
+                        unreadCounts[s.id] = 0;
+                    }
                 }
                 
                 if (totalUnread > 0) document.title = `📬 (${totalUnread}) چت با شاگردان`;
@@ -267,7 +279,9 @@
             currentStudent = student;
             
             if (unreadCounts[student.id] > 0) {
-                await fetch(`/api/messages/mark-read/${student.id}`, { method: 'POST' });
+                try {
+                    await fetch(`/api/messages/mark-read/${student.id}`, { method: 'POST' });
+                } catch(e) {}
                 unreadCounts[student.id] = 0;
                 displayStudents();
             }
@@ -291,6 +305,17 @@
                 const messages = await res.json();
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
+                
+                // بررسی پیام جدید
+                if (messages.length > 0) {
+                    const latestMsg = messages[messages.length - 1];
+                    if (latestMsg.sender_type !== 'admin' && latestMsg.is_read == 0 && (!currentStudent || currentStudent.id == latestMsg.sender_id)) {
+                        showNotification(currentStudent.name);
+                        await fetch(`/api/messages/mark-read/${currentStudent.id}`, { method: 'POST' });
+                        unreadCounts[currentStudent.id] = 0;
+                        displayStudents();
+                    }
+                }
                 
                 if (messages.length === 0) {
                     container.innerHTML = '<div class="text-center py-4 text-muted">هیچ پیامی وجود ندارد. اولین پیام را ارسال کنید.</div>';
@@ -324,16 +349,20 @@
             const oldText = msgDiv.innerText.replace('(ویرایش شده)', '').trim();
             const newText = prompt('ویرایش پیام:', oldText);
             if (!newText || newText === oldText) return;
-            const res = await fetch(`/api/messages/${messageId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: newText }) });
-            if (res.ok) loadMessages();
-            else alert('❌ خطا');
+            try {
+                const res = await fetch(`/api/messages/${messageId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: newText }) });
+                if (res.ok) loadMessages();
+                else alert('❌ خطا');
+            } catch(e) { alert('❌ خطا'); }
         }
 
         async function deleteMessage(messageId) {
             if (!confirm('آیا از حذف این پیام اطمینان دارید؟')) return;
-            const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
-            if (res.ok) loadMessages();
-            else alert('❌ خطا');
+            try {
+                const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
+                if (res.ok) loadMessages();
+                else alert('❌ خطا');
+            } catch(e) { alert('❌ خطا'); }
         }
 
         async function sendMessage() {
@@ -341,23 +370,27 @@
             const message = input.value.trim();
             if (!message || !currentStudent) return;
             input.disabled = true;
-            const res = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver_type: 'student', receiver_id: currentStudent.id, subject: 'گفتگو', message }) });
-            if (res.ok) { input.value = ''; await loadMessages(); await loadConversations(); }
-            else alert('❌ خطا');
+            try {
+                const res = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver_type: 'student', receiver_id: currentStudent.id, subject: 'گفتگو', message }) });
+                if (res.ok) { input.value = ''; await loadMessages(); await loadAllStudents(); }
+                else alert('❌ خطا');
+            } catch(e) { alert('❌ خطا'); }
             input.disabled = false;
             input.focus();
         }
 
         async function checkNewMessages() {
-            await loadConversations();
+            await loadAllStudents();
             if (currentStudent && unreadCounts[currentStudent.id] === 0) {
-                await fetch(`/api/messages/mark-read/${currentStudent.id}`, { method: 'POST' });
+                try {
+                    await fetch(`/api/messages/mark-read/${currentStudent.id}`, { method: 'POST' });
+                } catch(e) {}
             }
             if (currentStudent) await loadMessages();
         }
 
         setupSidebar();
-        loadConversations();
+        loadAllStudents();
         messagesInterval = setInterval(checkNewMessages, 5000);
         document.getElementById('adminName').innerText = localStorage.getItem('userName') || 'مدیر';
         
