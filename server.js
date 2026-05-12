@@ -4704,6 +4704,120 @@ app.get("/api/messages/conversations", authenticate, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// ====================== API چت (پیام‌ها) ======================
+
+// دریافت لیست گفتگوها (برای مدیر - لیست شاگردانی که پیام دارند)
+app.get("/api/messages/conversations", authenticate, async (req, res) => {
+    const currentUserId = req.user.id;
+    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
+    
+    // فقط مدیر می‌تواند لیست گفتگوها را ببیند
+    if (currentUserRole !== "admin") {
+        return res.status(403).json({ error: "دسترسی محدود به مدیر" });
+    }
+    
+    try {
+        // دریافت تمام شاگردانی که حداقل یک پیام با مدیر داشته‌اند
+        const [conversations] = await db.execute(`
+            SELECT DISTINCT 
+                CASE 
+                    WHEN sender_type = 'student' THEN sender_id
+                    WHEN receiver_type = 'student' THEN receiver_id
+                END as student_id,
+                MAX(created_at) as last_message_time,
+                (SELECT COUNT(*) FROM messages WHERE receiver_type = 'admin' AND receiver_id = ? AND sender_type = 'student' AND sender_id = student_id AND is_read = 0) as unread_count,
+                (SELECT message FROM messages WHERE 
+                    (sender_type = 'student' AND sender_id = student_id AND receiver_type = 'admin') OR
+                    (receiver_type = 'student' AND receiver_id = student_id AND sender_type = 'admin')
+                    ORDER BY created_at DESC LIMIT 1) as last_message,
+                (SELECT sender_type FROM messages WHERE 
+                    (sender_type = 'student' AND sender_id = student_id AND receiver_type = 'admin') OR
+                    (receiver_type = 'student' AND receiver_id = student_id AND sender_type = 'admin')
+                    ORDER BY created_at DESC LIMIT 1) as last_sender_type
+            FROM messages 
+            WHERE (sender_type = 'student' AND receiver_type = 'admin') 
+               OR (receiver_type = 'student' AND sender_type = 'admin')
+            GROUP BY student_id
+            ORDER BY last_message_time DESC
+        `, [currentUserId]);
+        
+        // دریافت اطلاعات کامل شاگردان
+        const students = [];
+        for (const conv of conversations) {
+            if (conv.student_id) {
+                const [student] = await db.execute(`
+                    SELECT s.id, s.name, s.student_card_id, s.class_id, c.class_name 
+                    FROM students s 
+                    LEFT JOIN classes c ON s.class_id = c.id 
+                    WHERE s.id = ?
+                `, [conv.student_id]);
+                if (student.length > 0) {
+                    students.push({
+                        id: student[0].id,
+                        name: student[0].name,
+                        student_card_id: student[0].student_card_id,
+                        class_id: student[0].class_id,
+                        class_name: student[0].class_name,
+                        last_message_time: conv.last_message_time,
+                        unread_count: conv.unread_count || 0,
+                        last_message: conv.last_message || '',
+                        last_sender_type: conv.last_sender_type
+                    });
+                }
+            }
+        }
+        
+        res.json(students);
+    } catch (err) {
+        console.error("Error in GET /api/messages/conversations:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// دریافت تعداد پیام‌های خوانده نشده برای کاربر جاری
+app.get("/api/messages/unread-count", authenticate, async (req, res) => {
+    const currentUserId = req.user.id;
+    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
+    
+    try {
+        const [result] = await db.execute(`
+            SELECT COUNT(*) as count FROM messages 
+            WHERE receiver_type = ? AND receiver_id = ? AND is_read = 0
+        `, [currentUserRole, currentUserId]);
+        
+        res.json({ unread_count: result[0]?.count || 0 });
+    } catch (err) {
+        console.error("Error in GET /api/messages/unread-count:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// علامت گذاری پیام‌های یک کاربر به عنوان خوانده شده
+app.post("/api/messages/mark-read/:senderId", authenticate, async (req, res) => {
+    const senderId = req.params.senderId;
+    const currentUserId = req.user.id;
+    const currentUserRole = req.user.role === "student" ? "student" : (req.user.role === "admin" ? "admin" : "teacher");
+    
+    let senderRole = "student";
+    if (currentUserRole === "student") senderRole = "admin";
+    else if (currentUserRole === "admin") senderRole = "student";
+    
+    try {
+        await db.execute(`
+            UPDATE messages 
+            SET is_read = 1 
+            WHERE sender_type = ? AND sender_id = ? 
+              AND receiver_type = ? AND receiver_id = ? 
+              AND is_read = 0
+        `, [senderRole, senderId, currentUserRole, currentUserId]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error in POST /api/messages/mark-read/:senderId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
