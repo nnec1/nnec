@@ -4350,6 +4350,58 @@ app.get("/api/messages/conversation/student/:studentId", authenticate, async (re
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== ویرایش پیام ======================
+app.put("/api/messages/:id", authenticate, async (req, res) => {
+  const messageId = req.params.id;
+  const { message } = req.body;
+  const userId = req.user.id;
+  
+  try {
+    // بررسی وجود پیام و دسترسی
+    const [check] = await db.execute(`
+      SELECT * FROM messages WHERE id = ? 
+      AND ((sender_type = ? AND sender_id = ?) OR (receiver_type = ? AND receiver_id = ?))
+    `, [messageId, req.user.role, userId, req.user.role, userId]);
+    
+    if (check.length === 0) {
+      return res.status(403).json({ error: "شما اجازه ویرایش این پیام را ندارید" });
+    }
+    
+    await db.execute(`UPDATE messages SET message = ?, is_edited = 1 WHERE id = ?`, [message, messageId]);
+    
+    res.json({ success: true, message: "پیام با موفقیت ویرایش شد" });
+  } catch (err) {
+    console.error("❌ Error in PUT /api/messages/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ====================== حذف پیام ======================
+app.delete("/api/messages/:id", authenticate, async (req, res) => {
+  const messageId = req.params.id;
+  const userId = req.user.id;
+  
+  try {
+    // بررسی وجود پیام و دسترسی
+    const [check] = await db.execute(`
+      SELECT * FROM messages WHERE id = ? 
+      AND ((sender_type = ? AND sender_id = ?) OR (receiver_type = ? AND receiver_id = ?))
+    `, [messageId, req.user.role, userId, req.user.role, userId]);
+    
+    if (check.length === 0) {
+      return res.status(403).json({ error: "شما اجازه حذف این پیام را ندارید" });
+    }
+    
+    await db.execute(`DELETE FROM messages WHERE id = ?`, [messageId]);
+    
+    res.json({ success: true, message: "پیام با موفقیت حذف شد" });
+  } catch (err) {
+    console.error("❌ Error in DELETE /api/messages/:id:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ====================== صفحات ======================
 
 app.use((req, res) => {

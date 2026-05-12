@@ -9,9 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         .chat-container {
             display: flex;
             height: calc(100vh - 150px);
@@ -20,7 +18,6 @@
             overflow: hidden;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
         }
-        /* لیست شاگردان (سایدبار چت) */
         .chat-sidebar {
             width: 300px;
             background: #f8fafc;
@@ -32,10 +29,6 @@
             padding: 15px;
             background: white;
             border-bottom: 1px solid #e2e8f0;
-        }
-        .chat-sidebar-header input {
-            border-radius: 30px;
-            padding: 8px 15px;
         }
         .student-list {
             flex: 1;
@@ -50,13 +43,8 @@
             align-items: center;
             gap: 10px;
         }
-        .student-item:hover {
-            background: #e0f2fe;
-        }
-        .student-item.active {
-            background: #dcfce7;
-            border-right: 3px solid #10b981;
-        }
+        .student-item:hover { background: #e0f2fe; }
+        .student-item.active { background: #dcfce7; border-right: 3px solid #10b981; }
         .student-avatar {
             width: 40px;
             height: 40px;
@@ -68,29 +56,9 @@
             color: white;
             font-weight: bold;
         }
-        .student-info {
-            flex: 1;
-        }
-        .student-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .last-message {
-            font-size: 11px;
-            color: #64748b;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 160px;
-        }
-        .unread-badge {
-            background: #dc2626;
-            color: white;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 10px;
-        }
-        /* منطقه چت */
+        .student-info { flex: 1; }
+        .student-name { font-weight: 600; font-size: 14px; }
+        .last-message { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
         .chat-main {
             flex: 1;
             display: flex;
@@ -105,14 +73,8 @@
             align-items: center;
             gap: 10px;
         }
-        .chat-header .student-name {
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .chat-header .student-class {
-            font-size: 12px;
-            color: #64748b;
-        }
+        .chat-header .student-name { font-size: 16px; font-weight: 600; }
+        .chat-header .student-class { font-size: 12px; color: #64748b; }
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -124,13 +86,10 @@
         .message {
             display: flex;
             max-width: 70%;
+            position: relative;
         }
-        .message-sent {
-            align-self: flex-end;
-        }
-        .message-received {
-            align-self: flex-start;
-        }
+        .message-sent { align-self: flex-end; }
+        .message-received { align-self: flex-start; }
         .message-bubble {
             padding: 10px 15px;
             border-radius: 18px;
@@ -146,12 +105,23 @@
             border: 1px solid #e2e8f0;
             border-bottom-right-radius: 4px;
         }
-        .message-time {
-            font-size: 10px;
-            margin-top: 4px;
-            text-align: center;
-            color: #94a3b8;
+        .message-time { font-size: 10px; margin-top: 4px; text-align: center; color: #94a3b8; }
+        .message-actions {
+            position: absolute;
+            top: 0;
+            display: none;
+            gap: 5px;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .message-sent .message-actions { left: -70px; }
+        .message-received .message-actions { right: -70px; }
+        .message:hover .message-actions { display: flex; }
+        .message-actions button { background: none; border: none; font-size: 12px; cursor: pointer; }
+        .message-actions .edit-btn { color: #f59e0b; }
+        .message-actions .delete-btn { color: #dc2626; }
         .chat-input-area {
             padding: 15px;
             background: white;
@@ -165,10 +135,7 @@
             padding: 10px 18px;
             border: 1px solid #e2e8f0;
         }
-        .chat-input-area input:focus {
-            outline: none;
-            border-color: #10b981;
-        }
+        .chat-input-area input:focus { outline: none; border-color: #10b981; }
         .chat-input-area button {
             background: #10b981;
             border: none;
@@ -184,7 +151,9 @@
             height: 100%;
             color: #94a3b8;
             text-align: center;
+            flex-direction: column;
         }
+        .edited-badge { font-size: 9px; opacity: 0.7; margin-left: 5px; }
         .menu-toggle {
             display: none;
             position: fixed;
@@ -207,9 +176,10 @@
             .main-content { width: 100%; margin-right: 0; padding: 80px 10px 10px 10px; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1030; display: none; }
             .overlay.show { display: block; }
-            .chat-container { flex-direction: column; height: calc(100vh - 100px); }
-            .chat-sidebar { width: 100%; max-height: 200px; }
             .message { max-width: 85%; }
+            .message-actions { display: flex !important; position: static; margin-top: 5px; justify-content: center; }
+            .message-sent .message-actions { left: auto; }
+            .message-received .message-actions { right: auto; }
         }
     </style>
 </head>
@@ -244,26 +214,15 @@
 
             <div class="col-md-9 col-lg-10 main-content">
                 <h3 class="section-title"><i class="fa-solid fa-comments text-success me-2"></i> چت با شاگردان</h3>
-
                 <div class="chat-container">
-                    <!-- لیست شاگردان -->
                     <div class="chat-sidebar">
                         <div class="chat-sidebar-header">
                             <input type="text" id="searchStudent" class="form-control" placeholder="جستجوی شاگرد..." oninput="filterStudents()">
                         </div>
-                        <div class="student-list" id="studentList">
-                            <div class="text-center py-4">در حال بارگیری...</div>
-                        </div>
+                        <div class="student-list" id="studentList"><div class="text-center py-4">در حال بارگیری...</div></div>
                     </div>
-
-                    <!-- منطقه چت -->
                     <div class="chat-main" id="chatMain">
-                        <div class="empty-chat">
-                            <div>
-                                <i class="fa-solid fa-comments fs-1 text-muted"></i>
-                                <p class="mt-2">سمت راست یک شاگرد را انتخاب کنید</p>
-                            </div>
-                        </div>
+                        <div class="empty-chat"><i class="fa-solid fa-comments fs-1 text-muted"></i><p class="mt-2">یک شاگرد را انتخاب کنید</p></div>
                     </div>
                 </div>
             </div>
@@ -290,7 +249,7 @@
             window.addEventListener('resize', () => { if (window.innerWidth > 768) closeSidebar(); });
         }
 
-        function formatDate(dateString) {
+        function formatTime(dateString) {
             if (!dateString) return '';
             try {
                 const d = new Date(dateString);
@@ -304,7 +263,7 @@
             try {
                 const d = new Date(dateString);
                 if (isNaN(d.getTime())) return dateString;
-                return d.toLocaleDateString('fa-IR') + ' ' + d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+                return d.toLocaleDateString('fa-IR');
             } catch(e) { return dateString; }
         }
 
@@ -313,6 +272,16 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function hashCode(str) {
+            if (!str) return 0;
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash);
         }
 
         async function loadStudents() {
@@ -327,175 +296,130 @@
         function displayStudents() {
             const search = document.getElementById('searchStudent').value.toLowerCase();
             let filtered = allStudents;
-            if (search) {
-                filtered = allStudents.filter(s => s.name.toLowerCase().includes(search) || (s.student_card_id && s.student_card_id.toLowerCase().includes(search)));
-            }
-            
+            if (search) filtered = allStudents.filter(s => s.name.toLowerCase().includes(search));
             if (filtered.length === 0) {
                 document.getElementById('studentList').innerHTML = '<div class="text-center py-4 text-muted">هیچ شاگردی یافت نشد</div>';
                 return;
             }
-            
             let html = '';
             for (const s of filtered) {
                 const isActive = currentStudent && currentStudent.id === s.id;
                 const initial = s.name ? s.name.charAt(0) : '?';
-                html += `
-                    <div class="student-item ${isActive ? 'active' : ''}" onclick="selectStudent(${s.id})">
-                        <div class="student-avatar" style="background: #${hashCode(s.name) % 0xFFFFFF}">
-                            ${escapeHtml(initial)}
-                        </div>
-                        <div class="student-info">
-                            <div class="student-name">${escapeHtml(s.name)}</div>
-                            <div class="last-message">${escapeHtml(s.class_name) || 'بدون صنف'}</div>
-                        </div>
-                    </div>
-                `;
+                html += `<div class="student-item ${isActive ? 'active' : ''}" onclick="selectStudent(${s.id})">
+                    <div class="student-avatar" style="background: #${hashCode(s.name) % 0xFFFFFF}">${escapeHtml(initial)}</div>
+                    <div class="student-info"><div class="student-name">${escapeHtml(s.name)}</div><div class="last-message">${escapeHtml(s.class_name) || 'بدون صنف'}</div></div>
+                </div>`;
             }
             document.getElementById('studentList').innerHTML = html;
         }
 
-        function filterStudents() {
-            displayStudents();
-        }
-
-        function hashCode(str) {
-            if (!str) return 0;
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = ((hash << 5) - hash) + str.charCodeAt(i);
-                hash |= 0;
-            }
-            return Math.abs(hash);
-        }
+        function filterStudents() { displayStudents(); }
 
         async function selectStudent(studentId) {
-            // توقف پولینگ قبلی
-            if (messagesInterval) {
-                clearInterval(messagesInterval);
-                messagesInterval = null;
-            }
-            
+            if (messagesInterval) { clearInterval(messagesInterval); messagesInterval = null; }
             const student = allStudents.find(s => s.id == studentId);
             if (!student) return;
-            
             currentStudent = student;
             displayStudents();
-            
-            // ساخت رابط چت
             document.getElementById('chatMain').innerHTML = `
                 <div class="chat-header">
-                    <div class="student-avatar" style="background: #${hashCode(student.name) % 0xFFFFFF}">
-                        ${escapeHtml(student.name ? student.name.charAt(0) : '?')}
-                    </div>
-                    <div>
-                        <div class="student-name">${escapeHtml(student.name)}</div>
-                        <div class="student-class">${escapeHtml(student.class_name) || 'بدون صنف'} | ${escapeHtml(student.student_card_id) || ''}</div>
-                    </div>
+                    <div class="student-avatar" style="background: #${hashCode(student.name) % 0xFFFFFF}">${escapeHtml(student.name ? student.name.charAt(0) : '?')}</div>
+                    <div><div class="student-name">${escapeHtml(student.name)}</div><div class="student-class">${escapeHtml(student.class_name) || 'بدون صنف'} | ${escapeHtml(student.student_card_id) || ''}</div></div>
                 </div>
-                <div class="chat-messages" id="chatMessages">
-                    <div class="text-center py-4">در حال بارگیری پیام‌ها...</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="messageInput" placeholder="پیام خود را بنویسید..." onkeypress="if(event.keyCode===13) sendMessage()">
-                    <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i> ارسال</button>
-                </div>
+                <div class="chat-messages" id="chatMessages"><div class="text-center py-4">در حال بارگیری پیام‌ها...</div></div>
+                <div class="chat-input-area"><input type="text" id="messageInput" placeholder="پیام خود را بنویسید..." onkeypress="if(event.keyCode===13) sendMessage()"><button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i> ارسال</button></div>
             `;
-            
-            // بارگذاری پیام‌ها
             await loadMessages();
-            
-            // شروع پولینگ برای دریافت پیام‌های جدید (هر 3 ثانیه)
             messagesInterval = setInterval(loadMessages, 3000);
         }
 
         async function loadMessages() {
             if (!currentStudent) return;
-            
             try {
                 const res = await fetch(`/api/messages/conversation/${currentStudent.id}`);
                 const messages = await res.json();
-                
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
-                
-                if (messages.length === 0) {
-                    container.innerHTML = '<div class="text-center py-4 text-muted">هیچ پیامی وجود ندارد. اولین پیام را ارسال کنید.</div>';
-                    return;
+                if (messages.length === 0) { 
+                    container.innerHTML = '<div class="text-center py-4 text-muted">هیچ پیامی وجود ندارد. اولین پیام را ارسال کنید.</div>'; 
+                    return; 
                 }
-                
-                let html = '';
-                let lastDate = '';
+                let html = '', lastDate = '';
                 for (const m of messages) {
                     const isOwn = m.sender_type === 'admin' && m.sender_id == adminId;
-                    const messageDate = new Date(m.created_at).toLocaleDateString('fa-IR');
-                    
-                    if (lastDate !== messageDate) {
-                        html += `<div class="text-center my-2"><span class="badge bg-light text-muted">${messageDate}</span></div>`;
-                        lastDate = messageDate;
+                    const messageDate = formatFullDate(m.created_at);
+                    if (lastDate !== messageDate) { 
+                        html += `<div class="text-center my-2"><span class="badge bg-light text-muted">${messageDate}</span></div>`; 
+                        lastDate = messageDate; 
                     }
-                    
-                    html += `
-                        <div class="message ${isOwn ? 'message-sent' : 'message-received'}">
-                            <div class="message-bubble">
-                                ${escapeHtml(m.message)}
-                                <div class="message-time">${formatDate(m.created_at)}</div>
-                            </div>
+                    html += `<div class="message ${isOwn ? 'message-sent' : 'message-received'}">
+                        <div class="message-bubble">
+                            <div id="msg-text-${m.id}">${escapeHtml(m.message)}${m.is_edited ? '<span class="edited-badge">(ویرایش شده)</span>' : ''}</div>
+                            <div class="message-time">${formatTime(m.created_at)}</div>
                         </div>
-                    `;
+                        <div class="message-actions">
+                            <button class="edit-btn" onclick="editMessage(${m.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="delete-btn" onclick="deleteMessage(${m.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`;
                 }
                 container.innerHTML = html;
-                
-                // اسکرول به پایین
                 container.scrollTop = container.scrollHeight;
-                
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
+        }
+
+        async function editMessage(messageId) {
+            const msgDiv = document.getElementById(`msg-text-${messageId}`);
+            if (!msgDiv) return;
+            const oldText = msgDiv.innerText.replace('(ویرایش شده)', '').trim();
+            const newText = prompt('ویرایش پیام:', oldText);
+            if (!newText || newText === oldText) return;
+            try {
+                const res = await fetch(`/api/messages/${messageId}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: newText })
+                });
+                if (res.ok) { await loadMessages(); }
+                else { alert('❌ خطا در ویرایش پیام'); }
+            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
+        }
+
+        async function deleteMessage(messageId) {
+            if (!confirm('آیا از حذف این پیام اطمینان دارید؟')) return;
+            try {
+                const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
+                if (res.ok) { await loadMessages(); }
+                else { alert('❌ خطا در حذف پیام'); }
+            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
         }
 
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             if (!message || !currentStudent) return;
-            
             input.disabled = true;
-            
             try {
                 const res = await fetch('/api/messages', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        receiver_type: 'student',
-                        receiver_id: currentStudent.id,
-                        subject: 'گفتگو',
-                        message: message
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiver_type: 'student', receiver_id: currentStudent.id, subject: 'گفتگو', message })
                 });
-                
-                if (res.ok) {
-                    input.value = '';
-                    await loadMessages();
-                } else {
-                    alert('❌ خطا در ارسال پیام');
-                }
-            } catch (err) {
-                alert('❌ خطا در ارتباط با سرور');
-            } finally {
-                input.disabled = false;
-                input.focus();
-            }
+                if (res.ok) { input.value = ''; await loadMessages(); }
+                else { alert('❌ خطا در ارسال پیام'); }
+            } catch (err) { alert('❌ خطا در ارتباط با سرور'); }
+            finally { input.disabled = false; input.focus(); }
         }
 
         setupSidebar();
         loadStudents();
         
-        // تنظیم نام مدیر در سایدبار
+        // تنظیم نام مدیر
         const adminName = localStorage.getItem('userName') || 'مدیر';
         document.getElementById('adminName').innerText = adminName;
         
         window.selectStudent = selectStudent;
         window.sendMessage = sendMessage;
+        window.editMessage = editMessage;
+        window.deleteMessage = deleteMessage;
     </script>
 </body>
 </html>
