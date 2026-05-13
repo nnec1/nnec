@@ -16,7 +16,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
+            background: #e2e8f0;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -26,152 +26,76 @@
         }
 
         .id-card {
-            width: 850px;
+            width: 750px;
             max-width: 100%;
-            background: linear-gradient(145deg, #ffffff, #fefefe);
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
-        .id-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.4);
-        }
-
-        /* هدر کارت با گرادینت زیبا */
+        /* هدر کارت */
         .card-header {
-            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-            padding: 16px 24px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
+            background: #10b981;
+            padding: 14px 20px;
         }
 
         .inst-name {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 800;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: white;
         }
 
         .inst-tagline {
-            font-size: 0.75rem;
-            opacity: 0.95;
-            letter-spacing: 0.5px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        /* بدنه اصلی - طراحی لنداسکیپ */
-        .card-body-horizontal {
+        /* بدنه اصلی - دو بخش */
+        .card-body {
             display: flex;
             flex-direction: row;
-            padding: 0;
-            min-height: 320px;
         }
 
-        /* بخش چپ - اطلاعات شاگرد */
+        /* بخش چپ - سفید (اطلاعات شاگرد) */
         .left-section {
-            flex: 1.4;
-            padding: 24px 20px 24px 24px;
+            flex: 1.3;
             background: white;
+            padding: 20px;
         }
 
-        /* بخش راست - لوگو + QR */
+        /* بخش راست - سرمه‌ای (لوگو + QR) */
         .right-section {
             flex: 0.9;
-            background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+            background: #1e293b;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-right: 2px dashed #10b981;
         }
 
-        /* عکس شاگرد - بزرگتر شده */
+        /* عکس شاگرد - 180x180 دایره */
         .student-photo {
-            width: 160px;
-            height: 160px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid #10b981;
-            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
-            background: white;
-            transition: transform 0.3s ease;
-        }
-
-        .student-photo:hover {
-            transform: scale(1.02);
-        }
-
-        /* لوگو در بالای QR */
-        .logo-container {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .school-logo {
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 8px;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-        }
-
-        .school-logo i {
-            font-size: 2.2rem;
-            color: white;
-        }
-
-        .logo-text {
-            font-size: 11px;
-            color: #047857;
-            font-weight: 600;
-        }
-
-        /* باکس QR کد */
-        .qr-box {
-            background: white;
-            border-radius: 18px;
-            padding: 12px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 8px;
-            border: 1px solid #e2e8f0;
+            border: 3px solid #10b981;
+            background: #f1f5f9;
+            display: block;
+            margin: 0 auto 15px auto;
         }
 
         /* ردیف اطلاعات */
         .info-row {
             display: flex;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
         }
 
         .info-label {
-            width: 85px;
+            width: 75px;
             font-weight: 700;
             color: #475569;
             font-size: 0.8rem;
@@ -181,40 +105,64 @@
             flex: 1;
             color: #1e293b;
             font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        /* بخش عکس و نام */
-        .photo-section {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin-bottom: 20px;
-        }
-
-        .name-section {
-            flex: 1;
+            font-size: 0.85rem;
         }
 
         /* نشانگر وضعیت */
         .badge-status {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: #10b981;
             color: white;
-            padding: 4px 14px;
+            padding: 3px 12px;
             border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
             display: inline-block;
-            box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
         }
 
-        /* خط چین جداکننده */
-        .divider {
-            border-top: 1px dashed #cbd5e1;
-            margin: 12px 0;
+        /* لوگو در بخش راست */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
         }
 
-        /* فوتر */
+        .school-logo {
+            width: 70px;
+            height: 70px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+        }
+
+        .school-logo i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* باکس QR */
+        .qr-box {
+            background: white;
+            border-radius: 16px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .qr-hint {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* فوتر - فقط دکمه‌ها */
         .card-footer {
             background: #f8fafc;
             padding: 12px;
@@ -222,41 +170,23 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        /* دکمه‌ها */
         .btn-grad {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: #10b981;
             border: none;
-            padding: 8px 24px;
-            border-radius: 40px;
+            padding: 6px 20px;
+            border-radius: 30px;
             color: white;
             font-weight: 600;
-            margin: 0 6px;
-            transition: 0.2s;
+            margin: 0 5px;
             cursor: pointer;
-            font-size: 13px;
-        }
-
-        .btn-grad:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+            font-size: 12px;
         }
 
         .bg-secondary {
-            background: linear-gradient(135deg, #64748b, #475569);
+            background: #64748b;
         }
 
-        .bg-secondary:hover {
-            box-shadow: 0 5px 15px rgba(100, 116, 139, 0.4);
-        }
-
-        /* متن QR */
-        .qr-hint {
-            font-size: 10px;
-            color: #64748b;
-            margin-top: 5px;
-        }
-
-        /* چاپ */
+        /* چاپ - حذف فضاهای اضافی و خطوط */
         @media print {
             body {
                 background: white;
@@ -280,40 +210,38 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-        }
-
-        /* ریسپانسیو برای موبایل */
-        @media (max-width: 650px) {
-            .card-body-horizontal {
-                flex-direction: column;
+            .student-photo {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            /* حذف فضاهای خالی */
+            body, .id-card, .card-body, .left-section, .right-section {
+                margin: 0;
+                padding: 0;
             }
             .left-section {
-                padding: 18px;
+                padding: 12px;
             }
             .right-section {
-                padding: 18px;
-                flex-direction: row;
-                gap: 20px;
-                border-right: none;
-                border-top: 2px dashed #10b981;
+                padding: 12px;
             }
-            .qr-box {
-                margin-bottom: 0;
+            .card-footer {
+                display: none;
+            }
+            .info-row {
+                margin-bottom: 5px;
+                padding-bottom: 3px;
+            }
+        }
+
+        /* موبایل */
+        @media (max-width: 600px) {
+            .card-body {
+                flex-direction: column;
             }
             .student-photo {
-                width: 100px;
-                height: 100px;
-            }
-            .photo-section {
-                flex-direction: column;
-                text-align: center;
-            }
-            .school-logo {
-                width: 50px;
-                height: 50px;
-            }
-            .school-logo i {
-                font-size: 1.6rem;
+                width: 120px;
+                height: 120px;
             }
         }
     </style>
@@ -321,42 +249,36 @@
 
 <body>
     <div class="id-card" id="idCard">
-        <!-- هدر با نام آموزشگاه -->
+        <!-- هدر -->
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center text-white">
-                <div><i class="bi bi-mortarboard-fill fs-2"></i></div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-mortarboard-fill fs-2 text-white"></i></div>
                 <div class="text-center">
                     <div class="inst-name" id="instituteName">آموزشگاه نوی نور</div>
-                    <div class="inst-tagline" id="instituteTagline">پیشرو در آموزش و توانمندسازی</div>
+                    <div class="inst-tagline" id="instituteTagline">پیشرو در آموزش</div>
                 </div>
-                <div><i class="bi bi-stars fs-2"></i></div>
+                <div><i class="bi bi-stars fs-2 text-white"></i></div>
             </div>
         </div>
 
-        <!-- بدنه اصلی -->
-        <div class="card-body-horizontal">
-            <!-- بخش چپ: اطلاعات شاگرد -->
+        <!-- بدنه -->
+        <div class="card-body">
+            <!-- بخش چپ: اطلاعات شاگرد (سفید) -->
             <div class="left-section">
-                <div class="photo-section">
-                    <img id="studentPhoto" src="/default-avatar.png" class="student-photo" onerror="this.src='/default-avatar.png'">
-                    <div class="name-section">
-                        <div class="info-row">
-                            <div class="info-label">نام:</div>
-                            <div class="info-value" id="studentName">-</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">نام پدر:</div>
-                            <div class="info-value" id="studentFather">-</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">صنف:</div>
-                            <div class="info-value" id="studentClass">-</div>
-                        </div>
-                    </div>
+                <img id="studentPhoto" src="/default-avatar.png" class="student-photo" onerror="this.src='/default-avatar.png'">
+                
+                <div class="info-row">
+                    <div class="info-label">نام:</div>
+                    <div class="info-value" id="studentName">-</div>
                 </div>
-
-                <div class="divider"></div>
-
+                <div class="info-row">
+                    <div class="info-label">نام پدر:</div>
+                    <div class="info-value" id="studentFather">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">صنف:</div>
+                    <div class="info-value" id="studentClass">-</div>
+                </div>
                 <div class="info-row">
                     <div class="info-label">آیدی کارت:</div>
                     <div class="info-value" id="studentCardId">-</div>
@@ -375,7 +297,7 @@
                 </div>
             </div>
 
-            <!-- بخش راست: لوگو + QR کد -->
+            <!-- بخش راست: لوگو + QR (سرمه‌ای) -->
             <div class="right-section">
                 <div class="logo-container">
                     <div class="school-logo">
@@ -383,16 +305,14 @@
                     </div>
                     <div class="logo-text">نوی نور</div>
                 </div>
-                <div>
-                    <div class="qr-box" id="qrcode"></div>
-                    <div class="qr-hint">
-                        <i class="bi bi-qr-code-scan"></i> اسکن برای ورود سریع
-                    </div>
+                <div class="qr-box" id="qrcode"></div>
+                <div class="qr-hint">
+                    <i class="bi bi-qr-code-scan"></i> اسکن برای ورود
                 </div>
             </div>
         </div>
 
-        <!-- فوتر با دکمه‌ها -->
+        <!-- فوتر -->
         <div class="card-footer no-print">
             <button class="btn-grad" onclick="window.print()"><i class="bi bi-printer"></i> چاپ کارت</button>
             <button class="btn-grad bg-secondary" onclick="window.close()"><i class="bi bi-x-lg"></i> بستن</button>
@@ -429,9 +349,7 @@
                 if (settings.institute_tagline) {
                     document.getElementById('instituteTagline').innerText = settings.institute_tagline;
                 }
-            } catch (e) {
-                console.log('Using default institute settings');
-            }
+            } catch (e) {}
         }
 
         async function loadStudentInfo(id) {
@@ -448,16 +366,9 @@
                     document.getElementById('regDate').innerText = formatDate(student.registration_date);
                     
                     let statusText = 'فعال';
-                    let statusClass = 'active';
-                    if (student.status === 'graduated') {
-                        statusText = 'فارغ‌التحصیل';
-                        statusClass = 'graduated';
-                    } else if (student.status === 'disabled') {
-                        statusText = 'غیرفعال';
-                        statusClass = 'disabled';
-                    }
+                    if (student.status === 'graduated') statusText = 'فارغ‌التحصیل';
+                    else if (student.status === 'disabled') statusText = 'غیرفعال';
                     document.getElementById('studentStatus').innerHTML = statusText;
-                    document.getElementById('studentStatus').className = `badge-status ${statusClass}`;
 
                     if (student.photo) document.getElementById('studentPhoto').src = student.photo;
 
@@ -467,9 +378,9 @@
                     document.getElementById('qrcode').innerHTML = '';
                     new QRCode(document.getElementById("qrcode"), {
                         text: qrUrl,
-                        width: 120,
-                        height: 120,
-                        colorDark: "#10b981",
+                        width: 110,
+                        height: 110,
+                        colorDark: "#1e293b",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
                     });
