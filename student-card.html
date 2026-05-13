@@ -32,7 +32,6 @@
             background: #1e293b;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            position: relative;
             direction: rtl;
             border-radius: 4px;
         }
@@ -43,11 +42,13 @@
             text-align: center;
             border-bottom: 1px solid #334155;
         }
+
         .inst-name {
             font-size: 9px;
             font-weight: bold;
             color: white;
         }
+
         .inst-tagline {
             font-size: 6px;
             color: #94a3b8;
@@ -117,7 +118,6 @@
             padding: 2px 8px;
             border-radius: 20px;
             font-size: 7px;
-            font-weight: 600;
             display: inline-block;
         }
 
@@ -168,9 +168,10 @@
             display: flex;
             gap: 10px;
             justify-content: center;
-            flex-wrap: wrap;
         }
-        .btn-print, .btn-close {
+
+        .btn-print,
+        .btn-close {
             border: none;
             padding: 10px 24px;
             border-radius: 30px;
@@ -180,9 +181,17 @@
             font-size: 14px;
             transition: 0.2s;
         }
-        .btn-print { background: #1e293b; }
-        .btn-close { background: #64748b; }
-        .btn-print:hover, .btn-close:hover {
+
+        .btn-print {
+            background: #1e293b;
+        }
+
+        .btn-close {
+            background: #64748b;
+        }
+
+        .btn-print:hover,
+        .btn-close:hover {
             opacity: 0.85;
             transform: translateY(-2px);
         }
@@ -193,19 +202,26 @@
                 padding: 0;
                 margin: 0;
             }
+
             .btn-container {
                 display: none;
             }
+
             .id-card {
                 box-shadow: none;
                 margin: 0;
                 width: 85mm;
                 height: 54mm;
             }
-            .card-header, .card-body, .left-section, .right-section {
+
+            .card-header,
+            .card-body,
+            .left-section,
+            .right-section {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+
             .student-photo {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
@@ -223,13 +239,32 @@
             </div>
             <div class="card-body">
                 <div class="left-section">
-                    <img id="studentPhoto" src="/default-avatar.png" class="student-photo" onerror="this.src='/default-avatar.png'">
-                    <div class="info-row"><div class="info-label">نام:</div><div class="info-value" id="studentName">-</div></div>
-                    <div class="info-row"><div class="info-label">نام پدر:</div><div class="info-value" id="studentFather">-</div></div>
-                    <div class="info-row"><div class="info-label">صنف:</div><div class="info-value" id="studentClass">-</div></div>
-                    <div class="info-row"><div class="info-label">شماره:</div><div class="info-value" id="studentPhone">-</div></div>
-                    <div class="info-row"><div class="info-label">آیدی:</div><div class="info-value" id="studentCardId">-</div></div>
-                    <div class="info-row"><div class="info-label">وضعیت:</div><div class="info-value"><span class="badge-status" id="studentStatus">فعال</span></div></div>
+                    <img id="studentPhoto" src="/default-avatar.png" class="student-photo"
+                        onerror="this.src='/default-avatar.png'">
+                    <div class="info-row">
+                        <div class="info-label">نام:</div>
+                        <div class="info-value" id="studentName">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">نام پدر:</div>
+                        <div class="info-value" id="studentFather">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">صنف:</div>
+                        <div class="info-value" id="studentClass">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">شماره:</div>
+                        <div class="info-value" id="studentPhone">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">آیدی:</div>
+                        <div class="info-value" id="studentCardId">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">وضعیت:</div>
+                        <div class="info-value"><span class="badge-status" id="studentStatus">فعال</span></div>
+                    </div>
                 </div>
                 <div class="right-section">
                     <div class="logo-container">
@@ -243,83 +278,56 @@
         </div>
 
         <div class="btn-container">
-            <button class="btn-print" onclick="printCard()"><i class="bi bi-printer"></i> چاپ کارت</button>
+            <button class="btn-print" id="printButton"><i class="bi bi-printer"></i> چاپ کارت</button>
             <button class="btn-close" onclick="window.close()"><i class="bi bi-x-lg"></i> بستن</button>
         </div>
     </div>
 
     <script>
-        let currentStudentData = null;
-        let currentQrToken = null;
+        const studentId = new URLSearchParams(window.location.search).get('id');
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const studentId = urlParams.get('id');
-
-        if (!studentId) {
-            document.getElementById('idCard').innerHTML = '<div class="alert alert-danger m-4">❌ آیدی شاگرد مشخص نشده است</div>';
-        } else {
-            loadStudentInfo(studentId);
-            loadInstituteSettings();
-        }
-
-        async function loadInstituteSettings() {
+        async function loadSettings() {
             try {
                 const res = await fetch('/api/settings');
-                const settings = await res.json();
-                if (settings.institute_name) document.getElementById('instituteName').innerText = settings.institute_name;
-                if (settings.institute_tagline) document.getElementById('instituteTagline').innerText = settings.institute_tagline;
-            } catch (e) {}
+                const data = await res.json();
+                if (data.institute_name) document.getElementById('instituteName').innerText = data.institute_name;
+                if (data.institute_tagline) document.getElementById('instituteTagline').innerText = data.institute_tagline;
+            } catch (e) { }
         }
 
-        async function loadStudentInfo(id) {
+        async function loadStudent() {
             try {
-                const response = await fetch(`/api/students/${id}`);
-                const student = await response.json();
-
-                if (student && student.id) {
-                    currentStudentData = student;
-                    currentQrToken = student.qr_token || `STU_${student.id}`;
-                    
-                    document.getElementById('studentName').innerText = student.name || '-';
-                    document.getElementById('studentFather').innerText = student.father_name || '-';
-                    document.getElementById('studentClass').innerText = student.class_name || '-';
-                    document.getElementById('studentCardId').innerText = student.student_card_id || `STU-${student.id}`;
-                    document.getElementById('studentPhone').innerText = student.phone || '-';
-                    
+                const res = await fetch(`/api/students/${studentId}`);
+                const s = await res.json();
+                if (s.id) {
+                    document.getElementById('studentName').innerText = s.name || '-';
+                    document.getElementById('studentFather').innerText = s.father_name || '-';
+                    document.getElementById('studentClass').innerText = s.class_name || '-';
+                    document.getElementById('studentPhone').innerText = s.phone || '-';
+                    document.getElementById('studentCardId').innerText = s.student_card_id || `STU-${s.id}`;
                     let statusText = 'فعال';
-                    if (student.status === 'graduated') statusText = 'فارغ‌التحصیل';
-                    else if (student.status === 'disabled') statusText = 'غیرفعال';
+                    if (s.status === 'graduated') statusText = 'فارغ‌التحصیل';
+                    if (s.status === 'disabled') statusText = 'غیرفعال';
                     document.getElementById('studentStatus').innerHTML = statusText;
+                    if (s.photo) document.getElementById('studentPhoto').src = s.photo;
 
-                    if (student.photo) document.getElementById('studentPhoto').src = student.photo;
-
-                    const qrUrl = `${window.location.origin}/login-with-qr.html?qr=${currentQrToken}`;
+                    const qrToken = s.qr_token || `STU_${s.id}`;
+                    const qrUrl = `${window.location.origin}/login-with-qr.html?qr=${qrToken}`;
                     document.getElementById('qrcode').innerHTML = '';
-                    new QRCode(document.getElementById("qrcode"), {
-                        text: qrUrl,
-                        width: 65,
-                        height: 65,
-                        colorDark: "#1e293b",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                } else {
-                    showError('شاگرد یافت نشد');
+                    new QRCode(document.getElementById("qrcode"), { text: qrUrl, width: 65, height: 65, colorDark: "#1e293b", colorLight: "#ffffff" });
                 }
-            } catch (error) {
-                console.error(error);
-                showError('خطا در دریافت اطلاعات شاگرد');
-            }
+            } catch (e) { console.error(e); }
         }
 
-        function showError(message) {
-            document.getElementById('idCard').innerHTML = `<div class="alert alert-danger m-4">${message}</div>`;
+        if (studentId) {
+            loadSettings();
+            loadStudent();
         }
 
-        // تابع چاپ - مستقیماً پنجره پرینت مرورگر را باز می‌کند
-        function printCard() {
+        // دکمه چاپ - ساده و مستقیم
+        document.getElementById('printButton').addEventListener('click', function () {
             window.print();
-        }
+        });
     </script>
 </body>
 
