@@ -25,96 +25,101 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        /* اندازه استاندارد کارت ID (لنداسکیپ) - 85mm x 54mm */
         .id-card {
-            width: 750px;
-            max-width: 100%;
+            width: 85mm;
+            height: 54mm;
             background: white;
-            border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             overflow: hidden;
+            position: relative;
+            direction: rtl;
         }
 
-        /* هدر کارت */
+        /* هدر کارت - سرمه‌ای */
         .card-header {
-            background: #10b981;
-            padding: 14px 20px;
+            background: #1e293b;
+            padding: 6px 12px;
+            height: 32px;
         }
 
         .inst-name {
-            font-size: 1.2rem;
+            font-size: 11px;
             font-weight: 800;
             color: white;
+            line-height: 1.2;
         }
 
         .inst-tagline {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 7px;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         /* بدنه اصلی - دو بخش */
         .card-body {
             display: flex;
             flex-direction: row;
+            height: calc(100% - 32px);
         }
 
         /* بخش چپ - سفید (اطلاعات شاگرد) */
         .left-section {
             flex: 1.3;
             background: white;
-            padding: 20px;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
         }
 
         /* بخش راست - سرمه‌ای (لوگو + QR) */
         .right-section {
             flex: 0.9;
             background: #1e293b;
-            padding: 20px;
+            padding: 6px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        /* عکس شاگرد - 180x180 دایره */
+        /* عکس شاگرد - 55x55 دایره (مناسب کارت کوچک) */
         .student-photo {
-            width: 180px;
-            height: 180px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #10b981;
+            border: 2px solid #10b981;
             background: #f1f5f9;
             display: block;
-            margin: 0 auto 15px auto;
+            margin: 0 auto 6px auto;
         }
 
-        /* ردیف اطلاعات */
+        /* ردیف اطلاعات - فشرده */
         .info-row {
             display: flex;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
+            margin-bottom: 4px;
+            font-size: 8px;
         }
 
         .info-label {
-            width: 75px;
+            width: 50px;
             font-weight: 700;
             color: #475569;
-            font-size: 0.8rem;
         }
 
         .info-value {
             flex: 1;
             color: #1e293b;
             font-weight: 600;
-            font-size: 0.85rem;
         }
 
         /* نشانگر وضعیت */
         .badge-status {
             background: #10b981;
             color: white;
-            padding: 3px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 7px;
             font-weight: 600;
             display: inline-block;
         }
@@ -122,200 +127,201 @@
         /* لوگو در بخش راست */
         .logo-container {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 6px;
         }
 
         .school-logo {
-            width: 70px;
-            height: 70px;
+            width: 35px;
+            height: 35px;
             background: #10b981;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 10px;
+            margin: 0 auto 5px;
         }
 
         .school-logo i {
-            font-size: 2rem;
+            font-size: 1.2rem;
             color: white;
         }
 
         .logo-text {
-            font-size: 12px;
+            font-size: 7px;
             color: #94a3b8;
             font-weight: 600;
         }
 
-        /* باکس QR */
+        /* باکس QR - کوچک */
         .qr-box {
             background: white;
-            border-radius: 16px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 4px;
             text-align: center;
         }
 
         .qr-hint {
-            font-size: 10px;
+            font-size: 6px;
             color: #94a3b8;
-            margin-top: 6px;
+            margin-top: 3px;
             text-align: center;
         }
 
-        /* فوتر - فقط دکمه‌ها */
-        .card-footer {
-            background: #f8fafc;
-            padding: 12px;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .btn-grad {
-            background: #10b981;
-            border: none;
-            padding: 6px 20px;
-            border-radius: 30px;
-            color: white;
-            font-weight: 600;
-            margin: 0 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .bg-secondary {
-            background: #64748b;
-        }
-
-        /* چاپ - حذف فضاهای اضافی و خطوط */
+        /* چاپ - حذف فضاهای اضافی، اندازه دقیق */
         @media print {
             body {
                 background: white;
                 padding: 0;
                 margin: 0;
             }
+
             .no-print {
                 display: none;
             }
+
             .id-card {
                 box-shadow: none;
                 margin: 0;
-                width: 100%;
+                padding: 0;
+                width: 85mm;
+                height: 54mm;
                 border-radius: 0;
             }
+
             .card-header {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+
             .right-section {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+
             .student-photo {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+
             /* حذف فضاهای خالی */
-            body, .id-card, .card-body, .left-section, .right-section {
+            body,
+            .id-card,
+            .card-body,
+            .left-section,
+            .right-section {
                 margin: 0;
                 padding: 0;
             }
+
             .left-section {
-                padding: 12px;
+                padding: 4px 6px;
             }
+
             .right-section {
-                padding: 12px;
+                padding: 4px 6px;
             }
-            .card-footer {
-                display: none;
-            }
+
             .info-row {
-                margin-bottom: 5px;
-                padding-bottom: 3px;
+                margin-bottom: 3px;
             }
         }
 
-        /* موبایل */
-        @media (max-width: 600px) {
-            .card-body {
-                flex-direction: column;
-            }
-            .student-photo {
-                width: 120px;
-                height: 120px;
-            }
+        /* دکمه‌ها در صفحه (برای چاپ) */
+        .print-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-print {
+            background: #10b981;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-close {
+            background: #64748b;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="id-card" id="idCard">
-        <!-- هدر -->
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div><i class="bi bi-mortarboard-fill fs-2 text-white"></i></div>
-                <div class="text-center">
-                    <div class="inst-name" id="instituteName">آموزشگاه نوی نور</div>
-                    <div class="inst-tagline" id="instituteTagline">پیشرو در آموزش</div>
-                </div>
-                <div><i class="bi bi-stars fs-2 text-white"></i></div>
-            </div>
-        </div>
-
-        <!-- بدنه -->
-        <div class="card-body">
-            <!-- بخش چپ: اطلاعات شاگرد (سفید) -->
-            <div class="left-section">
-                <img id="studentPhoto" src="/default-avatar.png" class="student-photo" onerror="this.src='/default-avatar.png'">
-                
-                <div class="info-row">
-                    <div class="info-label">نام:</div>
-                    <div class="info-value" id="studentName">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">نام پدر:</div>
-                    <div class="info-value" id="studentFather">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">صنف:</div>
-                    <div class="info-value" id="studentClass">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">آیدی کارت:</div>
-                    <div class="info-value" id="studentCardId">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">شماره تماس:</div>
-                    <div class="info-value" id="studentPhone">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">تاریخ ثبت:</div>
-                    <div class="info-value" id="regDate">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">وضعیت:</div>
-                    <div class="info-value"><span class="badge-status" id="studentStatus">فعال</span></div>
-                </div>
-            </div>
-
-            <!-- بخش راست: لوگو + QR (سرمه‌ای) -->
-            <div class="right-section">
-                <div class="logo-container">
-                    <div class="school-logo">
-                        <i class="bi bi-mortarboard-fill"></i>
+    <div>
+        <!-- کارت با اندازه استاندارد -->
+        <div class="id-card" id="idCard">
+            <!-- هدر سرمه‌ای -->
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><i class="bi bi-mortarboard-fill text-white" style="font-size: 14px;"></i></div>
+                    <div class="text-center">
+                        <div class="inst-name" id="instituteName">آموزشگاه نوی نور</div>
+                        <div class="inst-tagline" id="instituteTagline">پیشرو در آموزش</div>
                     </div>
-                    <div class="logo-text">نوی نور</div>
+                    <div><i class="bi bi-stars text-white" style="font-size: 12px;"></i></div>
                 </div>
-                <div class="qr-box" id="qrcode"></div>
-                <div class="qr-hint">
-                    <i class="bi bi-qr-code-scan"></i> اسکن برای ورود
+            </div>
+
+            <!-- بدنه -->
+            <div class="card-body">
+                <!-- بخش چپ: اطلاعات شاگرد (سفید) -->
+                <div class="left-section">
+                    <img id="studentPhoto" src="/default-avatar.png" class="student-photo"
+                        onerror="this.src='/default-avatar.png'">
+
+                    <div class="info-row">
+                        <div class="info-label">نام:</div>
+                        <div class="info-value" id="studentName">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">نام پدر:</div>
+                        <div class="info-value" id="studentFather">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">صنف:</div>
+                        <div class="info-value" id="studentClass">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">آیدی:</div>
+                        <div class="info-value" id="studentCardId">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">وضعیت:</div>
+                        <div class="info-value"><span class="badge-status" id="studentStatus">فعال</span></div>
+                    </div>
+                </div>
+
+                <!-- بخش راست: لوگو + QR (سرمه‌ای) -->
+                <div class="right-section">
+                    <div class="logo-container">
+                        <div class="school-logo">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <div class="logo-text">نوی نور</div>
+                    </div>
+                    <div class="qr-box" id="qrcode"></div>
+                    <div class="qr-hint">
+                        اسکن برای ورود
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- فوتر -->
-        <div class="card-footer no-print">
-            <button class="btn-grad" onclick="window.print()"><i class="bi bi-printer"></i> چاپ کارت</button>
-            <button class="btn-grad bg-secondary" onclick="window.close()"><i class="bi bi-x-lg"></i> بستن</button>
+        <!-- دکمه‌های خارج از کارت (برای چاپ) -->
+        <div class="print-btn-container no-print">
+            <button class="btn-print" onclick="printCard()"><i class="bi bi-printer"></i> چاپ کارت</button>
+            <button class="btn-close" onclick="window.close()"><i class="bi bi-x-lg"></i> بستن</button>
         </div>
     </div>
 
@@ -349,7 +355,7 @@
                 if (settings.institute_tagline) {
                     document.getElementById('instituteTagline').innerText = settings.institute_tagline;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         async function loadStudentInfo(id) {
@@ -362,9 +368,8 @@
                     document.getElementById('studentFather').innerText = student.father_name || '-';
                     document.getElementById('studentClass').innerText = student.class_name || '-';
                     document.getElementById('studentCardId').innerText = student.student_card_id || `STU-${student.id}`;
-                    document.getElementById('studentPhone').innerText = student.phone || '-';
-                    document.getElementById('regDate').innerText = formatDate(student.registration_date);
-                    
+                    document.getElementById('regDate') && (document.getElementById('regDate').innerText = formatDate(student.registration_date));
+
                     let statusText = 'فعال';
                     if (student.status === 'graduated') statusText = 'فارغ‌التحصیل';
                     else if (student.status === 'disabled') statusText = 'غیرفعال';
@@ -378,8 +383,8 @@
                     document.getElementById('qrcode').innerHTML = '';
                     new QRCode(document.getElementById("qrcode"), {
                         text: qrUrl,
-                        width: 110,
-                        height: 110,
+                        width: 65,
+                        height: 65,
                         colorDark: "#1e293b",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
@@ -395,6 +400,13 @@
 
         function showError(message) {
             document.getElementById('idCard').innerHTML = `<div class="alert alert-danger m-4">${message}</div>`;
+        }
+
+        function printCard() {
+            const originalTitle = document.title;
+            document.title = 'کارت شناسایی شاگرد';
+            window.print();
+            document.title = originalTitle;
         }
     </script>
 </body>
