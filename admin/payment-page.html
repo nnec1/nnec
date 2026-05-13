@@ -385,13 +385,32 @@
                 document.getElementById('studentPhoneInput').value = currentStudent.phone || '';
                 
                 let lastPayment = null;
+                let totalPaid = 0;
                 let remainingPrev = 0;
                 let dueDatePrev = null;
+                let lastTotalFee = 0;
                 
                 if (payments && payments.length > 0) {
                     lastPayment = payments[0];
-                    let totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-                    remainingPrev = (currentStudent.total_fee || 0) - totalPaid;
+                    totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+                    
+                    // تلاش برای پیدا کردن فیس کل از notes آخرین پرداخت
+                    if (lastPayment && lastPayment.notes) {
+                        const match = lastPayment.notes.match(/فیس کل:\s*([0-9,]+)/);
+                        if (match) {
+                            lastTotalFee = parseFloat(match[1].replace(/,/g, '')) || 0;
+                        }
+                    }
+                    
+                    if (lastTotalFee === 0) {
+                        lastTotalFee = parseFloat(currentStudent.total_fee) || 0;
+                    }
+                    
+                    if (lastTotalFee === 0 && lastPayment) {
+                        lastTotalFee = parseFloat(lastPayment.amount) || 0;
+                    }
+                    
+                    remainingPrev = lastTotalFee - totalPaid;
                     if (remainingPrev < 0) remainingPrev = 0;
                     
                     if (lastPayment && lastPayment.payment_date) {
@@ -401,6 +420,9 @@
                     } else {
                         dueDatePrev = currentStudent.due_date || '-';
                     }
+                    
+                    currentStudent.total_fee = lastTotalFee;
+                    currentStudent.remaining_fee = remainingPrev;
                 }
                 
                 const reminderBox = document.getElementById('reminderBox');
@@ -408,20 +430,23 @@
                     reminderBox.style.display = 'block';
                     document.getElementById('lastPaymentDate').innerHTML = lastPayment ? formatDate(lastPayment.payment_date) : '-';
                     document.getElementById('lastPaymentAmount').innerHTML = lastPayment ? formatNumber(lastPayment.amount) + ' AFN' : '-';
-                    document.getElementById('remainingReminder').innerHTML = formatNumber(remainingPrev) + ' AFN';
-                    document.getElementById('dueDateReminder').innerHTML = dueDatePrev ? formatDate(dueDatePrev) : '-';
                     
                     if (remainingPrev > 0) {
+                        document.getElementById('remainingReminder').innerHTML = '⚠️ ' + formatNumber(remainingPrev) + ' AFN';
                         document.getElementById('remainingReminder').style.color = '#dc2626';
                         document.getElementById('remainingReminder').style.fontWeight = 'bold';
                     } else {
+                        document.getElementById('remainingReminder').innerHTML = '✅ ' + formatNumber(remainingPrev) + ' AFN';
                         document.getElementById('remainingReminder').style.color = '#10b981';
                     }
+                    
+                    document.getElementById('dueDateReminder').innerHTML = dueDatePrev ? formatDate(dueDatePrev) : '-';
                     
                     if (dueDatePrev && dueDatePrev !== '-') {
                         const today = new Date();
                         const dueDateObj = new Date(dueDatePrev);
                         if (dueDateObj < today) {
+                            document.getElementById('dueDateReminder').innerHTML = '⚠️ ' + formatDate(dueDatePrev);
                             document.getElementById('dueDateReminder').style.color = '#dc2626';
                             document.getElementById('dueDateReminder').style.fontWeight = 'bold';
                         } else {
@@ -444,11 +469,18 @@
                 document.getElementById('remainingBox').style.display = 'none';
                 document.getElementById('debtNote').value = '';
                 
+                if (remainingPrev > 0) {
+                    document.getElementById('debtNote').placeholder = `⚠️ توجه: این شاگرد ${formatNumber(remainingPrev)} AFN بدهی دارد.`;
+                    document.getElementById('debtNote').style.borderColor = '#f59e0b';
+                } else {
+                    document.getElementById('debtNote').placeholder = 'توضیحات...';
+                    document.getElementById('debtNote').style.borderColor = '#e2e8f0';
+                }
+                
                 document.getElementById('newTotalFee').oninput = calculateRemaining;
                 document.getElementById('newPayment').oninput = calculateRemaining;
                 document.getElementById('paymentForm').style.display = 'block';
                 
-                // اسکرول به بخش فرم
                 document.getElementById('paymentForm').scrollIntoView({ behavior: 'smooth' });
                 
                 filterAndDisplay();
@@ -469,7 +501,7 @@
             const paymentDate = document.getElementById('newDate').value;
             let expiryDate = document.getElementById('newExpiry').value;
             const phone = document.getElementById('studentPhoneInput').value;
-            const debtNote = document.getElementById('debtNote').value;
+            let debtNote = document.getElementById('debtNote').value;
             
             if (totalFee <= 0) { 
                 alert('❌ لطفاً فیس کل را وارد کنید'); 
@@ -484,14 +516,18 @@
                 return; 
             }
             
-            // اگر تاریخ انقضا خالی بود، یک ماه بعد محاسبه کن
             if (!expiryDate) {
                 const defaultExpiry = new Date(paymentDate);
                 defaultExpiry.setMonth(defaultExpiry.getMonth() + 1);
                 expiryDate = defaultExpiry.toISOString().split('T')[0];
             }
+            
+            // اضافه کردن اطلاعات بدهی قبلی به یادداشت
+            if (currentStudent.remaining_fee > 0) {
+                debtNote = `(بدهی قبلی: ${formatNumber(currentStudent.remaining_fee)} AFN) ` + debtNote;
+            }
+            debtNote = `فیس کل: ${formatNumber(totalFee)} AFN - ` + debtNote;
 
-            // به روز رسانی شماره تماس
             if (phone !== currentStudent.phone) {
                 try {
                     await fetch(`/api/students/${currentStudent.id}`, {
