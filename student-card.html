@@ -8,7 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -44,13 +43,11 @@
             text-align: center;
             border-bottom: 1px solid #334155;
         }
-
         .inst-name {
             font-size: 9px;
             font-weight: bold;
             color: white;
         }
-
         .inst-tagline {
             font-size: 6px;
             color: #94a3b8;
@@ -173,10 +170,7 @@
             justify-content: center;
             flex-wrap: wrap;
         }
-
-        .btn-print,
-        .btn-pdf,
-        .btn-close {
+        .btn-print, .btn-close {
             border: none;
             padding: 10px 24px;
             border-radius: 30px;
@@ -186,24 +180,36 @@
             font-size: 14px;
             transition: 0.2s;
         }
-
-        .btn-print {
-            background: #1e293b;
-        }
-
-        .btn-pdf {
-            background: #dc2626;
-        }
-
-        .btn-close {
-            background: #64748b;
-        }
-
-        .btn-print:hover,
-        .btn-pdf:hover,
-        .btn-close:hover {
+        .btn-print { background: #1e293b; }
+        .btn-close { background: #64748b; }
+        .btn-print:hover, .btn-close:hover {
             opacity: 0.85;
             transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .btn-container {
+                display: none;
+            }
+            .id-card {
+                box-shadow: none;
+                margin: 0;
+                width: 85mm;
+                height: 54mm;
+            }
+            .card-header, .card-body, .left-section, .right-section {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .student-photo {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
@@ -217,32 +223,13 @@
             </div>
             <div class="card-body">
                 <div class="left-section">
-                    <img id="studentPhoto" src="/default-avatar.png" class="student-photo"
-                        onerror="this.src='/default-avatar.png'">
-                    <div class="info-row">
-                        <div class="info-label">نام:</div>
-                        <div class="info-value" id="studentName">-</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">نام پدر:</div>
-                        <div class="info-value" id="studentFather">-</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">صنف:</div>
-                        <div class="info-value" id="studentClass">-</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">شماره:</div>
-                        <div class="info-value" id="studentPhone">-</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">آیدی:</div>
-                        <div class="info-value" id="studentCardId">-</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">وضعیت:</div>
-                        <div class="info-value"><span class="badge-status" id="studentStatus">فعال</span></div>
-                    </div>
+                    <img id="studentPhoto" src="/default-avatar.png" class="student-photo" onerror="this.src='/default-avatar.png'">
+                    <div class="info-row"><div class="info-label">نام:</div><div class="info-value" id="studentName">-</div></div>
+                    <div class="info-row"><div class="info-label">نام پدر:</div><div class="info-value" id="studentFather">-</div></div>
+                    <div class="info-row"><div class="info-label">صنف:</div><div class="info-value" id="studentClass">-</div></div>
+                    <div class="info-row"><div class="info-label">شماره:</div><div class="info-value" id="studentPhone">-</div></div>
+                    <div class="info-row"><div class="info-label">آیدی:</div><div class="info-value" id="studentCardId">-</div></div>
+                    <div class="info-row"><div class="info-label">وضعیت:</div><div class="info-value"><span class="badge-status" id="studentStatus">فعال</span></div></div>
                 </div>
                 <div class="right-section">
                     <div class="logo-container">
@@ -256,14 +243,12 @@
         </div>
 
         <div class="btn-container">
-            <button class="btn-print" onclick="printCardDirect()"><i class="bi bi-printer"></i> چاپ کارت</button>
-            <button class="btn-pdf" onclick="downloadCardAsPDF()"><i class="bi bi-file-pdf"></i> دانلود PDF</button>
+            <button class="btn-print" onclick="printCard()"><i class="bi bi-printer"></i> چاپ کارت</button>
             <button class="btn-close" onclick="window.close()"><i class="bi bi-x-lg"></i> بستن</button>
         </div>
     </div>
 
     <script>
-        // متغیرهای سراسری برای ذخیره اطلاعات شاگرد
         let currentStudentData = null;
         let currentQrToken = null;
 
@@ -283,7 +268,7 @@
                 const settings = await res.json();
                 if (settings.institute_name) document.getElementById('instituteName').innerText = settings.institute_name;
                 if (settings.institute_tagline) document.getElementById('instituteTagline').innerText = settings.institute_tagline;
-            } catch (e) { }
+            } catch (e) {}
         }
 
         async function loadStudentInfo(id) {
@@ -294,13 +279,13 @@
                 if (student && student.id) {
                     currentStudentData = student;
                     currentQrToken = student.qr_token || `STU_${student.id}`;
-
+                    
                     document.getElementById('studentName').innerText = student.name || '-';
                     document.getElementById('studentFather').innerText = student.father_name || '-';
                     document.getElementById('studentClass').innerText = student.class_name || '-';
                     document.getElementById('studentCardId').innerText = student.student_card_id || `STU-${student.id}`;
                     document.getElementById('studentPhone').innerText = student.phone || '-';
-
+                    
                     let statusText = 'فعال';
                     if (student.status === 'graduated') statusText = 'فارغ‌التحصیل';
                     else if (student.status === 'disabled') statusText = 'غیرفعال';
@@ -331,114 +316,9 @@
             document.getElementById('idCard').innerHTML = `<div class="alert alert-danger m-4">${message}</div>`;
         }
 
-        // چاپ مستقیم
-        function printCardDirect() {
-            if (!currentStudentData) {
-                alert('لطفاً چند لحظه صبر کنید، اطلاعات در حال بارگیری است...');
-                return;
-            }
-
-            const printWindow = window.open('', '_blank');
-            const qrUrl = `${window.location.origin}/login-with-qr.html?qr=${currentQrToken}`;
-
-            printWindow.document.write(`
-                <html dir="rtl">
-                <head>
-                    <title>کارت شناسایی شاگرد</title>
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-                    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"><\/script>
-                    <style>
-                        * { margin: 0; padding: 0; box-sizing: border-box; }
-                        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; margin: 0; padding: 0; }
-                        .id-card { width: 85mm; height: 54mm; background: #1e293b; direction: rtl; border-radius: 4px; overflow: hidden; }
-                        .card-header { background: #1e293b; padding: 4px 8px; text-align: center; border-bottom: 1px solid #334155; }
-                        .inst-name { font-size: 9px; font-weight: bold; color: white; }
-                        .inst-tagline { font-size: 6px; color: #94a3b8; }
-                        .card-body { display: flex; padding: 6px; background: #1e293b; height: calc(100% - 38px); }
-                        .left-section { flex: 1.3; padding: 4px 6px; color: white; }
-                        .right-section { flex: 0.9; background: rgba(255,255,255,0.06); padding: 6px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-                        .student-photo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #10b981; margin: 0 auto 6px auto; }
-                        .info-row { display: flex; margin-bottom: 4px; font-size: 8px; }
-                        .info-label { width: 52px; font-weight: 700; color: #94a3b8; }
-                        .info-value { flex: 1; color: white; }
-                        .badge-status { background: #10b981; color: white; padding: 2px 8px; border-radius: 20px; font-size: 7px; }
-                        .school-logo { width: 40px; height: 40px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; }
-                        .school-logo i { font-size: 1.3rem; color: white; }
-                        .logo-text { font-size: 7px; color: #94a3b8; }
-                        .qr-box { background: white; border-radius: 8px; padding: 4px; text-align: center; }
-                        .qr-hint { font-size: 6px; color: #94a3b8; margin-top: 3px; text-align: center; }
-                        @media print { body { margin: 0; padding: 0; } .id-card { box-shadow: none; margin: 0; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="id-card">
-                        <div class="card-header">
-                            <div class="inst-name">${document.getElementById('instituteName').innerText}</div>
-                            <div class="inst-tagline">${document.getElementById('instituteTagline').innerText}</div>
-                        </div>
-                        <div class="card-body">
-                            <div class="left-section">
-                                <img src="${document.getElementById('studentPhoto').src}" class="student-photo" onerror="this.src='/default-avatar.png'">
-                                <div class="info-row"><div class="info-label">نام:</div><div class="info-value">${document.getElementById('studentName').innerText}</div></div>
-                                <div class="info-row"><div class="info-label">نام پدر:</div><div class="info-value">${document.getElementById('studentFather').innerText}</div></div>
-                                <div class="info-row"><div class="info-label">صنف:</div><div class="info-value">${document.getElementById('studentClass').innerText}</div></div>
-                                <div class="info-row"><div class="info-label">شماره:</div><div class="info-value">${document.getElementById('studentPhone').innerText}</div></div>
-                                <div class="info-row"><div class="info-label">آیدی:</div><div class="info-value">${document.getElementById('studentCardId').innerText}</div></div>
-                                <div class="info-row"><div class="info-label">وضعیت:</div><div class="info-value"><span class="badge-status">${document.getElementById('studentStatus').innerText}</span></div></div>
-                            </div>
-                            <div class="right-section">
-                                <div class="logo-container"><div class="school-logo"><i class="bi bi-mortarboard-fill"></i></div><div class="logo-text">نوی نور</div></div>
-                                <div class="qr-box" id="printQrcode"></div>
-                                <div class="qr-hint">اسکن برای ورود</div>
-                            </div>
-                        </div>
-                    </div>
-                    <script>
-                        new QRCode(document.getElementById("printQrcode"), { 
-                            text: "${qrUrl}", 
-                            width: 65, 
-                            height: 65, 
-                            colorDark: "#1e293b", 
-                            colorLight: "#ffffff", 
-                            correctLevel: QRCode.CorrectLevel.H 
-                        });
-                        window.onload = function() { 
-                            window.print(); 
-                            setTimeout(function() { window.close(); }, 1000); 
-                        };
-                    <\/script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
-        }
-
-        // دانلود PDF
-        async function downloadCardAsPDF() {
-            if (!currentStudentData) {
-                alert('لطفاً چند لحظه صبر کنید، اطلاعات در حال بارگیری است...');
-                return;
-            }
-
-            const element = document.getElementById('idCard');
-            const studentName = document.getElementById('studentName').innerText;
-            const studentIdNum = document.getElementById('studentCardId').innerText;
-
-            const opt = {
-                margin: [0, 0, 0, 0],
-                filename: `کارت_شناسایی_${studentName}_${studentIdNum}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 3, letterRendering: true, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: [85, 54], orientation: 'landscape' }
-            };
-
-            try {
-                await html2pdf().set(opt).from(element).save();
-            } catch (error) {
-                console.error('PDF Error:', error);
-                alert('خطا در ساخت PDF. لطفاً دوباره تلاش کنید.');
-            }
+        // تابع چاپ - مستقیماً پنجره پرینت مرورگر را باز می‌کند
+        function printCard() {
+            window.print();
         }
     </script>
 </body>
