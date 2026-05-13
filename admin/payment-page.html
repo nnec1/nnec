@@ -237,44 +237,64 @@
                 <!-- اطلاعات شاگرد -->
                 <div class="info-box">
                     <h6 class="mb-2"><i class="fa-solid fa-user-circle"></i> اطلاعات شاگرد</h6>
-                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام شاگرد:</span><span id="studentName" class="fw-bold">-</span></div>
-                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام پدر:</span><span id="studentFather">-</span></div>
-                    <div class="info-row"><span><i class="fa-solid fa-table-cells-large"></i> صنف:</span><span id="studentClass">-</span></div>
-                    <div class="info-row"><span><i class="fa-solid fa-phone"></i> شماره تماس:</span><span id="studentPhoneDisplay">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام شاگرد:</span><span id="studentName"
+                            class="fw-bold">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-user"></i> نام پدر:</span><span
+                            id="studentFather">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-table-cells-large"></i> صنف:</span><span
+                            id="studentClass">-</span></div>
+                    <div class="info-row"><span><i class="fa-solid fa-phone"></i> شماره تماس:</span><span
+                            id="studentPhoneDisplay">-</span></div>
                 </div>
 
                 <!-- ========== بخش یادآوری پرداخت‌های قبلی ========== -->
                 <div id="reminderBox" class="reminder-box" style="display: none;">
                     <h6><i class="fa-solid fa-clock-rotate-left"></i> یادآوری آخرین پرداخت</h6>
-                    <div class="reminder-row"><span class="reminder-label"><i class="fa-regular fa-calendar"></i> تاریخ آخرین پرداخت:</span><span class="reminder-value" id="lastPaymentDate">-</span></div>
-                    <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-money-bill-wave"></i> مبلغ آخرین پرداخت:</span><span class="reminder-value" id="lastPaymentAmount">-</span></div>
-                    <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-receipt"></i> فیس کل ثبت شده:</span><span class="reminder-value" id="totalFeeReminder">-</span></div>
-                    <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-circle-check"></i> مجموع پرداختی تا الان:</span><span class="reminder-value text-success" id="totalPaidReminder">-</span></div>
-                    <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-triangle-exclamation"></i> باقی مانده قبلی:</span><span class="reminder-value text-danger" id="remainingReminder">-</span></div>
-                    <div class="reminder-row"><span class="reminder-label"><i class="fa-regular fa-calendar-circle-exclamation"></i> تاریخ انقضای قبلی:</span><span class="reminder-value" id="dueDateReminder">-</span></div>
+                    <div class="reminder-row"><span class="reminder-label"><i class="fa-regular fa-calendar"></i> تاریخ
+                            آخرین پرداخت:</span><span class="reminder-value" id="lastPaymentDate">-</span></div>
+                    <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-money-bill-wave"></i>
+                            مبلغ آخرین پرداخت:</span><span class="reminder-value" id="lastPaymentAmount">-</span></div>
+                    <!-- <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-receipt"></i> فیس کل ثبت شده:</span><span class="reminder-value" id="totalFeeReminder">-</span></div> -->
+                    <!-- <div class="reminder-row"><span class="reminder-label"><i class="fa-solid fa-circle-check"></i> مجموع پرداختی تا الان:</span><span class="reminder-value text-success" id="totalPaidReminder">-</span></div> -->
+                    <div class="reminder-row"><span class="reminder-label"><i
+                                class="fa-solid fa-triangle-exclamation"></i> باقی مانده قبلی:</span><span
+                            class="reminder-value text-danger" id="remainingReminder">-</span></div>
+                    <!-- <div class="reminder-row"><span class="reminder-label"><i class="fa-regular fa-calendar-circle-exclamation"></i> تاریخ انقضای قبلی:</span><span class="reminder-value" id="dueDateReminder">-</span></div> -->
                 </div>
 
                 <!-- فرم ثبت فیس جدید -->
                 <div class="new-fee-box">
                     <h6 class="mb-3"><i class="fa-solid fa-plus-circle text-success"></i> ثبت فیس جدید</h6>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> فیس کل (AFN)</label><input type="number" id="newTotalFee" class="form-control" placeholder="مثال: 5000" required></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> مبلغ پرداختی (AFN)</label><input type="number" id="newPayment" class="form-control" placeholder="مبلغ پرداختی" required></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-money-bill-wave"></i> فیس کل
+                            (AFN)</label><input type="number" id="newTotalFee" class="form-control"
+                            placeholder="مثال: 5000" required></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-hand-holding-dollar"></i> مبلغ
+                            پرداختی (AFN)</label><input type="number" id="newPayment" class="form-control"
+                            placeholder="مبلغ پرداختی" required></div>
 
                     <div id="remainingBox" class="remaining-box" style="display: none;">
                         <span class="text-dark">💰 باقی مانده:</span>
                         <h3 class="text-danger mb-0" id="remainingAmount">0 AFN</h3>
                     </div>
 
-                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ پرداخت</label><input type="date" id="newDate" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضا (اختیاری)</label><input type="date" id="newExpiry" class="form-control"><small class="text-muted">خالی = یک ماه بعد</small></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-phone"></i> شماره تماس (قابل ویرایش)</label><input type="text" id="studentPhoneInput" class="form-control" placeholder="شماره تماس شاگرد"></div>
-                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت</label><textarea id="debtNote" class="form-control" rows="2" placeholder="توضیحات..."></textarea></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar"></i> تاریخ
+                            پرداخت</label><input type="date" id="newDate" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-regular fa-calendar-plus"></i> تاریخ انقضا
+                            (اختیاری)</label><input type="date" id="newExpiry" class="form-control"><small
+                            class="text-muted">خالی = یک ماه بعد</small></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-phone"></i> شماره تماس (قابل
+                            ویرایش)</label><input type="text" id="studentPhoneInput" class="form-control"
+                            placeholder="شماره تماس شاگرد"></div>
+                    <div class="mb-3"><label class="form-label"><i class="fa-solid fa-pen"></i> یادداشت</label><textarea
+                            id="debtNote" class="form-control" rows="2" placeholder="توضیحات..."></textarea></div>
 
-                    <button type="button" id="submitPayment" class="btn-payment mt-2"><i class="fa-solid fa-print"></i> ثبت پرداخت و چاپ رسید</button>
+                    <button type="button" id="submitPayment" class="btn-payment mt-2"><i class="fa-solid fa-print"></i>
+                        ثبت پرداخت و چاپ رسید</button>
                 </div>
             </div>
 
-            <button class="btn-back" onclick="window.location.href='fee-management.html'"><i class="fa-solid fa-arrow-right"></i> بازگشت</button>
+            <button class="btn-back" onclick="window.location.href='fee-management.html'"><i
+                    class="fa-solid fa-arrow-right"></i> بازگشت</button>
         </div>
     </div>
 
@@ -373,17 +393,17 @@
             try {
                 const res = await fetch(`/api/students/${studentId}`);
                 currentStudent = await res.json();
-                
+
                 // دریافت تاریخچه پرداخت‌ها
                 const payments = await loadPaymentHistory(studentId);
-                
+
                 // اطلاعات شاگرد
                 document.getElementById('studentName').innerHTML = currentStudent.name || '-';
                 document.getElementById('studentFather').innerHTML = currentStudent.father_name || '-';
                 document.getElementById('studentClass').innerHTML = currentStudent.class_name || '-';
                 document.getElementById('studentPhoneDisplay').innerHTML = currentStudent.phone || '-';
                 document.getElementById('studentPhoneInput').value = currentStudent.phone || '';
-                
+
                 // محاسبه مجموع پرداختی‌ها
                 let totalPaid = 0;
                 let lastPayment = null;
@@ -391,9 +411,9 @@
                     totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
                     lastPayment = payments[0]; // آخرین پرداخت (اولین در لیست)
                 }
-                
+
                 const remainingPrev = (currentStudent.remaining_fee || 0);
-                
+
                 // نمایش بخش یادآوری اگر حداقل یک پرداخت وجود داشته باشد
                 const reminderBox = document.getElementById('reminderBox');
                 if (payments && payments.length > 0) {
@@ -404,7 +424,7 @@
                     document.getElementById('totalPaidReminder').innerHTML = formatNumber(totalPaid) + ' AFN';
                     document.getElementById('remainingReminder').innerHTML = formatNumber(remainingPrev) + ' AFN';
                     document.getElementById('dueDateReminder').innerHTML = formatDate(currentStudent.due_date);
-                    
+
                     // اگر باقی مانده دارد، با رنگ قرمز مشخص کن
                     if (remainingPrev > 0) {
                         document.getElementById('remainingReminder').style.color = '#dc2626';
@@ -414,7 +434,7 @@
                 } else {
                     reminderBox.style.display = 'none';
                 }
-                
+
                 // مقداردهی فرم
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('newDate').value = today;
@@ -423,14 +443,14 @@
                 document.getElementById('newPayment').value = '';
                 document.getElementById('remainingBox').style.display = 'none';
                 document.getElementById('debtNote').value = '';
-                
+
                 document.getElementById('newTotalFee').oninput = calculateRemaining;
                 document.getElementById('newPayment').oninput = calculateRemaining;
                 document.getElementById('paymentForm').style.display = 'block';
                 filterAndDisplay();
-            } catch (err) { 
+            } catch (err) {
                 console.error(err);
-                alert('❌ خطا در بارگیری اطلاعات'); 
+                alert('❌ خطا در بارگیری اطلاعات');
             }
         }
 
@@ -442,7 +462,7 @@
             const expiryDate = document.getElementById('newExpiry').value;
             const phone = document.getElementById('studentPhoneInput').value;
             const debtNote = document.getElementById('debtNote').value;
-            
+
             if (totalFee <= 0) { alert('❌ لطفاً فیس کل را وارد کنید'); return; }
             if (payment <= 0) { alert('❌ لطفاً مبلغ پرداختی را وارد کنید'); return; }
             if (!paymentDate) { alert('❌ تاریخ پرداخت را انتخاب کنید'); return; }
