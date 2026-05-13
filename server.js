@@ -5189,6 +5189,39 @@ app.get("/api/student/attendance/:studentId", authenticate, async (req, res) => 
         res.status(500).json({ error: err.message });
     }
 });
+
+// دریافت باقی‌مانده قبلی شاگرد بر اساس آخرین فیس کل ثبت‌شده
+app.get("/api/student/remaining-before/:studentId", authenticate, async (req, res) => {
+  const studentId = req.params.studentId;
+  try {
+    // دریافت آخرین پرداختی که total_fee دارد
+    const [lastFeeRecord] = await db.execute(
+      `SELECT total_fee, paid_fee, due_date 
+       FROM fee_payments 
+       WHERE student_id = ? AND total_fee IS NOT NULL AND total_fee > 0 
+       ORDER BY payment_date DESC, id DESC LIMIT 1`,
+      [studentId]
+    );
+
+    if (lastFeeRecord.length === 0) {
+      return res.json({ remaining_before: 0, last_total_fee: 0, total_paid: 0 });
+    }
+
+    const lastTotalFee = parseFloat(lastFeeRecord[0].total_fee) || 0;
+    const lastPaidFee = parseFloat(lastFeeRecord[0].paid_fee) || 0;
+    const remainingBefore = lastTotalFee - lastPaidFee;
+
+    res.json({
+      remaining_before: remainingBefore < 0 ? 0 : remainingBefore,
+      last_total_fee: lastTotalFee,
+      total_paid: lastPaidFee,
+      last_due_date: lastFeeRecord[0].due_date
+    });
+  } catch (err) {
+    console.error("Error in /api/student/remaining-before:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
