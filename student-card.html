@@ -13,7 +13,7 @@
         }
 
         body {
-            background: #e2e8f0;
+            background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -23,29 +23,47 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* کارت */
+        /* کارت با گرادینت Navy Blue زیبا */
         .card {
             width: 85mm;
             height: 54mm;
-            background: #1e293b;
-            border-radius: 4px;
+            background: linear-gradient(145deg, #0f172a, #1e293b, #2d3a5e);
+            border-radius: 8px;
             overflow: hidden;
             direction: rtl;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        /* افکت شاین روی کارت */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
         }
 
         /* هدر */
         .card-header {
-            background: #0f172a;
+            background: rgba(0, 0, 0, 0.2);
             padding: 5px;
             text-align: center;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .inst-name {
             font-size: 10px;
             font-weight: bold;
             color: white;
+            letter-spacing: 0.5px;
         }
 
         .inst-tagline {
@@ -65,18 +83,24 @@
             flex: 1;
         }
 
-        .photo {
+        /* آیکون حرفه‌ای شاگرد */
+        .student-avatar {
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            background: #f1f5f9;
-            border: 2px solid #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
             margin: 0 auto 8px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #64748b;
-            font-size: 24px;
+            font-size: 32px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .student-avatar:hover {
+            transform: scale(1.05);
         }
 
         .info-row {
@@ -94,30 +118,34 @@
 
         .info-value {
             flex: 1;
+            color: white;
+            font-weight: 500;
         }
 
         .status-badge {
-            background: #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             padding: 2px 8px;
             border-radius: 20px;
             font-size: 7px;
             display: inline-block;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         /* بخش QR */
         .qr-section {
             width: 90px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
             padding: 8px;
             text-align: center;
+            backdrop-filter: blur(2px);
         }
 
         .logo {
             width: 35px;
             height: 35px;
-            background: #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -125,44 +153,51 @@
             margin: 0 auto 5px;
             font-size: 18px;
             color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .logo-text {
             font-size: 7px;
             color: #94a3b8;
             margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .qr-box {
             background: white;
-            border-radius: 6px;
-            padding: 4px;
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .qr-hint {
             font-size: 6px;
             color: #94a3b8;
-            margin-top: 4px;
+            margin-top: 5px;
         }
 
-        /* دکمه */
+        /* دکمه چاپ */
         .btn-print {
-            margin-top: 20px;
-            background: #1e293b;
+            margin-top: 25px;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
             border: none;
-            padding: 10px 30px;
-            border-radius: 30px;
+            padding: 10px 35px;
+            border-radius: 40px;
             color: white;
             font-weight: bold;
             cursor: pointer;
             font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
         }
 
         .btn-print:hover {
-            background: #0f172a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #1e293b, #0f172a);
         }
 
-        /* چاپ */
+        /* تنظیمات چاپ */
         @media print {
             body {
                 background: white;
@@ -179,10 +214,14 @@
                 margin: 0;
                 width: 85mm;
                 height: 54mm;
+                border-radius: 0;
             }
 
             .card-header,
-            .card-body {
+            .card-body,
+            .student-avatar,
+            .logo,
+            .status-badge {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -195,11 +234,12 @@
     <div class="card" id="studentCard">
         <div class="card-header">
             <div class="inst-name" id="instName">آموزشگاه نوی نور</div>
-            <div class="inst-tagline" id="instTagline">پیشرو در آموزش</div>
+            <div class="inst-tagline" id="instTagline">پیشرو در آموزش و توانمندسازی</div>
         </div>
         <div class="card-body">
             <div class="info-section">
-                <div class="photo" id="photoArea">
+                <!-- آیکون شاگرد (بر اساس نام، آیکون متفاوت می‌شود) -->
+                <div class="student-avatar" id="studentAvatar">
                     🧑‍🎓
                 </div>
                 <div class="info-row">
@@ -242,6 +282,23 @@
     <script>
         const studentId = new URLSearchParams(window.location.search).get('id');
 
+        // تابع برای تعیین آیکون مناسب بر اساس نام شاگرد
+        function getStudentAvatar(name) {
+            if (!name) return '🧑‍🎓';
+            const firstChar = name.charAt(0);
+            // تشخیص جنسیت از روی حروف آخر (ساده)
+            if (name.includes('الله') || name.includes('محمد') || name.includes('علی') || name.includes('حسین') || name.includes('رضا')) {
+                return '👨‍🎓';
+            }
+            if (name.includes('فاطمه') || name.includes('زهرا') || name.includes('مریم') || name.includes('سارا') || name.includes('نرگس')) {
+                return '👩‍🎓';
+            }
+            // آیکون‌های متنوع
+            const icons = ['🧑‍🎓', '👨‍🎓', '👩‍🎓', '🎓', '📚', '✏️', '📖'];
+            const hash = (name.length * 7) % icons.length;
+            return icons[hash];
+        }
+
         async function loadData() {
             if (!studentId) return;
 
@@ -259,11 +316,17 @@
                 const s = await studentRes.json();
 
                 if (s.id) {
-                    document.getElementById('studentName').innerText = s.name || '-';
+                    const studentName = s.name || '-';
+                    document.getElementById('studentName').innerText = studentName;
                     document.getElementById('studentFather').innerText = s.father_name || '-';
                     document.getElementById('studentClass').innerText = s.class_name || '-';
                     document.getElementById('studentPhone').innerText = s.phone || '-';
                     document.getElementById('studentCardId').innerText = s.student_card_id || `STU-${s.id}`;
+
+                    // تنظیم آیکون شاگرد بر اساس نام
+                    const avatarIcon = getStudentAvatar(studentName);
+                    document.getElementById('studentAvatar').innerHTML = avatarIcon;
+                    document.getElementById('studentAvatar').style.fontSize = '36px';
 
                     let status = 'فعال';
                     if (s.status === 'graduated') status = 'فارغ‌التحصیل';
@@ -278,18 +341,20 @@
                         text: qrUrl,
                         width: 60,
                         height: 60,
-                        colorDark: "#1e293b",
-                        colorLight: "#ffffff"
+                        colorDark: "#0f172a",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
                     });
                 }
             } catch (e) {
                 console.error('خطا:', e);
+                document.getElementById('studentAvatar').innerHTML = '⚠️';
             }
         }
 
         loadData();
 
-        // دکمه چاپ - ساده
+        // دکمه چاپ - ساده و مستقیم
         window.printCard = function () {
             window.print();
         };
