@@ -5384,6 +5384,27 @@ app.post("/api/teacher/save-attendance", authenticate, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// دریافت لیست صنف‌های استاد برای انتقال شاگرد (شامل صنف‌های خالی)
+app.get("/api/teacher/transfer-classes/:teacherId", authenticate, async (req, res) => {
+    const teacherId = req.params.teacherId;
+    
+    try {
+        // دریافت همه صنف‌هایی که استاد به آنها تخصیص داده شده است
+        const [classes] = await db.execute(`
+            SELECT DISTINCT c.id, c.class_name, c.start_time, c.is_active
+            FROM classes c
+            JOIN teacher_classes tc ON c.id = tc.class_id
+            WHERE tc.teacher_id = ? AND c.is_active = 1
+            ORDER BY c.class_name ASC
+        `, [teacherId]);
+        
+        res.json(classes);
+    } catch (err) {
+        console.error("Error in /api/teacher/transfer-classes/:teacherId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
