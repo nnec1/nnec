@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>کارت شناسایی شاگرد</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,210 +22,193 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'Tahoma', Geneva, Verdana, sans-serif;
         }
 
-        /* کارت با گرادینت آبی زیبا */
         .card {
-            width: 90mm;
-            height: 57mm;
+            width: 85mm;
+            height: 54mm;
             background: linear-gradient(145deg, #1e3a5f, #2563eb, #1e40af);
-            border-radius: 10px;
+            border-radius: 6px;
             overflow: hidden;
             direction: rtl;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             position: relative;
         }
 
-        /* افکت شاین روی کارت */
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 120%;
-            height: 200%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-            transform: rotate(25deg);
-            transition: left 0.6s;
-        }
-
-        .card:hover::before {
-            left: 100%;
-        }
-
-        /* هدر */
         .card-header {
             background: rgba(0, 0, 0, 0.15);
-            padding: 6px 10px;
+            padding: 4px 8px;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .inst-name {
             font-size: 12px;
             font-weight: bold;
             color: white;
-            letter-spacing: 0.5px;
         }
 
         .inst-tagline {
-            font-size: 8px;
+            font-size: 7px;
             color: #bfdbfe;
         }
 
-        /* بدنه */
         .card-body {
             display: flex;
-            padding: 10px 12px;
-            gap: 12px;
+            padding: 6px 8px;
+            gap: 8px;
+            height: calc(100% - 38px);
         }
 
-        /* بخش اطلاعات */
         .info-section {
             flex: 1.4;
+            display: flex;
+            gap: 8px;
         }
 
-        /* آیکون شاگرد - یک آیکون ثابت و شیک */
+        .info-left {
+            flex: 1;
+        }
+
+        .info-right {
+            flex: 1;
+        }
+
         .student-avatar {
-            width: 75px;
-            height: 75px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            margin: 0 auto 10px auto;
+            margin: 0 auto 6px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 42px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-            border: 3px solid rgba(255, 255, 255, 0.4);
-            transition: transform 0.3s;
-        }
-
-        .student-avatar:hover {
-            transform: scale(1.05);
+            font-size: 34px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .info-row {
             display: flex;
-            margin-bottom: 8px;
-            font-size: 11px;
+            margin-bottom: 5px;
+            font-size: 9px;
             color: white;
+            align-items: baseline;
         }
 
         .info-label {
-            width: 55px;
+            width: 45px;
             font-weight: bold;
             color: #bfdbfe;
+            font-size: 8px;
         }
 
         .info-value {
             flex: 1;
             color: white;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 9px;
         }
 
         .status-badge {
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: #1e3a5f;
-            padding: 3px 10px;
-            border-radius: 25px;
-            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 8px;
             font-weight: bold;
             display: inline-block;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        /* بخش QR */
         .qr-section {
-            width: 100px;
+            width: 88px;
             background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 6px;
             text-align: center;
-            backdrop-filter: blur(2px);
         }
 
         .logo {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 6px;
-            font-size: 20px;
+            margin: 0 auto 4px;
+            font-size: 16px;
             color: #1e3a5f;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
         }
 
         .logo-text {
-            font-size: 8px;
+            font-size: 7px;
             color: #bfdbfe;
-            margin-bottom: 10px;
-            font-weight: 600;
+            margin-bottom: 6px;
         }
 
         .qr-box {
             background: white;
-            border-radius: 10px;
-            padding: 6px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 6px;
+            padding: 3px;
         }
 
         .qr-hint {
-            font-size: 7px;
+            font-size: 6px;
             color: #bfdbfe;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
-        /* دکمه چاپ */
-        .btn-print {
-            margin-top: 28px;
-            background: linear-gradient(135deg, #1e3a5f, #1e40af);
+        .btn-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-print, .btn-png {
             border: none;
-            padding: 12px 40px;
-            border-radius: 50px;
+            padding: 8px 22px;
+            border-radius: 40px;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            font-size: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+            font-size: 13px;
             transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .btn-print:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-            background: linear-gradient(135deg, #1e40af, #1e3a5f);
+        .btn-print {
+            background: linear-gradient(135deg, #1e3a5f, #1e40af);
         }
 
-        /* تنظیمات چاپ */
+        .btn-png {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-print:hover, .btn-png:hover {
+            transform: translateY(-2px);
+        }
+
         @media print {
             body {
                 background: white;
                 padding: 0;
                 margin: 0;
             }
-
-            .btn-print {
+            .btn-container {
                 display: none;
             }
-
             .card {
                 box-shadow: none;
                 margin: 0;
-                width: 90mm;
-                height: 57mm;
+                width: 85mm;
+                height: 54mm;
                 border-radius: 0;
             }
-
-            .card-header,
-            .card-body,
-            .student-avatar,
-            .logo,
-            .status-badge {
+            .card-header, .card-body, .student-avatar, .logo, .status-badge {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -240,47 +225,50 @@
         </div>
         <div class="card-body">
             <div class="info-section">
-                <!-- آیکون ثابت و شیک شاگرد -->
-                <div class="student-avatar" id="studentAvatar">
-                    🧑‍🎓
+                <div class="info-left">
+                    <div class="student-avatar" id="studentAvatar">🧑‍🎓</div>
+                    <div class="info-row">
+                        <div class="info-label">نام:</div>
+                        <div class="info-value" id="studentName">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">نام پدر:</div>
+                        <div class="info-value" id="studentFather">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">صنف:</div>
+                        <div class="info-value" id="studentClass">-</div>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">نام:</div>
-                    <div class="info-value" id="studentName">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">نام پدر:</div>
-                    <div class="info-value" id="studentFather">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">صنف:</div>
-                    <div class="info-value" id="studentClass">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">شماره:</div>
-                    <div class="info-value" id="studentPhone">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">آیدی:</div>
-                    <div class="info-value" id="studentCardId">-</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">وضعیت:</div>
-                    <div class="info-value"><span class="status-badge" id="studentStatus">فعال</span></div>
+                <div class="info-right">
+                    <div class="info-row">
+                        <div class="info-label">شماره:</div>
+                        <div class="info-value" id="studentPhone">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">آیدی:</div>
+                        <div class="info-value" id="studentCardId">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">وضعیت:</div>
+                        <div class="info-value"><span class="status-badge" id="studentStatus">فعال</span></div>
+                    </div>
                 </div>
             </div>
             <div class="qr-section">
                 <div class="logo">🎓</div>
                 <div class="logo-text">نوی نور</div>
                 <div class="qr-box" id="qrcode"></div>
-                <div class="qr-hint">اسکن برای ورود</div>
+                <div class="qr-hint">اسکن کنید</div>
             </div>
         </div>
     </div>
 
-    <button class="btn-print" onclick="window.print();">🖨️ چاپ کارت</button>
+    <div class="btn-container">
+        <button class="btn-print" onclick="window.print();">🖨️ چاپ کارت</button>
+        <button class="btn-png" onclick="downloadAsPNG();">📸 دانلود PNG</button>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
     <script>
         const studentId = new URLSearchParams(window.location.search).get('id');
 
@@ -288,7 +276,6 @@
             if (!studentId) return;
 
             try {
-                // بارگیری تنظیمات آموزشگاه
                 const settingsRes = await fetch('/api/settings');
                 const settings = await settingsRes.json();
                 if (settings.institute_name) document.getElementById('instName').innerText = settings.institute_name;
@@ -296,7 +283,6 @@
             } catch (e) { }
 
             try {
-                // بارگیری اطلاعات شاگرد
                 const studentRes = await fetch(`/api/students/${studentId}`);
                 const s = await studentRes.json();
 
@@ -312,14 +298,28 @@
                     if (s.status === 'disabled') status = 'غیرفعال';
                     document.getElementById('studentStatus').innerHTML = status;
 
-                    // ساخت QR کد
-                    const qrToken = s.qr_token || `STU_${s.id}`;
+                    // ========== اصلاح مهم: استفاده از qr_token واقعی ==========
+                    let qrToken = s.qr_token;
+                    
+                    // اگر qr_token وجود نداشت، یک توکن جدید بساز و در دیتابیس ذخیره کن
+                    if (!qrToken || qrToken === 'null' || qrToken === '') {
+                        qrToken = generateNewToken();
+                        // ذخیره توکن در دیتابیس
+                        await fetch(`/api/students/update-qr-token/${studentId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ qr_token: qrToken })
+                        });
+                    }
+                    
                     const qrUrl = `${window.location.origin}/login-with-qr.html?qr=${qrToken}`;
+                    console.log('QR URL:', qrUrl); // برای دیباگ
+                    
                     document.getElementById('qrcode').innerHTML = '';
                     new QRCode(document.getElementById("qrcode"), {
                         text: qrUrl,
-                        width: 65,
-                        height: 65,
+                        width: 58,
+                        height: 58,
                         colorDark: "#1e3a5f",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
@@ -327,15 +327,49 @@
                 }
             } catch (e) {
                 console.error('خطا:', e);
+                document.getElementById('qrcode').innerHTML = '<div style="color:red;font-size:8px;">خطا در ساخت QR</div>';
+            }
+        }
+
+        // تولید توکن جدید یکتا
+        function generateNewToken() {
+            return 'QR_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
+        }
+
+        async function downloadAsPNG() {
+            const card = document.getElementById('studentCard');
+            const originalWidth = card.style.width;
+            const originalHeight = card.style.height;
+            
+            card.style.width = (85 * 3.78) + 'px';
+            card.style.height = (54 * 3.78) + 'px';
+            
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 3,
+                    backgroundColor: null,
+                    useCORS: true,
+                    logging: false
+                });
+                
+                card.style.width = originalWidth;
+                card.style.height = originalHeight;
+                
+                const link = document.createElement('a');
+                const studentName = document.getElementById('studentName').innerText;
+                link.download = `کارت_شناسایی_${studentName}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('خطا در ساخت PNG');
+                card.style.width = originalWidth;
+                card.style.height = originalHeight;
             }
         }
 
         loadData();
-
-        // دکمه چاپ
-        window.printCard = function () {
-            window.print();
-        };
     </script>
 </body>
 

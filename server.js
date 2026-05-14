@@ -5029,79 +5029,96 @@ app.post(
 
 // دریافت اطلاعات کامل شاگرد برای پنل شاگرد
 app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
-    try {
-        const [results] = await db.execute(`
+  try {
+    const [results] = await db.execute(
+      `
             SELECT s.*, c.class_name 
             FROM students s 
             LEFT JOIN classes c ON s.class_id = c.id 
             WHERE s.id = ?
-        `, [req.params.studentId]);
-        
-        if (results.length === 0) {
-            return res.status(404).json({ error: "شاگرد یافت نشد" });
-        }
-        
-        const student = results[0];
-        if (student.due_date) {
-            const d = new Date(student.due_date);
-            if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
-        }
-        if (student.registration_date) {
-            const d = new Date(student.registration_date);
-            if (!isNaN(d.getTime())) student.registration_date = d.toISOString().split("T")[0];
-        }
-        
-        res.json(student);
-    } catch (err) {
-        console.error("Error in /api/student/info/:studentId:", err);
-        res.status(500).json({ error: err.message });
+        `,
+      [req.params.studentId],
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "شاگرد یافت نشد" });
     }
+
+    const student = results[0];
+    if (student.due_date) {
+      const d = new Date(student.due_date);
+      if (!isNaN(d.getTime())) student.due_date = d.toISOString().split("T")[0];
+    }
+    if (student.registration_date) {
+      const d = new Date(student.registration_date);
+      if (!isNaN(d.getTime()))
+        student.registration_date = d.toISOString().split("T")[0];
+    }
+
+    res.json(student);
+  } catch (err) {
+    console.error("Error in /api/student/info/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت آمار شاگرد (حاضری و نمرات)
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
-    try {
-        const [presentCount] = await db.execute(`
+  try {
+    const [presentCount] = await db.execute(
+      `
             SELECT COUNT(*) as count FROM attendance_details ad 
             JOIN daily_attendance da ON ad.attendance_id = da.id 
             WHERE ad.student_id = ? AND ad.status = 'present' 
             AND YEAR(da.attendance_date) = YEAR(CURDATE())
-        `, [req.params.studentId]);
-        
-        const [absentCount] = await db.execute(`
+        `,
+      [req.params.studentId],
+    );
+
+    const [absentCount] = await db.execute(
+      `
             SELECT COUNT(*) as count FROM attendance_details ad 
             JOIN daily_attendance da ON ad.attendance_id = da.id 
             WHERE ad.student_id = ? AND ad.status = 'absent' 
             AND YEAR(da.attendance_date) = YEAR(CURDATE())
-        `, [req.params.studentId]);
-        
-        const [lateCount] = await db.execute(`
+        `,
+      [req.params.studentId],
+    );
+
+    const [lateCount] = await db.execute(
+      `
             SELECT COUNT(*) as count FROM attendance_details ad 
             JOIN daily_attendance da ON ad.attendance_id = da.id 
             WHERE ad.student_id = ? AND ad.status = 'late' 
             AND YEAR(da.attendance_date) = YEAR(CURDATE())
-        `, [req.params.studentId]);
-        
-        const [grades] = await db.execute(`
+        `,
+      [req.params.studentId],
+    );
+
+    const [grades] = await db.execute(
+      `
             SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?
-        `, [req.params.studentId]);
-        
-        res.json({
-            present_count: presentCount[0]?.count || 0,
-            absent_count: absentCount[0]?.count || 0,
-            late_count: lateCount[0]?.count || 0,
-            avg_grade: Math.round(grades[0]?.avg_grade || 0)
-        });
-    } catch (err) {
-        console.error("Error in /api/student/stats/:studentId:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [req.params.studentId],
+    );
+
+    res.json({
+      present_count: presentCount[0]?.count || 0,
+      absent_count: absentCount[0]?.count || 0,
+      late_count: lateCount[0]?.count || 0,
+      avg_grade: Math.round(grades[0]?.avg_grade || 0),
+    });
+  } catch (err) {
+    console.error("Error in /api/student/stats/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت وضعیت فیس شاگرد
 app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
-    try {
-        const [results] = await db.execute(`
+  try {
+    const [results] = await db.execute(
+      `
             SELECT 
                 COALESCE(SUM(fp.amount), 0) as paid_fee,
                 s.due_date
@@ -5109,146 +5126,184 @@ app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
             LEFT JOIN fee_payments fp ON s.id = fp.student_id
             WHERE s.id = ?
             GROUP BY s.id, s.due_date
-        `, [req.params.studentId]);
-        
-        const student = results[0] || { paid_fee: 0, due_date: null };
-        res.json({
-            total_fee: 0,
-            paid_fee: student.paid_fee || 0,
-            remaining_fee: 0,
-            due_date: student.due_date
-        });
-    } catch (err) {
-        console.error("Error in /api/student/fees/:studentId:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [req.params.studentId],
+    );
+
+    const student = results[0] || { paid_fee: 0, due_date: null };
+    res.json({
+      total_fee: 0,
+      paid_fee: student.paid_fee || 0,
+      remaining_fee: 0,
+      due_date: student.due_date,
+    });
+  } catch (err) {
+    console.error("Error in /api/student/fees/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت نمرات شاگرد
 app.get("/api/student/grades/:studentId", authenticate, async (req, res) => {
-    try {
-        const [results] = await db.execute(`
+  try {
+    const [results] = await db.execute(
+      `
             SELECT g.*, 'مضمون' as subject_name 
             FROM grades g 
             WHERE g.student_id = ? 
             ORDER BY g.exam_date DESC
-        `, [req.params.studentId]);
-        
-        const formatted = results.map((g) => {
-            if (g.exam_date) {
-                const d = new Date(g.exam_date);
-                if (!isNaN(d.getTime())) g.exam_date = d.toISOString().split("T")[0];
-            }
-            return g;
-        });
-        
-        res.json(formatted);
-    } catch (err) {
-        console.error("Error in /api/student/grades/:studentId:", err);
-        res.status(500).json({ error: err.message });
-    }
+        `,
+      [req.params.studentId],
+    );
+
+    const formatted = results.map((g) => {
+      if (g.exam_date) {
+        const d = new Date(g.exam_date);
+        if (!isNaN(d.getTime())) g.exam_date = d.toISOString().split("T")[0];
+      }
+      return g;
+    });
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in /api/student/grades/:studentId:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت تاریخچه حاضری شاگرد
-app.get("/api/student/attendance/:studentId", authenticate, async (req, res) => {
+app.get(
+  "/api/student/attendance/:studentId",
+  authenticate,
+  async (req, res) => {
     const { month, year } = req.query;
     try {
-        let query = `
+      let query = `
             SELECT ad.status, ad.notes, da.attendance_date as date
             FROM attendance_details ad
             JOIN daily_attendance da ON ad.attendance_id = da.id
             WHERE ad.student_id = ?
         `;
-        let params = [req.params.studentId];
-        
-        if (month && month !== 'all' && year) {
-            query += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
-            params.push(month, year);
-        }
-        
-        query += ` ORDER BY da.attendance_date DESC`;
-        
-        const [details] = await db.execute(query, params);
-        
-        const present = details.filter((d) => d.status === "present").length;
-        const absent = details.filter((d) => d.status === "absent").length;
-        const late = details.filter((d) => d.status === "late").length;
-        
-        res.json({
-            present,
-            absent,
-            late,
-            details: details.map((d) => ({
-                date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
-                status: d.status,
-                notes: d.notes,
-            })),
-        });
+      let params = [req.params.studentId];
+
+      if (month && month !== "all" && year) {
+        query += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
+        params.push(month, year);
+      }
+
+      query += ` ORDER BY da.attendance_date DESC`;
+
+      const [details] = await db.execute(query, params);
+
+      const present = details.filter((d) => d.status === "present").length;
+      const absent = details.filter((d) => d.status === "absent").length;
+      const late = details.filter((d) => d.status === "late").length;
+
+      res.json({
+        present,
+        absent,
+        late,
+        details: details.map((d) => ({
+          date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
+          status: d.status,
+          notes: d.notes,
+        })),
+      });
     } catch (err) {
-        console.error("Error in /api/student/attendance/:studentId:", err);
-        res.status(500).json({ error: err.message });
+      console.error("Error in /api/student/attendance/:studentId:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // دریافت باقی‌مانده قبلی شاگرد بر اساس آخرین فیس کل ثبت‌شده
-app.get("/api/student/remaining-before/:studentId", authenticate, async (req, res) => {
-  const studentId = req.params.studentId;
-  try {
-    // دریافت آخرین پرداختی که total_fee دارد
-    const [lastFeeRecord] = await db.execute(
-      `SELECT total_fee, paid_fee, due_date 
+app.get(
+  "/api/student/remaining-before/:studentId",
+  authenticate,
+  async (req, res) => {
+    const studentId = req.params.studentId;
+    try {
+      // دریافت آخرین پرداختی که total_fee دارد
+      const [lastFeeRecord] = await db.execute(
+        `SELECT total_fee, paid_fee, due_date 
        FROM fee_payments 
        WHERE student_id = ? AND total_fee IS NOT NULL AND total_fee > 0 
        ORDER BY payment_date DESC, id DESC LIMIT 1`,
-      [studentId]
-    );
+        [studentId],
+      );
 
-    if (lastFeeRecord.length === 0) {
-      return res.json({ remaining_before: 0, last_total_fee: 0, total_paid: 0 });
+      if (lastFeeRecord.length === 0) {
+        return res.json({
+          remaining_before: 0,
+          last_total_fee: 0,
+          total_paid: 0,
+        });
+      }
+
+      const lastTotalFee = parseFloat(lastFeeRecord[0].total_fee) || 0;
+      const lastPaidFee = parseFloat(lastFeeRecord[0].paid_fee) || 0;
+      const remainingBefore = lastTotalFee - lastPaidFee;
+
+      res.json({
+        remaining_before: remainingBefore < 0 ? 0 : remainingBefore,
+        last_total_fee: lastTotalFee,
+        total_paid: lastPaidFee,
+        last_due_date: lastFeeRecord[0].due_date,
+      });
+    } catch (err) {
+      console.error("Error in /api/student/remaining-before:", err);
+      res.status(500).json({ error: err.message });
     }
+  },
+);
 
-    const lastTotalFee = parseFloat(lastFeeRecord[0].total_fee) || 0;
-    const lastPaidFee = parseFloat(lastFeeRecord[0].paid_fee) || 0;
-    const remainingBefore = lastTotalFee - lastPaidFee;
-
+app.post("/api/student-login-with-qr", async (req, res) => {
+  const { qr_token } = req.body;
+  try {
+    const [results] = await db.execute(
+      `SELECT * FROM students WHERE qr_token = ? AND status = 'active'`,
+      [qr_token],
+    );
+    if (results.length === 0) {
+      return res
+        .status(401)
+        .json({ error: "QR کد معتبر نیست یا حساب غیرفعال است" });
+    }
+    const user = results[0];
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        role: "student",
+        student_card_id: user.student_card_id,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+    res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
     res.json({
-      remaining_before: remainingBefore < 0 ? 0 : remainingBefore,
-      last_total_fee: lastTotalFee,
-      total_paid: lastPaidFee,
-      last_due_date: lastFeeRecord[0].due_date
+      success: true,
+      redirectUrl: "/student/dashboard.html",
+      user: { id: user.id, name: user.name },
     });
   } catch (err) {
-    console.error("Error in /api/student/remaining-before:", err);
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "خطای سرور" });
   }
 });
 
-app.post("/api/student-login-with-qr", async (req, res) => {
-    const { qr_token } = req.body;
-    try {
-        const [results] = await db.execute(
-            `SELECT * FROM students WHERE qr_token = ? AND status = 'active'`,
-            [qr_token]
-        );
-        if (results.length === 0) {
-            return res.status(401).json({ error: "QR کد معتبر نیست یا حساب غیرفعال است" });
-        }
-        const user = results[0];
-        const token = jwt.sign(
-            { id: user.id, name: user.name, role: "student", student_card_id: user.student_card_id },
-            JWT_SECRET,
-            { expiresIn: "24h" }
-        );
-        res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
-        res.json({
-            success: true,
-            redirectUrl: "/student/dashboard.html",
-            user: { id: user.id, name: user.name }
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "خطای سرور" });
-    }
+// آپدیت توکن QR شاگرد
+app.put("/api/students/update-qr-token/:id", authenticate, async (req, res) => {
+  const { qr_token } = req.body;
+  try {
+    await db.execute(`UPDATE students SET qr_token = ? WHERE id = ?`, [
+      qr_token,
+      req.params.id,
+    ]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 // ====================== صفحات ======================
 
