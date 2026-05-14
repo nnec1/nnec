@@ -2410,6 +2410,40 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
 });
 // ====================== API اسلایدر (عکس‌های کورس) ======================
 
+// ایجاد پوشه uploads/slider اگر وجود ندارد
+const sliderDir = "./uploads/slider";
+if (!fs.existsSync(sliderDir)) {
+  fs.mkdirSync(sliderDir, { recursive: true });
+  console.log("📁 Created uploads/slider directory");
+}
+
+// تنظیمات ذخیره عکس اسلایدر
+const sliderStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/slider/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + "-" + file.originalname.replace(/\s/g, "_");
+    cb(null, uniqueName);
+  },
+});
+
+const uploadSlider = multer({
+  storage: sliderStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase(),
+    );
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error("فقط فایل‌های تصویری مجاز هستند"));
+    }
+  },
+});
 // دریافت اسلایدرهای فعال (برای صفحه ورود - عمومی)
 app.get("/api/slider", async (req, res) => {
   try {
@@ -2438,23 +2472,25 @@ app.get("/api/admin/slider", authenticate, isAdminOrCEO, async (req, res) => {
 });
 
 // افزودن اسلایدر جدید (فقط مدیر و ریس)
+// افزودن اسلایدر جدید (فقط مدیر و ریس)
 app.post(
   "/api/admin/slider",
   authenticate,
   isAdminOrCEO,
-  upload.single("image"),
+  uploadSlider.single("image"),
   async (req, res) => {
     const { title, description, link, order_index, is_active } = req.body;
-    const imagePath = req.file ? `/uploads/slider/${req.file.filename}` : null;
 
-    if (!imagePath) {
+    if (!req.file) {
       return res.status(400).json({ error: "لطفاً عکس را انتخاب کنید" });
     }
+
+    const imagePath = `/uploads/slider/${req.file.filename}`;
 
     try {
       const [result] = await db.execute(
         `INSERT INTO slider_images (image_path, title, description, link, order_index, is_active, created_by) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           imagePath,
           title || null,
@@ -2465,14 +2501,17 @@ app.post(
           req.user.id,
         ],
       );
-      res.json({ id: result.insertId, message: "اسلایدر با موفقیت اضافه شد" });
+      res.json({
+        id: result.insertId,
+        message: "اسلایدر با موفقیت اضافه شد",
+        image_path: imagePath,
+      });
     } catch (err) {
       console.error("Error in POST /api/admin/slider:", err);
       res.status(500).json({ error: err.message });
     }
   },
 );
-
 // ویرایش اسلایدر (فقط مدیر و ریس)
 app.put(
   "/api/admin/slider/:id",
