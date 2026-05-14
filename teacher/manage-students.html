@@ -124,19 +124,14 @@
                     <small class="text-muted" id="teacherNameSidebar">نام استاد</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link active"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> کارخانگی</a>
-
-                    <!-- <a href="transfer-student.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> -->
-
-                    <a href="manage-students.html" class="nav-link "><i class="fa-solid fa-users-gear"></i> مدیریت
+                    <a href="manage-students.html" class="nav-link active"><i class="fa-solid fa-users-gear"></i> مدیریت
                         شاگردان</a>
                     <a href="rate-student.html" class="nav-link"><i class="fa-solid fa-star"></i> امتیاز و شکایت</a>
-                    <!-- <a href="class-settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات صنف</a> -->
-                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات
-                        اکاونت</a>
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
                     <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
                         خروج</a>
@@ -193,10 +188,14 @@
                     <input type="hidden" id="transferStudentId">
                     <div class="mb-3"><label class="form-label">شاگرد</label><input type="text" id="transferStudentName"
                             class="form-control" disabled></div>
+                    <div class="mb-3"><label class="form-label">صنف فعلی</label><input type="text" id="currentClassName"
+                            class="form-control" disabled></div>
                     <div class="mb-3"><label class="form-label">صنف مقصد</label><select id="targetClass"
                             class="form-select" required>
                             <option value="">انتخاب صنف...</option>
-                        </select></div>
+                        </select>
+                        <small class="text-muted">فقط صنف‌هایی که به شما تخصیص داده شده است نمایش داده می‌شوند</small>
+                    </div>
                     <button class="btn btn-primary w-100" onclick="confirmTransfer()"><i
                             class="fa-solid fa-arrow-right-arrow-left"></i> انتقال</button>
                 </div>
@@ -262,15 +261,15 @@
                             <div class="d-flex align-items-center gap-3">
                                 <img src="${s.photo || '/default-avatar.png'}" class="student-photo" onerror="this.src='/default-avatar.png'">
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-0">${s.name}</h6>
+                                    <h6 class="mb-0">${escapeHtml(s.name)}</h6>
                                     <small class="text-muted">${s.student_card_id || '-'}</small>
-                                    <div><small>پدر: ${s.father_name || '-'}</small></div>
-                                    <div><small>صنف: ${s.class_name || '-'}</small></div>
+                                    <div><small>پدر: ${escapeHtml(s.father_name) || '-'}</small></div>
+                                    <div><small>صنف: ${escapeHtml(s.class_name) || '-'}</small></div>
                                 </div>
                             </div>
                             <hr>
                             <div class="d-flex gap-2 flex-wrap justify-content-center">
-                                <button class="btn btn-sm btn-warning" onclick="openTransferModal(${s.id}, '${s.name.replace(/'/g, "\\'")}')">
+                                <button class="btn btn-sm btn-warning" onclick="openTransferModal(${s.id}, '${escapeHtml(s.name)}', ${s.class_id}, '${escapeHtml(s.class_name)}')">
                                     <i class="fa-solid fa-arrow-right-arrow-left"></i> انتقال
                                 </button>
                                 ${isDisabled ?
@@ -285,28 +284,47 @@
             document.getElementById('studentsList').innerHTML = html;
         }
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function filterStudents() {
             filterAndDisplay();
         }
 
-        async function openTransferModal(studentId, studentName) {
+        async function openTransferModal(studentId, studentName, currentClassId, currentClassName) {
             document.getElementById('transferStudentId').value = studentId;
             document.getElementById('transferStudentName').value = studentName;
+            document.getElementById('currentClassName').value = currentClassName || 'نامشخص';
 
             const select = document.getElementById('targetClass');
             select.innerHTML = '<option value="">در حال بارگیری...</option>';
 
             try {
-                const res = await fetch(`/api/teacher/other-classes/${studentId}`);
+                // دریافت همه صنف‌هایی که استاد به آنها دسترسی دارد
+                const res = await fetch(`/api/teacher/transfer-classes/${teacherId}`);
                 const classes = await res.json();
+
                 if (classes.length === 0) {
                     select.innerHTML = '<option value="">هیچ صنف دیگری وجود ندارد</option>';
                 } else {
-                    select.innerHTML = '<option value="">انتخاب صنف...</option>' + classes.map(c => `<option value="${c.id}">${c.class_name} (${c.start_time?.substring(0, 5) || '08:00'})</option>`).join('');
+                    let options = '<option value="">انتخاب صنف...</option>';
+                    for (const c of classes) {
+                        // حذف صنف فعلی از لیست
+                        if (c.id != currentClassId) {
+                            options += `<option value="${c.id}">${escapeHtml(c.class_name)} (${c.start_time?.substring(0, 5) || '08:00'})</option>`;
+                        }
+                    }
+                    select.innerHTML = options;
                 }
                 transferModal.show();
             } catch (err) {
-                alert('خطا در بارگیری صنف‌ها');
+                console.error(err);
+                alert('خطا در بارگیری صنف‌ها: ' + err.message);
+                select.innerHTML = '<option value="">خطا در بارگیری</option>';
             }
         }
 
@@ -319,55 +337,67 @@
                 return;
             }
 
-            const res = await fetch('/api/transfer-student', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: studentId, new_class_id: targetClassId })
-            });
+            try {
+                const res = await fetch('/api/transfer-student', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, new_class_id: targetClassId })
+                });
 
-            const data = await res.json();
-            if (res.ok) {
-                alert('✅ ' + data.message);
-                transferModal.hide();
-                loadStudents();
-            } else {
-                alert('❌ خطا: ' + data.error);
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ ' + data.message);
+                    transferModal.hide();
+                    loadStudents();
+                } else {
+                    alert('❌ خطا: ' + data.error);
+                }
+            } catch (err) {
+                alert('❌ خطا در ارتباط با سرور: ' + err.message);
             }
         }
 
         async function disableStudent(studentId) {
             if (!confirm('⚠️ آیا از غیرفعال کردن این شاگرد اطمینان دارید؟')) return;
 
-            const res = await fetch('/api/teacher/disable-student', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: studentId })
-            });
+            try {
+                const res = await fetch('/api/teacher/disable-student', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId })
+                });
 
-            const data = await res.json();
-            if (res.ok) {
-                alert('✅ ' + data.message);
-                loadStudents();
-            } else {
-                alert('❌ خطا: ' + data.error);
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ ' + data.message);
+                    loadStudents();
+                } else {
+                    alert('❌ خطا: ' + data.error);
+                }
+            } catch (err) {
+                alert('❌ خطا: ' + err.message);
             }
         }
 
         async function enableStudent(studentId) {
             if (!confirm('آیا از فعال کردن این شاگرد اطمینان دارید؟')) return;
 
-            const res = await fetch('/api/teacher/enable-student', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: studentId })
-            });
+            try {
+                const res = await fetch('/api/teacher/enable-student', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId })
+                });
 
-            const data = await res.json();
-            if (res.ok) {
-                alert('✅ ' + data.message);
-                loadStudents();
-            } else {
-                alert('❌ خطا: ' + data.error);
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ ' + data.message);
+                    loadStudents();
+                } else {
+                    alert('❌ خطا: ' + data.error);
+                }
+            } catch (err) {
+                alert('❌ خطا: ' + err.message);
             }
         }
 
