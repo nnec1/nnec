@@ -2408,6 +2408,141 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ====================== API اسلایدر (عکس‌های کورس) ======================
+
+// دریافت اسلایدرهای فعال (برای صفحه ورود - عمومی)
+app.get("/api/slider", async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `SELECT id, image_path, title, description, link, order_index 
+       FROM slider_images 
+       WHERE is_active = 1 
+       ORDER BY order_index ASC, id DESC`,
+    );
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// دریافت همه اسلایدرها (برای مدیریت - فقط مدیر و ریس)
+app.get("/api/admin/slider", authenticate, isAdminOrCEO, async (req, res) => {
+  try {
+    const [results] = await db.execute(
+      `SELECT * FROM slider_images ORDER BY order_index ASC, id DESC`,
+    );
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// افزودن اسلایدر جدید (فقط مدیر و ریس)
+app.post(
+  "/api/admin/slider",
+  authenticate,
+  isAdminOrCEO,
+  upload.single("image"),
+  async (req, res) => {
+    const { title, description, link, order_index, is_active } = req.body;
+    const imagePath = req.file ? `/uploads/slider/${req.file.filename}` : null;
+
+    if (!imagePath) {
+      return res.status(400).json({ error: "لطفاً عکس را انتخاب کنید" });
+    }
+
+    try {
+      const [result] = await db.execute(
+        `INSERT INTO slider_images (image_path, title, description, link, order_index, is_active, created_by) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          imagePath,
+          title || null,
+          description || null,
+          link || null,
+          order_index || 0,
+          is_active !== undefined ? is_active : 1,
+          req.user.id,
+        ],
+      );
+      res.json({ id: result.insertId, message: "اسلایدر با موفقیت اضافه شد" });
+    } catch (err) {
+      console.error("Error in POST /api/admin/slider:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// ویرایش اسلایدر (فقط مدیر و ریس)
+app.put(
+  "/api/admin/slider/:id",
+  authenticate,
+  isAdminOrCEO,
+  upload.single("image"),
+  async (req, res) => {
+    const { title, description, link, order_index, is_active } = req.body;
+    let imagePath = null;
+
+    if (req.file) {
+      imagePath = `/uploads/slider/${req.file.filename}`;
+    }
+
+    try {
+      let query = `UPDATE slider_images SET title=?, description=?, link=?, order_index=?, is_active=?`;
+      let params = [
+        title || null,
+        description || null,
+        link || null,
+        order_index || 0,
+        is_active !== undefined ? is_active : 1,
+      ];
+
+      if (imagePath) {
+        query += `, image_path=?`;
+        params.push(imagePath);
+      }
+
+      query += ` WHERE id=?`;
+      params.push(req.params.id);
+
+      await db.execute(query, params);
+      res.json({ message: "اسلایدر با موفقیت به‌روز شد" });
+    } catch (err) {
+      console.error("Error in PUT /api/admin/slider/:id:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// حذف اسلایدر (فقط مدیر و ریس)
+app.delete(
+  "/api/admin/slider/:id",
+  authenticate,
+  isAdminOrCEO,
+  async (req, res) => {
+    try {
+      // ابتدا مسیر عکس را بگیریم
+      const [slider] = await db.execute(
+        `SELECT image_path FROM slider_images WHERE id = ?`,
+        [req.params.id],
+      );
+      if (slider.length > 0 && slider[0].image_path) {
+        const filePath = path.join(__dirname, slider[0].image_path);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      await db.execute(`DELETE FROM slider_images WHERE id = ?`, [
+        req.params.id,
+      ]);
+      res.json({ message: "اسلایدر با موفقیت حذف شد" });
+    } catch (err) {
+      console.error("Error in DELETE /api/admin/slider/:id:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ====================== صفحات ======================
 
