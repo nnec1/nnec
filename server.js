@@ -5222,6 +5222,34 @@ app.get("/api/student/remaining-before/:studentId", authenticate, async (req, re
     res.status(500).json({ error: err.message });
   }
 });
+
+app.post("/api/student-login-with-qr", async (req, res) => {
+    const { qr_token } = req.body;
+    try {
+        const [results] = await db.execute(
+            `SELECT * FROM students WHERE qr_token = ? AND status = 'active'`,
+            [qr_token]
+        );
+        if (results.length === 0) {
+            return res.status(401).json({ error: "QR کد معتبر نیست یا حساب غیرفعال است" });
+        }
+        const user = results[0];
+        const token = jwt.sign(
+            { id: user.id, name: user.name, role: "student", student_card_id: user.student_card_id },
+            JWT_SECRET,
+            { expiresIn: "24h" }
+        );
+        res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+        res.json({
+            success: true,
+            redirectUrl: "/student/dashboard.html",
+            user: { id: user.id, name: user.name }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "خطای سرور" });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
