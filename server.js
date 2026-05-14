@@ -5428,6 +5428,126 @@ app.get(
     }
   },
 );
+
+// ==================== API صنف‌های فعال ====================
+app.get("/api/active-classes", authenticate, async (req, res) => {
+    try {
+        const [classes] = await db.execute(`
+            SELECT c.*, e.name as teacher_name 
+            FROM classes c 
+            LEFT JOIN employees e ON c.teacher_id = e.id 
+            WHERE c.is_active = 1
+        `);
+        res.json(classes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== API صنف‌های بدون استاد ====================
+app.get("/api/classes-without-teacher", authenticate, async (req, res) => {
+    try {
+        const [classes] = await db.execute(`
+            SELECT c.* 
+            FROM classes c 
+            WHERE c.id NOT IN (SELECT DISTINCT class_id FROM teacher_classes) 
+            AND c.is_active = 1
+        `);
+        res.json(classes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== API تخصیص استاد به صنف ====================
+app.post("/api/assign-teacher-to-class", authenticate, isAdminOrCEO, async (req, res) => {
+    const { teacher_id, class_id, subject_id, academic_year, is_main_teacher } = req.body;
+    
+    try {
+        const [classResult] = await db.execute(`SELECT id FROM classes WHERE id = ? AND is_active = 1`, [class_id]);
+        if (classResult.length === 0) {
+            return res.status(404).json({ error: "صنف مورد نظر وجود ندارد یا غیرفعال است" });
+        }
+        
+        const [teacherResult] = await db.execute(`SELECT id FROM employees WHERE id = ? AND position = 'teacher' AND status = 'active'`, [teacher_id]);
+        if (teacherResult.length === 0) {
+            return res.status(404).json({ error: "استاد مورد نظر وجود ندارد یا غیرفعال است" });
+        }
+        
+        // حذف تخصیص قبلی (در صورت وجود)
+        await db.execute(`DELETE FROM teacher_classes WHERE class_id = ? AND teacher_id = ?`, [class_id, teacher_id]);
+        
+        // تخصیص جدید
+        await db.execute(`
+            INSERT INTO teacher_classes (teacher_id, class_id, subject_id, academic_year, is_main_teacher) 
+            VALUES (?, ?, ?, ?, ?)
+        `, [teacher_id, class_id, subject_id || null, academic_year || "1404", is_main_teacher || false]);
+        
+        res.json({ success: true, message: "استاد با موفقیت به صنف تخصیص داده شد" });
+    } catch (err) {
+        console.error("Error in /api/assign-teacher-to-class:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== API دریافت تخصیص‌های فعلی ====================
+app.get("/api/teacher-classes", authenticate, async (req, res) => {
+    try {
+        const [results] = await db.execute(`
+            SELECT tc.*, e.name as teacher_name, c.class_name, s.subject_name 
+            FROM teacher_classes tc 
+            JOIN employees e ON tc.teacher_id = e.id 
+            JOIN classes c ON tc.class_id = c.id 
+            LEFT JOIN subjects s ON tc.subject_id = s.id
+        `);
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== API دریافت لیست استادان بر اساس صنف ====================
+app.get("/api/teachers-by-class/:classId", authenticate, async (req, res) => {
+    const classId = req.params.classId;
+    try {
+        const [teachers] = await db.execute(`
+            SELECT e.id, e.name, e.email, e.phone 
+            FROM employees e
+            JOIN teacher_classes tc ON e.id = tc.teacher_id
+            WHERE tc.class_id = ? AND e.position = 'teacher' AND e.status = 'active'
+        `, [classId]);
+        res.json(teachers);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== API صنف‌هایی که استاد دارند (برای ثبت نام شاگرد) ====================
+app.get("/api/classes-with-teachers", authenticate, async (req, res) => {
+    try {
+        const [classes] = await db.execute(`
+            SELECT DISTINCT c.id, c.class_name, c.start_time, c.monthly_fee,
+                (SELECT COUNT(*) FROM teacher_classes WHERE class_id = c.id) as teacher_count
+            FROM classes c
+            JOIN teacher_classes tc ON c.id = tc.class_id
+            WHERE c.is_active = 1
+            ORDER BY c.class_name
+        `);
+        res.json(classes);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== API حذف تخصیص استاد ====================
+app.delete("/api/teacher-classes/:id", authenticate, isAdminOrCEO, async (req, res) => {
+    try {
+        await db.execute("DELETE FROM teacher_classes WHERE id = ?", [req.params.id]);
+        res.json({ success: true, message: "تخصیص با موفقیت حذف شد" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
