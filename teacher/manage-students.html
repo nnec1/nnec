@@ -106,6 +106,12 @@
             padding: 5px 10px;
             font-size: 12px;
         }
+        
+        .empty-classes-msg {
+            color: #f59e0b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
@@ -128,20 +134,17 @@
                     <a href="attendance.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
                     <a href="homework.html" class="nav-link"><i class="fa-solid fa-book-open"></i> کارخانگی</a>
-                    <a href="manage-students.html" class="nav-link active"><i class="fa-solid fa-users-gear"></i> مدیریت
-                        شاگردان</a>
+                    <a href="manage-students.html" class="nav-link active"><i class="fa-solid fa-users-gear"></i> مدیریت شاگردان</a>
                     <a href="rate-student.html" class="nav-link"><i class="fa-solid fa-star"></i> امتیاز و شکایت</a>
                     <a href="profile.html" class="nav-link"><i class="fa-solid fa-user-circle"></i> تنظیمات اکاونت</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h3 class="section-title"><i class="fa-solid fa-users-gear text-success me-2"></i> مدیریت شاگردان
-                    </h3>
+                    <h3 class="section-title"><i class="fa-solid fa-users-gear text-success me-2"></i> مدیریت شاگردان</h3>
                 </div>
 
                 <!-- فیلترها -->
@@ -190,11 +193,14 @@
                             class="form-control" disabled></div>
                     <div class="mb-3"><label class="form-label">صنف فعلی</label><input type="text" id="currentClassName"
                             class="form-control" disabled></div>
-                    <div class="mb-3"><label class="form-label">صنف مقصد</label><select id="targetClass"
-                            class="form-select" required>
+                    <div class="mb-3"><label class="form-label">صنف مقصد</label>
+                        <select id="targetClass" class="form-select" required>
                             <option value="">انتخاب صنف...</option>
                         </select>
                         <small class="text-muted">فقط صنف‌هایی که به شما تخصیص داده شده است نمایش داده می‌شوند</small>
+                        <div id="emptyClassesWarning" class="empty-classes-msg d-none">
+                            <i class="fa-solid fa-info-circle"></i> صنف خالی: شاگردی در این صنف ثبت نام نشده است
+                        </div>
                     </div>
                     <button class="btn btn-primary w-100" onclick="confirmTransfer()"><i
                             class="fa-solid fa-arrow-right-arrow-left"></i> انتقال</button>
@@ -209,6 +215,7 @@
         let teacherId = localStorage.getItem('userId') || 3;
         let allStudents = [];
         let transferModal = null;
+        let allTeacherClasses = [];
 
         function setupSidebar() {
             const toggleBtn = document.getElementById('sidebarToggle');
@@ -226,6 +233,7 @@
                 const classes = await res.json();
                 const select = document.getElementById('classFilter');
                 select.innerHTML = '<option value="">همه صنف‌ها</option>' + classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+                allTeacherClasses = classes;
             } catch (err) { console.error(err); }
         }
 
@@ -302,23 +310,41 @@
 
             const select = document.getElementById('targetClass');
             select.innerHTML = '<option value="">در حال بارگیری...</option>';
+            document.getElementById('emptyClassesWarning').classList.add('d-none');
 
             try {
                 // دریافت همه صنف‌هایی که استاد به آنها دسترسی دارد
                 const res = await fetch(`/api/teacher/transfer-classes/${teacherId}`);
                 const classes = await res.json();
-
+                
+                console.log('صنف‌های قابل انتقال:', classes);
+                
                 if (classes.length === 0) {
-                    select.innerHTML = '<option value="">هیچ صنف دیگری وجود ندارد</option>';
+                    select.innerHTML = '<option value="">هیچ صنفی به شما تخصیص داده نشده است</option>';
                 } else {
                     let options = '<option value="">انتخاب صنف...</option>';
+                    let hasEmptyClass = false;
+                    
+                    // دریافت تعداد شاگردان هر صنف برای نمایش وضعیت خالی بودن
+                    const studentsRes = await fetch('/api/students');
+                    const allStudentsData = await studentsRes.json();
+                    
                     for (const c of classes) {
                         // حذف صنف فعلی از لیست
                         if (c.id != currentClassId) {
-                            options += `<option value="${c.id}">${escapeHtml(c.class_name)} (${c.start_time?.substring(0, 5) || '08:00'})</option>`;
+                            // شمارش تعداد شاگردان این صنف
+                            const studentCount = allStudentsData.filter(s => s.class_id == c.id).length;
+                            const isEmpty = studentCount === 0;
+                            if (isEmpty) hasEmptyClass = true;
+                            const emptyBadge = isEmpty ? ' (خالی - بدون شاگرد)' : '';
+                            options += `<option value="${c.id}" data-is-empty="${isEmpty}">${escapeHtml(c.class_name)} (${c.start_time?.substring(0, 5) || '08:00'})${emptyBadge}</option>`;
                         }
                     }
                     select.innerHTML = options;
+                    
+                    if (hasEmptyClass) {
+                        document.getElementById('emptyClassesWarning').classList.remove('d-none');
+                    }
                 }
                 transferModal.show();
             } catch (err) {
