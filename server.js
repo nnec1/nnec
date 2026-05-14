@@ -5305,6 +5305,85 @@ app.put("/api/students/update-qr-token/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// دریافت حاضری شاگرد بر اساس ماه و سال
+app.get("/api/student/attendance/:studentId", authenticate, async (req, res) => {
+    const { month, year } = req.query;
+    const studentId = req.params.studentId;
+    
+    try {
+        let query = `
+            SELECT ad.status, ad.notes, da.attendance_date as date
+            FROM attendance_details ad
+            JOIN daily_attendance da ON ad.attendance_id = da.id
+            WHERE ad.student_id = ?
+        `;
+        let params = [studentId];
+        
+        if (month && month !== 'all' && year) {
+            query += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
+            params.push(month, year);
+        }
+        
+        query += ` ORDER BY da.attendance_date DESC`;
+        
+        const [details] = await db.execute(query, params);
+        
+        const present = details.filter(d => d.status === "present").length;
+        const absent = details.filter(d => d.status === "absent").length;
+        const late = details.filter(d => d.status === "late").length;
+        
+        res.json({
+            present,
+            absent,
+            late,
+            details: details.map(d => ({
+                date: d.date ? new Date(d.date).toISOString().split("T")[0] : null,
+                status: d.status,
+                notes: d.notes
+            }))
+        });
+    } catch (err) {
+        console.error("Error in /api/student/attendance/:studentId:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+app.post("/api/teacher/save-attendance", authenticate, async (req, res) => {
+    const { teacher_id, class_id, date, attendance } = req.body;
+    
+    try {
+        // حذف حاضری قبلی در همان تاریخ
+        const [existing] = await db.execute(
+            `SELECT id FROM daily_attendance WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
+            [teacher_id, class_id, date]
+        );
+        
+        if (existing.length > 0) {
+            await db.execute(`DELETE FROM attendance_details WHERE attendance_id = ?`, [existing[0].id]);
+            await db.execute(`DELETE FROM daily_attendance WHERE id = ?`, [existing[0].id]);
+        }
+        
+        // ثبت حاضری جدید
+        const [result] = await db.execute(
+            `INSERT INTO daily_attendance (teacher_id, class_id, attendance_date) VALUES (?, ?, ?)`,
+            [teacher_id, class_id, date]
+        );
+        
+        const attId = result.insertId;
+        
+        for (const a of attendance) {
+            await db.execute(
+                `INSERT INTO attendance_details (attendance_id, student_id, status, notes) VALUES (?, ?, ?, ?)`,
+                [attId, a.student_id, a.status, a.notes || null]
+            );
+        }
+        
+        res.json({ success: true, message: "حاضری با موفقیت ثبت شد" });
+    } catch (err) {
+        console.error("Error saving attendance:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {

@@ -113,7 +113,7 @@
                     <small class="text-muted" id="studentNameSidebar">نام شاگرد</small>
                 </div>
                 <nav class="nav flex-column mt-2">
-                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> داشبورد</a>
+                    <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-gauge-high"></i> پیشخوان</a>
                     <a href="attendance.html" class="nav-link active"><i class="fa-solid fa-calendar-check"></i>
                         حاضری</a>
                     <a href="grades.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> نمرات</a>
@@ -130,22 +130,21 @@
                 <h3 class="section-title"><i class="fa-solid fa-calendar-check text-success me-2"></i> گزارش حاضری من
                 </h3>
 
-                <!-- انتخاب ماه و سال به میلادی -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
                         <select class="form-select" id="attendanceMonth">
-                            <option value="1">January</option>
-                            <option value="2">February</option>
-                            <option value="3">March</option>
-                            <option value="4">April</option>
-                            <option value="5">May</option>
-                            <option value="6">June</option>
-                            <option value="7">July</option>
-                            <option value="8">August</option>
-                            <option value="9">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
+                            <option value="1">فروردین</option>
+                            <option value="2">اردیبهشت</option>
+                            <option value="3">خرداد</option>
+                            <option value="4">تیر</option>
+                            <option value="5">مرداد</option>
+                            <option value="6">شهریور</option>
+                            <option value="7">مهر</option>
+                            <option value="8">آبان</option>
+                            <option value="9">آذر</option>
+                            <option value="10">دی</option>
+                            <option value="11">بهمن</option>
+                            <option value="12">اسفند</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -161,26 +160,30 @@
                     </div>
                 </div>
 
-                <!-- کارت‌های آمار -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
-                        <div class="stat-card text-center"><i class="fa-solid fa-check-circle fs-1 text-success"></i>
-                            <h2 id="totalPresent">0</h2><small>حاضر</small>
+                        <div class="stat-card text-center">
+                            <i class="fa-solid fa-check-circle fs-1 text-success"></i>
+                            <h2 id="totalPresent">0</h2>
+                            <small>حاضر</small>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="stat-card text-center"><i class="fa-solid fa-clock fs-1 text-warning"></i>
-                            <h2 id="totalLate">0</h2><small>تأخیر</small>
+                        <div class="stat-card text-center">
+                            <i class="fa-solid fa-clock fs-1 text-warning"></i>
+                            <h2 id="totalLate">0</h2>
+                            <small>تأخیر</small>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="stat-card text-center"><i class="fa-solid fa-xmark-circle fs-1 text-danger"></i>
-                            <h2 id="totalAbsent">0</h2><small>غایب</small>
+                        <div class="stat-card text-center">
+                            <i class="fa-solid fa-xmark-circle fs-1 text-danger"></i>
+                            <h2 id="totalAbsent">0</h2>
+                            <small>غایب</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- جدول جزئیات -->
                 <div class="table-container">
                     <div class="table-responsive">
                         <table class="table table-bordered">
@@ -193,7 +196,7 @@
                             </thead>
                             <tbody id="attendanceList">
                                 <tr>
-                                    <td colspan="3" class="text-center py-4 text-muted">لطفاً ماه و سال را انتخاب کنید
+                                    <td colspan="3" class="text-center py-4">لطفاً ماه و سال را انتخاب کنید
                     </div>
                 </div>
             </div>
@@ -228,13 +231,21 @@
             try {
                 const d = new Date(dateString);
                 if (isNaN(d.getTime())) return dateString;
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            } catch (e) { return dateString; }
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}/${month}/${day}`;
+            } catch (e) {
+                return dateString;
+            }
         }
 
         async function loadAttendance() {
             const month = document.getElementById('attendanceMonth').value;
             const year = document.getElementById('attendanceYear').value;
+
+            const resultDiv = document.getElementById('attendanceList');
+            resultDiv.innerHTML = '<tr><td colspan="3" class="text-center py-4"><div class="spinner-border text-success"></div> در حال بارگیری...</div></div></div></tr>';
 
             try {
                 const res = await fetch(`/api/student/attendance/${studentId}?month=${month}&year=${year}`);
@@ -245,46 +256,87 @@
                 document.getElementById('totalAbsent').innerText = data.absent || 0;
 
                 if (data.details && data.details.length > 0) {
-                    document.getElementById('attendanceList').innerHTML = data.details.map(d => {
+                    let html = '';
+                    for (const d of data.details) {
                         let badgeClass = '', statusText = '';
-                        if (d.status === 'present') { badgeClass = 'badge-present'; statusText = 'حاضر'; }
-                        else if (d.status === 'absent') { badgeClass = 'badge-absent'; statusText = 'غایب'; }
-                        else { badgeClass = 'badge-late'; statusText = 'تأخیر'; }
-                        return `<tr>
+                        if (d.status === 'present') {
+                            badgeClass = 'badge-present';
+                            statusText = 'حاضر';
+                        } else if (d.status === 'absent') {
+                            badgeClass = 'badge-absent';
+                            statusText = 'غایب';
+                        } else {
+                            badgeClass = 'badge-late';
+                            statusText = 'تأخیر';
+                        }
+                        html += `<tr>
                             <td class="text-dark">${formatDate(d.date)}</div></div></div>
                             <td class="text-dark"><span class="${badgeClass}">${statusText}</span></div></div></div>
                             <td class="text-dark">${d.notes || '-'}</div></div></div>
                         </div></div></div>`;
-                    }).join('');
+                    }
+                    resultDiv.innerHTML = html;
                 } else {
-                    document.getElementById('attendanceList').innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">هیچ حاضری ثبت نشده است</div></div></div></tr>';
+                    resultDiv.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">هیچ حاضری در این ماه ثبت نشده است</div></div></div></tr>';
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('attendanceList').innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
+                resultDiv.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4">خطا در بارگیری اطلاعات</div></div></div></tr>';
             }
         }
 
         function printReport() {
+            const month = document.getElementById('attendanceMonth').options[document.getElementById('attendanceMonth').selectedIndex]?.text || '';
+            const year = document.getElementById('attendanceYear').value;
             const content = document.querySelector('.table-container').innerHTML;
             const stats = document.querySelector('.row.g-4.mb-4').innerHTML;
             const win = window.open('', '_blank');
             win.document.write(`
                 <html dir="rtl">
                 <head>
-                    <title>گزارش حاضری</title>
+                    <title>گزارش حاضری - ${month} ${year}</title>
                     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-                    <style>body { padding: 20px; } @media print { .no-print { display: none; } }</style>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+                    <style>
+                        body { padding: 20px; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
                 </head>
-                <body><div class="container mt-3"><h3>گزارش حاضری</h3>${stats}${content}</div><script>window.print();<\/script></body>
+                <body>
+                    <div class="container">
+                        <div class="text-center mb-4">
+                            <h3>گزارش حاضری</h3>
+                            <p>${month} ${year}</p>
+                        </div>
+                        ${stats}
+                        ${content}
+                        <div class="text-center mt-4 text-muted small">
+                            تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };
+                    <\/script>
+                </body>
                 </html>
             `);
             win.document.close();
         }
 
+        // بارگذاری خودکار حاضری ماه جاری
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+        document.getElementById('attendanceMonth').value = currentMonth;
+        document.getElementById('attendanceYear').value = currentYear;
+
         setupSidebar();
         loadAttendance();
+
+        // بارگذاری مجدد هر 30 ثانیه (برای به‌روزرسانی خودکار)
+        setInterval(loadAttendance, 30000);
     </script>
 </body>
 
