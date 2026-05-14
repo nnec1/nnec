@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
+        /* استایل‌های قبلی保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -35,7 +36,6 @@
             justify-content: center;
         }
 
-        /* اسلایدر سمت راست */
         .slider-section {
             flex: 1;
             min-width: 300px;
@@ -52,10 +52,15 @@
             overflow: hidden;
         }
 
+        .swiper-slide {
+            position: relative;
+        }
+
         .swiper-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background: linear-gradient(135deg, #10b981, #059669);
         }
 
         .swiper-slide .slide-content {
@@ -63,7 +68,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
             color: white;
             padding: 20px;
             text-align: center;
@@ -73,11 +78,11 @@
             background: #10b981 !important;
         }
 
-        .swiper-button-next, .swiper-button-prev {
+        .swiper-button-next,
+        .swiper-button-prev {
             color: #10b981 !important;
         }
 
-        /* کارت ورود سمت چپ */
         .login-card {
             background: rgba(255, 255, 255, 0.98);
             border-radius: 32px;
@@ -88,6 +93,7 @@
             transition: transform 0.3s ease;
         }
 
+        /* سایر استایل‌های login-card مانند قبل */
         .login-card:hover {
             transform: translateY(-5px);
         }
@@ -199,21 +205,6 @@
             transform: translateX(-4px);
         }
 
-        .register-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .register-link a {
-            color: #10b981;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-
         .login-options {
             text-align: center;
             margin-top: 15px;
@@ -247,25 +238,32 @@
             .login-container {
                 flex-direction: column;
             }
+
             .slider-section {
                 width: 100%;
             }
+
             .swiper {
                 height: 250px;
             }
+
             .login-card {
                 width: 100%;
                 padding: 25px;
             }
+
             .user-type-btn {
                 padding: 10px 5px;
             }
+
             .user-type-btn i {
                 font-size: 1.4rem;
             }
+
             .user-type-btn small {
                 font-size: 10px;
             }
+
             .login-options {
                 gap: 10px;
             }
@@ -275,15 +273,13 @@
 
 <body>
     <div class="login-container">
-        <!-- بخش اسلایدر -->
         <div class="slider-section">
             <div class="swiper mySwiper">
                 <div class="swiper-wrapper" id="swiperWrapper">
                     <div class="swiper-slide">
-                        <img src="/default-slider.jpg" alt="اسلایدر">
+                        <img src="https://placehold.co/800x400/10b981/white?text=Loading+Slider" alt="اسلایدر">
                         <div class="slide-content">
-                            <h5>به آموزشگاه نوی نور خوش آمدید</h5>
-                            <p>پیشرو در آموزش و توانمندسازی</p>
+                            <h5>در حال بارگیری...</h5>
                         </div>
                     </div>
                 </div>
@@ -293,12 +289,9 @@
             </div>
         </div>
 
-        <!-- بخش ورود -->
         <div class="login-card">
             <div class="logo-area">
-                <div class="logo-circle">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
+                <div class="logo-circle"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="institute-name">آموزشگاه نوی نور</div>
                 <div class="institute-tagline">پیشرو در آموزش و توانمندسازی</div>
             </div>
@@ -308,58 +301,45 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-3">
-                    <div class="user-type-btn" data-type="ceo">
-                        <i class="fa-solid fa-user-tie"></i>
-                        <small>ریس</small>
+                    <div class="user-type-btn" data-type="ceo"><i class="fa-solid fa-user-tie"></i><small>ریس</small>
                     </div>
                 </div>
                 <div class="col-3">
-                    <div class="user-type-btn active" data-type="admin">
-                        <i class="fa-solid fa-people-group"></i>
-                        <small>مدیر</small>
-                    </div>
+                    <div class="user-type-btn active" data-type="admin"><i
+                            class="fa-solid fa-people-group"></i><small>مدیر</small></div>
                 </div>
                 <div class="col-3">
-                    <div class="user-type-btn" data-type="teacher">
-                        <i class="fa-solid fa-chalkboard-user"></i>
-                        <small>استاد</small>
-                    </div>
+                    <div class="user-type-btn" data-type="teacher"><i
+                            class="fa-solid fa-chalkboard-user"></i><small>استاد</small></div>
                 </div>
                 <div class="col-3">
-                    <div class="user-type-btn" data-type="student">
-                        <i class="fa-solid fa-user-graduate"></i>
-                        <small>شاگرد</small>
-                    </div>
+                    <div class="user-type-btn" data-type="student"><i
+                            class="fa-solid fa-user-graduate"></i><small>شاگرد</small></div>
                 </div>
             </div>
 
-            <!-- فرم لاگین برای مدیر، استاد، ریس -->
             <form id="loginForm">
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-solid fa-envelope me-2"></i> ایمیل</label>
-                    <input type="email" class="form-control" id="email" placeholder="example@school.com" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-solid fa-lock me-2"></i> رمز عبور</label>
-                    <input type="password" class="form-control" id="password" placeholder="••••••" required>
-                </div>
+                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-envelope me-2"></i>
+                        ایمیل</label><input type="email" class="form-control" id="email"
+                        placeholder="example@school.com" required></div>
+                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-lock me-2"></i> رمز عبور</label><input
+                        type="password" class="form-control" id="password" placeholder="••••••" required></div>
                 <input type="hidden" id="userType" value="admin">
                 <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket me-2"></i> ورود</button>
             </form>
 
-            <!-- فرم لاگین شاگرد (مخفی در ابتدا) -->
             <form id="studentLoginForm" style="display: none;">
-                <div class="mb-3">
-                    <label class="form-label"><i class="fa-solid fa-barcode me-2"></i> آیدی کارت / بارکد</label>
-                    <input type="text" class="form-control" id="studentCardId" placeholder="مثال: STU-2501-1234" required>
-                    <small class="text-muted">آیدی کارت خود را از کارت شناسایی وارد کنید</small>
-                </div>
+                <div class="mb-3"><label class="form-label"><i class="fa-solid fa-barcode me-2"></i> آیدی کارت /
+                        بارکد</label><input type="text" class="form-control" id="studentCardId"
+                        placeholder="مثال: STU-2501-1234" required><small class="text-muted">آیدی کارت خود را از کارت
+                        شناسایی وارد کنید</small></div>
                 <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket me-2"></i> ورود با
                     بارکد</button>
             </form>
 
             <div class="login-options">
-                <a href="#" onclick="showStudentLogin()"><i class="fa-solid fa-barcode me-1"></i> ورود شاگرد با بارکد</a>
+                <a href="#" onclick="showStudentLogin()"><i class="fa-solid fa-barcode me-1"></i> ورود شاگرد با
+                    بارکد</a>
                 <span class="text-muted">|</span>
                 <a href="scan-qr.html"><i class="fa-solid fa-qrcode me-1"></i> ورود با QR کد</a>
             </div>
@@ -371,19 +351,18 @@
     <script>
         let swiper = null;
 
-        // بارگذاری اسلایدرها
         async function loadSliders() {
             try {
                 const res = await fetch('/api/slider');
                 const sliders = await res.json();
                 const wrapper = document.getElementById('swiperWrapper');
-                
+
                 if (sliders && sliders.length > 0) {
                     let html = '';
                     for (const s of sliders) {
                         html += `
                             <div class="swiper-slide">
-                                <img src="${s.image_path}" alt="${s.title || 'اسلایدر'}">
+                                <img src="${s.image_path}" alt="${s.title || 'اسلایدر'}" onerror="this.src='https://placehold.co/800x400/10b981/white?text=Slider+Image'">
                                 <div class="slide-content">
                                     ${s.title ? `<h5>${escapeHtml(s.title)}</h5>` : ''}
                                     ${s.description ? `<p>${escapeHtml(s.description)}</p>` : ''}
@@ -395,7 +374,7 @@
                 } else {
                     wrapper.innerHTML = `
                         <div class="swiper-slide">
-                            <img src="/default-slider.jpg" alt="اسلایدر پیش‌فرض">
+                            <img src="https://placehold.co/800x400/10b981/white?text=Welcome+to+Noor+Institute" alt="اسلایدر پیش‌فرض">
                             <div class="slide-content">
                                 <h5>به آموزشگاه نوی نور خوش آمدید</h5>
                                 <p>پیشرو در آموزش و توانمندسازی</p>
@@ -403,11 +382,8 @@
                         </div>
                     `;
                 }
-                
-                // راه‌اندازی مجدد Swiper
-                if (swiper) {
-                    swiper.destroy(true, true);
-                }
+
+                if (swiper) swiper.destroy(true, true);
                 swiper = new Swiper('.mySwiper', {
                     loop: true,
                     autoplay: { delay: 4000, disableOnInteraction: false },
@@ -428,32 +404,22 @@
             return div.innerHTML;
         }
 
-        // بارگذاری اعلانات عمومی
         fetch('/api/announcements/public').then(r => r.json()).then(data => {
             const div = document.getElementById('announcementsList');
             if (data && data.length) {
-                div.innerHTML = data.map(a => `
-                    <div class="announcement-item">
-                        <strong><i class="fa-solid fa-bullhorn text-success me-2"></i> ${a.title}</strong>
-                        <p class="mb-0 small text-muted">${a.content.substring(0, 100)}${a.content.length > 100 ? '...' : ''}</p>
-                    </div>
-                `).join('');
+                div.innerHTML = data.map(a => `<div class="announcement-item"><strong><i class="fa-solid fa-bullhorn text-success me-2"></i> ${a.title}</strong><p class="mb-0 small text-muted">${a.content.substring(0, 100)}${a.content.length > 100 ? '...' : ''}</p></div>`).join('');
             }
         }).catch(() => { });
 
-        // انتخاب نوع کاربر
         let currentUserType = 'admin';
-
         document.querySelectorAll('.user-type-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 document.querySelectorAll('.user-type-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentUserType = this.dataset.type;
                 document.getElementById('userType').value = currentUserType;
-
                 const adminForm = document.getElementById('loginForm');
                 const studentForm = document.getElementById('studentLoginForm');
-
                 if (currentUserType === 'student') {
                     adminForm.style.display = 'none';
                     studentForm.style.display = 'block';
@@ -464,21 +430,14 @@
             });
         });
 
-        // فرم لاگین برای مدیر، استاد، ریس
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const userType = document.getElementById('userType').value;
-
             const errorDiv = document.getElementById('errorMsg');
             errorDiv.style.display = 'none';
-
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, userType })
-            });
+            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, userType }) });
             const data = await res.json();
             if (data.success) {
                 localStorage.setItem('userId', data.user.id);
@@ -492,26 +451,18 @@
             }
         });
 
-        // فرم لاگین شاگرد با آیدی کارت
         document.getElementById('studentLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const studentCardId = document.getElementById('studentCardId').value;
-
             const errorDiv = document.getElementById('errorMsg');
             errorDiv.style.display = 'none';
-
             if (!studentCardId) {
                 errorDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> لطفاً آیدی کارت خود را وارد کنید`;
                 errorDiv.style.display = 'block';
                 return;
             }
-
             try {
-                const res = await fetch('/api/student-login-with-card', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_card_id: studentCardId })
-                });
+                const res = await fetch('/api/student-login-with-card', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ student_card_id: studentCardId }) });
                 const data = await res.json();
                 if (data.success) {
                     localStorage.setItem('studentId', data.user.id);
@@ -540,7 +491,6 @@
             document.getElementById('studentLoginForm').style.display = 'block';
         }
 
-        // بارگذاری اسلایدرها
         loadSliders();
     </script>
 </body>
