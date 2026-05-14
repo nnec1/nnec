@@ -245,7 +245,7 @@ app.get("/api/announcements/public", async (req, res) => {
   }
 });
 
-// ====================== API کلاس‌ها ======================
+// ====================== API کلاس‌ها (صنف‌ها) ======================
 
 app.get("/api/classes", authenticate, async (req, res) => {
   try {
@@ -1035,7 +1035,13 @@ app.put("/api/transfer-student", authenticate, async (req, res) => {
   }
   try {
     const [student] = await db.execute(
-      `SELECT s.*, c.class_name as current_class_name FROM students s JOIN classes c ON s.class_id = c.id JOIN teacher_classes tc ON c.id = tc.class_id WHERE s.id = ? AND tc.teacher_id = ?`,
+      `
+      SELECT s.*, c.class_name as current_class_name 
+      FROM students s 
+      JOIN classes c ON s.class_id = c.id 
+      JOIN teacher_classes tc ON c.id = tc.class_id 
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `,
       [student_id, req.user.id],
     );
     if (student.length === 0)
@@ -1043,7 +1049,11 @@ app.put("/api/transfer-student", authenticate, async (req, res) => {
         .status(404)
         .json({ error: "شاگرد یافت نشد یا در صنف شما نیست" });
     const [targetClass] = await db.execute(
-      `SELECT c.* FROM classes c JOIN teacher_classes tc ON c.id = tc.class_id WHERE c.id = ? AND tc.teacher_id = ? AND c.is_active = 1`,
+      `
+      SELECT c.* FROM classes c 
+      JOIN teacher_classes tc ON c.id = tc.class_id 
+      WHERE c.id = ? AND tc.teacher_id = ? AND c.is_active = 1
+    `,
       [new_class_id, req.user.id],
     );
     if (targetClass.length === 0)
@@ -1056,7 +1066,7 @@ app.put("/api/transfer-student", authenticate, async (req, res) => {
     ]);
     res.json({
       success: true,
-      message: `شاگرد "${student[0].name}" با موفقیت از صنف "${student[0].current_class_name}" به صنف "${targetClass[0].class_name}" منتقل شد`,
+      message: `شاگرد "${student[0].name}" با موفقیت به صنف "${targetClass[0].class_name}" منتقل شد`,
     });
   } catch (err) {
     console.error("Error in /api/transfer-student:", err);
@@ -1073,8 +1083,10 @@ app.get(
       const [classes] = await db.execute(
         `
       SELECT DISTINCT c.id, c.class_name, c.start_time, c.is_active
-      FROM classes c INNER JOIN teacher_classes tc ON c.id = tc.class_id
-      WHERE tc.teacher_id = ? AND c.is_active = 1 ORDER BY c.class_name ASC
+      FROM classes c 
+      INNER JOIN teacher_classes tc ON c.id = tc.class_id
+      WHERE tc.teacher_id = ? AND c.is_active = 1 
+      ORDER BY c.class_name ASC
     `,
         [teacherId],
       );
@@ -1094,7 +1106,12 @@ app.put("/api/teacher/disable-student", authenticate, async (req, res) => {
       .json({ error: "فقط استاد می‌تواند شاگرد را غیرفعال کند" });
   try {
     const [check] = await db.execute(
-      `SELECT s.id, s.name FROM students s JOIN classes c ON s.class_id = c.id JOIN teacher_classes tc ON c.id = tc.class_id WHERE s.id = ? AND tc.teacher_id = ?`,
+      `
+      SELECT s.id, s.name FROM students s 
+      JOIN classes c ON s.class_id = c.id 
+      JOIN teacher_classes tc ON c.id = tc.class_id 
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `,
       [student_id, req.user.id],
     );
     if (check.length === 0)
@@ -1122,7 +1139,12 @@ app.put("/api/teacher/enable-student", authenticate, async (req, res) => {
       .json({ error: "فقط استاد می‌تواند شاگرد را فعال کند" });
   try {
     const [check] = await db.execute(
-      `SELECT s.id, s.name FROM students s JOIN classes c ON s.class_id = c.id JOIN teacher_classes tc ON c.id = tc.class_id WHERE s.id = ? AND tc.teacher_id = ?`,
+      `
+      SELECT s.id, s.name FROM students s 
+      JOIN classes c ON s.class_id = c.id 
+      JOIN teacher_classes tc ON c.id = tc.class_id 
+      WHERE s.id = ? AND tc.teacher_id = ?
+    `,
       [student_id, req.user.id],
     );
     if (check.length === 0)
@@ -1151,7 +1173,12 @@ app.get(
     const { month, year } = req.query;
     const studentId = req.params.studentId;
     try {
-      let query = `SELECT ad.status, ad.notes, da.attendance_date as date FROM attendance_details ad JOIN daily_attendance da ON ad.attendance_id = da.id WHERE ad.student_id = ?`;
+      let query = `
+      SELECT ad.status, ad.notes, da.attendance_date as date 
+      FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ?
+    `;
       let params = [studentId];
       if (month && month !== "all" && year) {
         query += ` AND MONTH(da.attendance_date) = ? AND YEAR(da.attendance_date) = ?`;
@@ -1184,7 +1211,12 @@ app.get(
 app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
-      `SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ?`,
+      `
+      SELECT s.*, c.class_name 
+      FROM students s 
+      LEFT JOIN classes c ON s.class_id = c.id 
+      WHERE s.id = ?
+    `,
       [req.params.studentId],
     );
     if (results.length === 0)
@@ -1209,19 +1241,36 @@ app.get("/api/student/info/:studentId", authenticate, async (req, res) => {
 app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
   try {
     const [presentCount] = await db.execute(
-      `SELECT COUNT(*) as count FROM attendance_details ad JOIN daily_attendance da ON ad.attendance_id = da.id WHERE ad.student_id = ? AND ad.status = 'present' AND YEAR(da.attendance_date) = YEAR(CURDATE())`,
+      `
+      SELECT COUNT(*) as count FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ? AND ad.status = 'present' 
+      AND YEAR(da.attendance_date) = YEAR(CURDATE())
+    `,
       [req.params.studentId],
     );
     const [absentCount] = await db.execute(
-      `SELECT COUNT(*) as count FROM attendance_details ad JOIN daily_attendance da ON ad.attendance_id = da.id WHERE ad.student_id = ? AND ad.status = 'absent' AND YEAR(da.attendance_date) = YEAR(CURDATE())`,
+      `
+      SELECT COUNT(*) as count FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ? AND ad.status = 'absent' 
+      AND YEAR(da.attendance_date) = YEAR(CURDATE())
+    `,
       [req.params.studentId],
     );
     const [lateCount] = await db.execute(
-      `SELECT COUNT(*) as count FROM attendance_details ad JOIN daily_attendance da ON ad.attendance_id = da.id WHERE ad.student_id = ? AND ad.status = 'late' AND YEAR(da.attendance_date) = YEAR(CURDATE())`,
+      `
+      SELECT COUNT(*) as count FROM attendance_details ad 
+      JOIN daily_attendance da ON ad.attendance_id = da.id 
+      WHERE ad.student_id = ? AND ad.status = 'late' 
+      AND YEAR(da.attendance_date) = YEAR(CURDATE())
+    `,
       [req.params.studentId],
     );
     const [grades] = await db.execute(
-      `SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?`,
+      `
+      SELECT AVG((score/max_score)*100) as avg_grade FROM grades WHERE student_id = ?
+    `,
       [req.params.studentId],
     );
     res.json({
@@ -1239,7 +1288,13 @@ app.get("/api/student/stats/:studentId", authenticate, async (req, res) => {
 app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
-      `SELECT COALESCE(SUM(fp.amount), 0) as paid_fee, s.due_date FROM students s LEFT JOIN fee_payments fp ON s.id = fp.student_id WHERE s.id = ? GROUP BY s.id, s.due_date`,
+      `
+      SELECT COALESCE(SUM(fp.amount), 0) as paid_fee, s.due_date 
+      FROM students s 
+      LEFT JOIN fee_payments fp ON s.id = fp.student_id 
+      WHERE s.id = ? 
+      GROUP BY s.id, s.due_date
+    `,
       [req.params.studentId],
     );
     const student = results[0] || { paid_fee: 0, due_date: null };
@@ -1258,7 +1313,12 @@ app.get("/api/student/fees/:studentId", authenticate, async (req, res) => {
 app.get("/api/student/grades/:studentId", authenticate, async (req, res) => {
   try {
     const [results] = await db.execute(
-      `SELECT g.*, 'مضمون' as subject_name FROM grades g WHERE g.student_id = ? ORDER BY g.exam_date DESC`,
+      `
+      SELECT g.*, 'مضمون' as subject_name 
+      FROM grades g 
+      WHERE g.student_id = ? 
+      ORDER BY g.exam_date DESC
+    `,
       [req.params.studentId],
     );
     const formatted = results.map((g) => {
@@ -1281,7 +1341,12 @@ app.get(
   async (req, res) => {
     try {
       const [lastFeeRecord] = await db.execute(
-        `SELECT total_fee, paid_fee, due_date FROM fee_payments WHERE student_id = ? AND total_fee IS NOT NULL AND total_fee > 0 ORDER BY payment_date DESC, id DESC LIMIT 1`,
+        `
+      SELECT total_fee, paid_fee, due_date 
+      FROM fee_payments 
+      WHERE student_id = ? AND total_fee IS NOT NULL AND total_fee > 0 
+      ORDER BY payment_date DESC, id DESC LIMIT 1
+    `,
         [req.params.studentId],
       );
       if (lastFeeRecord.length === 0)
@@ -1360,7 +1425,10 @@ app.post(
     const photoPath = req.file ? `/uploads/${req.file.filename}` : null;
     try {
       const [result] = await db.execute(
-        `INSERT INTO employees (name, father_name, phone, email, password, position, salary, hire_date, photo, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+        `
+      INSERT INTO employees (name, father_name, phone, email, password, position, salary, hire_date, photo, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+    `,
         [
           name,
           toNull(father_name),
@@ -1559,8 +1627,11 @@ app.get("/api/recent-transactions", authenticate, async (req, res) => {
       `
       SELECT fp.id, fp.amount, DATE_FORMAT(fp.payment_date, '%Y-%m-%d') as payment_date, fp.receipt_number,
              s.id as student_id, s.name as student_name, s.student_card_id, c.class_name
-      FROM fee_payments fp JOIN students s ON fp.student_id = s.id JOIN classes c ON s.class_id = c.id 
-      ORDER BY fp.payment_date DESC, fp.id DESC LIMIT ?
+      FROM fee_payments fp 
+      JOIN students s ON fp.student_id = s.id 
+      JOIN classes c ON s.class_id = c.id 
+      ORDER BY fp.payment_date DESC, fp.id DESC 
+      LIMIT ?
     `,
       [limit],
     );
@@ -1611,6 +1682,116 @@ app.get("/api/financial-summary", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ====================== API صنف‌های فعال و بدون استاد (برای تخصیص) ======================
+
+app.get("/api/active-classes", authenticate, async (req, res) => {
+  try {
+    const [classes] = await db.execute(`
+      SELECT c.*, e.name as teacher_name 
+      FROM classes c 
+      LEFT JOIN employees e ON c.teacher_id = e.id 
+      WHERE c.is_active = 1
+    `);
+    res.json(classes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/classes-without-teacher", authenticate, async (req, res) => {
+  try {
+    const [classes] = await db.execute(`
+      SELECT c.* 
+      FROM classes c 
+      WHERE c.id NOT IN (SELECT DISTINCT class_id FROM teacher_classes) 
+      AND c.is_active = 1
+    `);
+    res.json(classes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/teacher-classes", authenticate, async (req, res) => {
+  try {
+    const [results] = await db.execute(`
+      SELECT tc.*, e.name as teacher_name, c.class_name 
+      FROM teacher_classes tc 
+      JOIN employees e ON tc.teacher_id = e.id 
+      JOIN classes c ON tc.class_id = c.id
+    `);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post(
+  "/api/assign-teacher-to-class",
+  authenticate,
+  isAdminOrCEO,
+  async (req, res) => {
+    const { teacher_id, class_id, academic_year, is_main_teacher } = req.body;
+    try {
+      const [classResult] = await db.execute(
+        `SELECT id FROM classes WHERE id = ? AND is_active = 1`,
+        [class_id],
+      );
+      if (classResult.length === 0)
+        return res
+          .status(404)
+          .json({ error: "صنف مورد نظر وجود ندارد یا غیرفعال است" });
+      const [teacherResult] = await db.execute(
+        `SELECT id FROM employees WHERE id = ? AND position = 'teacher' AND status = 'active'`,
+        [teacher_id],
+      );
+      if (teacherResult.length === 0)
+        return res
+          .status(404)
+          .json({ error: "استاد مورد نظر وجود ندارد یا غیرفعال است" });
+      await db.execute(
+        `DELETE FROM teacher_classes WHERE class_id = ? AND teacher_id = ?`,
+        [class_id, teacher_id],
+      );
+      await db.execute(
+        `
+      INSERT INTO teacher_classes (teacher_id, class_id, academic_year, is_main_teacher) 
+      VALUES (?, ?, ?, ?)
+    `,
+        [
+          teacher_id,
+          class_id,
+          academic_year || "1404",
+          is_main_teacher === "true" || is_main_teacher === true ? 1 : 0,
+        ],
+      );
+      res.json({
+        success: true,
+        message: "استاد با موفقیت به صنف تخصیص داده شد",
+      });
+    } catch (err) {
+      console.error("Error in /api/assign-teacher-to-class:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+app.delete(
+  "/api/teacher-classes/:id",
+  authenticate,
+  isAdminOrCEO,
+  async (req, res) => {
+    try {
+      await db.execute("DELETE FROM teacher_classes WHERE id = ?", [
+        req.params.id,
+      ]);
+      res.json({ success: true, message: "تخصیص با موفقیت حذف شد" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ====================== صفحات ======================
 
