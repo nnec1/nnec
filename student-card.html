@@ -26,10 +26,10 @@
         }
 
         .card {
-            width: 85mm;
-            height: 54mm;
+            width: 90mm;
+            height: 57mm;
             background: linear-gradient(145deg, #1e3a5f, #2563eb, #1e40af);
-            border-radius: 6px;
+            border-radius: 8px;
             overflow: hidden;
             direction: rtl;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
@@ -38,33 +38,33 @@
 
         .card-header {
             background: rgba(0, 0, 0, 0.15);
-            padding: 4px 8px;
+            padding: 5px 10px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .inst-name {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             color: white;
         }
 
         .inst-tagline {
-            font-size: 7px;
+            font-size: 8px;
             color: #bfdbfe;
         }
 
         .card-body {
             display: flex;
-            padding: 6px 8px;
-            gap: 8px;
-            height: calc(100% - 38px);
+            padding: 8px 10px;
+            gap: 10px;
+            height: calc(100% - 42px);
         }
 
         .info-section {
             flex: 1.4;
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .info-left {
@@ -76,32 +76,32 @@
         }
 
         .student-avatar {
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            margin: 0 auto 6px auto;
+            margin: 0 auto 8px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 34px;
+            font-size: 38px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .info-row {
             display: flex;
-            margin-bottom: 5px;
-            font-size: 9px;
+            margin-bottom: 6px;
+            font-size: 10px;
             color: white;
             align-items: baseline;
         }
 
         .info-label {
-            width: 45px;
+            width: 48px;
             font-weight: bold;
             color: #bfdbfe;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .info-value {
@@ -114,68 +114,73 @@
         .status-badge {
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: #1e3a5f;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 20px;
             font-size: 8px;
             font-weight: bold;
             display: inline-block;
         }
 
+        /* بخش QR - بزرگتر شده */
         .qr-section {
-            width: 88px;
+            width: 105px;
             background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 6px;
+            border-radius: 10px;
+            padding: 8px;
             text-align: center;
         }
 
         .logo {
-            width: 32px;
-            height: 32px;
+            width: 35px;
+            height: 35px;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 4px;
-            font-size: 16px;
+            margin: 0 auto 5px;
+            font-size: 18px;
             color: #1e3a5f;
         }
 
         .logo-text {
-            font-size: 7px;
+            font-size: 8px;
             color: #bfdbfe;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .qr-box {
             background: white;
-            border-radius: 6px;
-            padding: 3px;
+            border-radius: 8px;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .qr-hint {
-            font-size: 6px;
+            font-size: 7px;
             color: #bfdbfe;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .btn-container {
-            margin-top: 20px;
+            margin-top: 25px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
-        .btn-print, .btn-png {
+        .btn-print,
+        .btn-png {
             border: none;
-            padding: 8px 22px;
+            padding: 10px 25px;
             border-radius: 40px;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             transition: all 0.3s;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
         }
@@ -188,7 +193,8 @@
             background: linear-gradient(135deg, #10b981, #059669);
         }
 
-        .btn-print:hover, .btn-png:hover {
+        .btn-print:hover,
+        .btn-png:hover {
             transform: translateY(-2px);
         }
 
@@ -198,17 +204,24 @@
                 padding: 0;
                 margin: 0;
             }
+
             .btn-container {
                 display: none;
             }
+
             .card {
                 box-shadow: none;
                 margin: 0;
-                width: 85mm;
-                height: 54mm;
+                width: 90mm;
+                height: 57mm;
                 border-radius: 0;
             }
-            .card-header, .card-body, .student-avatar, .logo, .status-badge {
+
+            .card-header,
+            .card-body,
+            .student-avatar,
+            .logo,
+            .status-badge {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -259,7 +272,7 @@
                 <div class="logo">🎓</div>
                 <div class="logo-text">نوی نور</div>
                 <div class="qr-box" id="qrcode"></div>
-                <div class="qr-hint">اسکن کنید</div>
+                <div class="qr-hint">برای ورود اسکن کنید</div>
             </div>
         </div>
     </div>
@@ -298,52 +311,47 @@
                     if (s.status === 'disabled') status = 'غیرفعال';
                     document.getElementById('studentStatus').innerHTML = status;
 
-                    // ========== اصلاح مهم: استفاده از qr_token واقعی ==========
+                    // استفاده از qr_token واقعی
                     let qrToken = s.qr_token;
-                    
-                    // اگر qr_token وجود نداشت، یک توکن جدید بساز و در دیتابیس ذخیره کن
+
                     if (!qrToken || qrToken === 'null' || qrToken === '') {
-                        qrToken = generateNewToken();
-                        // ذخیره توکن در دیتابیس
+                        qrToken = 'QR_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
                         await fetch(`/api/students/update-qr-token/${studentId}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ qr_token: qrToken })
                         });
                     }
-                    
-                    const qrUrl = `${window.location.origin}/login-with-qr.html?qr=${qrToken}`;
-                    console.log('QR URL:', qrUrl); // برای دیباگ
-                    
+
+                    // آدرس کامل برای QR
+                    const qrUrl = `${window.location.origin}/login-with-qr.html?qr=${encodeURIComponent(qrToken)}`;
+                    console.log('QR URL:', qrUrl);
+
+                    // پاک کردن و ساخت QR جدید با اندازه بزرگتر (85x85)
                     document.getElementById('qrcode').innerHTML = '';
                     new QRCode(document.getElementById("qrcode"), {
                         text: qrUrl,
-                        width: 58,
-                        height: 58,
-                        colorDark: "#1e3a5f",
+                        width: 85,
+                        height: 85,
+                        colorDark: "#0f172a",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
                     });
                 }
             } catch (e) {
                 console.error('خطا:', e);
-                document.getElementById('qrcode').innerHTML = '<div style="color:red;font-size:8px;">خطا در ساخت QR</div>';
+                document.getElementById('qrcode').innerHTML = '<div style="color:#fbbf24;font-size:8px;">خطا</div>';
             }
-        }
-
-        // تولید توکن جدید یکتا
-        function generateNewToken() {
-            return 'QR_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
         }
 
         async function downloadAsPNG() {
             const card = document.getElementById('studentCard');
             const originalWidth = card.style.width;
             const originalHeight = card.style.height;
-            
-            card.style.width = (85 * 3.78) + 'px';
-            card.style.height = (54 * 3.78) + 'px';
-            
+
+            card.style.width = (90 * 3.78) + 'px';
+            card.style.height = (57 * 3.78) + 'px';
+
             try {
                 const canvas = await html2canvas(card, {
                     scale: 3,
@@ -351,16 +359,16 @@
                     useCORS: true,
                     logging: false
                 });
-                
+
                 card.style.width = originalWidth;
                 card.style.height = originalHeight;
-                
+
                 const link = document.createElement('a');
                 const studentName = document.getElementById('studentName').innerText;
                 link.download = `کارت_شناسایی_${studentName}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                
+
             } catch (error) {
                 console.error('Error:', error);
                 alert('خطا در ساخت PNG');
