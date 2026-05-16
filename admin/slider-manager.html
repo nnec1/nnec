@@ -24,7 +24,7 @@
 
         .slider-image {
             width: 100%;
-            height: 150px;
+            height: 180px;
             object-fit: cover;
             background: linear-gradient(135deg, #10b981, #059669);
         }
@@ -91,6 +91,10 @@
             .overlay.show {
                 display: block;
             }
+
+            .slider-image {
+                height: 140px;
+            }
         }
     </style>
 </head>
@@ -114,21 +118,18 @@
                     <a href="students.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> شاگردان</a>
                     <a href="employees.html" class="nav-link"><i class="fa-solid fa-users"></i> کارمندان</a>
                     <a href="classes.html" class="nav-link"><i class="fa-solid fa-table-cells-large"></i> صنف‌ها</a>
-                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت
-                        فیس</a>
+                    <a href="fee-management.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i> مدیریت فیس</a>
                     <a href="slider-manager.html" class="nav-link active"><i class="fa-solid fa-images"></i> اسلایدر</a>
                     <a href="settings.html" class="nav-link"><i class="fa-solid fa-gear"></i> تنظیمات</a>
                     <hr class="text-secondary mx-3 my-2">
-                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>
-                        خروج</a>
+                    <a href="#" class="nav-link" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</a>
                 </nav>
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                     <h3 class="section-title"><i class="fa-solid fa-images text-success me-2"></i> مدیریت اسلایدر</h3>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sliderModal"
-                        onclick="resetForm()">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sliderModal" onclick="resetForm()">
                         <i class="fa-solid fa-plus-circle"></i> افزودن اسلایدر جدید
                     </button>
                 </div>
@@ -150,23 +151,21 @@
                     <form id="sliderForm" enctype="multipart/form-data">
                         <input type="hidden" id="sliderId">
                         <div class="mb-3">
-                            <label class="form-label"><i class="fa-solid fa-image"></i> عکس اسلایدر <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" class="form-control" id="sliderImage" accept="image/*">
+                            <label class="form-label"><i class="fa-solid fa-image"></i> عکس اسلایدر <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="sliderImage" accept="image/*" required>
                             <small class="text-muted">فرمت‌های مجاز: JPG, PNG, GIF (حداکثر 2MB)</small>
                             <div id="imagePreview" class="mt-2 d-none">
                                 <img id="previewImg" class="preview-img">
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeImage()">حذف</button>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><i class="fa-solid fa-heading"></i> عنوان (اختیاری)</label>
-                            <input type="text" class="form-control" id="sliderTitle"
-                                placeholder="مثال: کلاس‌های برنامه‌نویسی">
+                            <input type="text" class="form-control" id="sliderTitle" placeholder="مثال: کلاس‌های برنامه‌نویسی">
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><i class="fa-solid fa-align-left"></i> توضیحات (اختیاری)</label>
-                            <textarea class="form-control" id="sliderDescription" rows="2"
-                                placeholder="توضیحات کوتاه..."></textarea>
+                            <textarea class="form-control" id="sliderDescription" rows="2" placeholder="توضیحات کوتاه..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><i class="fa-solid fa-link"></i> لینک (اختیاری)</label>
@@ -183,8 +182,7 @@
                                 <option value="0">غیرفعال</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i>
-                            ذخیره</button>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> ذخیره</button>
                     </form>
                 </div>
             </div>
@@ -214,16 +212,18 @@
                 const res = await fetch('/api/admin/slider');
                 const sliders = await res.json();
                 const container = document.getElementById('slidersList');
-                if (sliders.length === 0) {
+                
+                if (!sliders || sliders.length === 0) {
                     container.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">هیچ اسلایدری ثبت نشده است</div></div>';
                     return;
                 }
+                
                 let html = '';
                 for (const s of sliders) {
                     html += `
                         <div class="col-md-6 col-lg-4">
                             <div class="slider-card">
-                                <img src="${s.image_path}" class="slider-image" onerror="this.src='https://placehold.co/600x400/10b981/white?text=Slider+Image'">
+                                <img src="${s.image_path}" class="slider-image" onerror="this.src='https://placehold.co/600x400/10b981/white?text=No+Image'">
                                 <div class="p-3">
                                     ${s.title ? `<h6>${escapeHtml(s.title)}</h6>` : ''}
                                     ${s.description ? `<p class="small text-muted">${escapeHtml(s.description)}</p>` : ''}
@@ -241,6 +241,7 @@
                 container.innerHTML = html;
             } catch (err) {
                 console.error(err);
+                document.getElementById('slidersList').innerHTML = '<div class="col-12"><div class="alert alert-danger text-center">خطا در بارگیری اسلایدرها</div></div>';
             }
         }
 
@@ -257,13 +258,21 @@
             document.getElementById('sliderId').value = '';
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-image"></i> افزودن اسلایدر جدید';
             document.getElementById('imagePreview').classList.add('d-none');
+            document.getElementById('sliderImage').required = true;
+        }
+
+        function removeImage() {
+            document.getElementById('previewImg').src = '';
+            document.getElementById('imagePreview').classList.add('d-none');
+            document.getElementById('sliderImage').value = '';
+            document.getElementById('sliderImage').required = true;
         }
 
         async function editSlider(id) {
             try {
-                const res = await fetch(`/api/admin/slider`);
-                const sliders = await res.json();
-                const slider = sliders.find(s => s.id == id);
+                const res = await fetch(`/api/admin/slider/${id}`);
+                const slider = await res.json();
+                
                 if (slider) {
                     editId = id;
                     document.getElementById('sliderId').value = slider.id;
@@ -273,14 +282,18 @@
                     document.getElementById('sliderOrder').value = slider.order_index || 0;
                     document.getElementById('sliderStatus').value = slider.is_active;
                     document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pencil"></i> ویرایش اسلایدر';
+                    document.getElementById('sliderImage').required = false;
+                    
                     if (slider.image_path) {
                         document.getElementById('previewImg').src = slider.image_path;
                         document.getElementById('imagePreview').classList.remove('d-none');
                     }
+                    
                     modal.show();
                 }
             } catch (err) {
-                alert('خطا در بارگیری اطلاعات');
+                console.error(err);
+                alert('خطا در بارگیری اطلاعات اسلایدر');
             }
         }
 
@@ -292,18 +305,20 @@
                     alert('اسلایدر با موفقیت حذف شد');
                     loadSliders();
                 } else {
-                    alert('خطا در حذف');
+                    const err = await res.json();
+                    alert(err.error || 'خطا در حذف');
                 }
             } catch (err) {
+                console.error(err);
                 alert('خطا در ارتباط با سرور');
             }
         }
 
-        document.getElementById('sliderImage').addEventListener('change', function (e) {
+        document.getElementById('sliderImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function (event) {
+                reader.onload = function(event) {
                     document.getElementById('previewImg').src = event.target.result;
                     document.getElementById('imagePreview').classList.remove('d-none');
                 };
@@ -313,39 +328,58 @@
 
         document.getElementById('sliderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const formData = new FormData();
-            if (editId) formData.append('id', editId);
             formData.append('title', document.getElementById('sliderTitle').value);
             formData.append('description', document.getElementById('sliderDescription').value);
             formData.append('link', document.getElementById('sliderLink').value);
             formData.append('order_index', document.getElementById('sliderOrder').value);
             formData.append('is_active', document.getElementById('sliderStatus').value);
+            
             const imageFile = document.getElementById('sliderImage').files[0];
-            if (imageFile) formData.append('image', imageFile);
+            if (imageFile) {
+                formData.append('image', imageFile);
+            } else if (!editId) {
+                alert('لطفاً عکس اسلایدر را انتخاب کنید');
+                return;
+            }
 
             const url = editId ? `/api/admin/slider/${editId}` : '/api/admin/slider';
             const method = editId ? 'PUT' : 'POST';
 
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> در حال ذخیره...';
+
             try {
                 const res = await fetch(url, { method, body: formData });
+                const data = await res.json();
+                
                 if (res.ok) {
-                    alert(editId ? 'اسلایدر ویرایش شد' : 'اسلایدر اضافه شد');
+                    alert(editId ? 'اسلایدر با موفقیت ویرایش شد' : 'اسلایدر با موفقیت اضافه شد');
                     modal.hide();
                     loadSliders();
                     resetForm();
                 } else {
-                    const err = await res.json();
-                    alert(err.error || 'خطا');
+                    alert(data.error || 'خطا در ذخیره اسلایدر');
                 }
             } catch (err) {
+                console.error(err);
                 alert('خطا در ارتباط با سرور');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             }
         });
 
+        // مقداردهی اولیه
         modal = new bootstrap.Modal(document.getElementById('sliderModal'));
         setupSidebar();
         loadSliders();
-        document.getElementById('adminName').innerText = localStorage.getItem('userName') || 'مدیر';
+        
+        const adminName = localStorage.getItem('userName') || 'مدیر';
+        if (document.getElementById('adminName')) document.getElementById('adminName').innerText = adminName;
     </script>
 </body>
 
