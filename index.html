@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
-        /* استایل‌های قبلی保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -45,6 +44,7 @@
             backdrop-filter: blur(10px);
         }
 
+        /* تنظیمات اسلایدر برای نمایش صحیح هر نوع عکسی */
         .swiper {
             width: 100%;
             height: 400px;
@@ -54,15 +54,22 @@
 
         .swiper-slide {
             position: relative;
-        }
-
-        .swiper-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: linear-gradient(135deg, #10b981, #059669);
         }
 
+        /* تنظیم عکس برای هر نوع ابعاد - بدون برش و با حفظ تناسب */
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* کل عکس بدون برش نمایش داده شود */
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        /* محتوای متنی روی عکس */
         .swiper-slide .slide-content {
             position: absolute;
             bottom: 0;
@@ -81,6 +88,15 @@
         .swiper-button-next,
         .swiper-button-prev {
             color: #10b981 !important;
+            background: rgba(0, 0, 0, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+            font-size: 18px;
         }
 
         .login-card {
@@ -93,7 +109,6 @@
             transition: transform 0.3s ease;
         }
 
-        /* سایر استایل‌های login-card مانند قبل */
         .login-card:hover {
             transform: translateY(-5px);
         }
@@ -389,8 +404,9 @@
                     autoplay: { delay: 4000, disableOnInteraction: false },
                     pagination: { el: '.swiper-pagination', clickable: true },
                     navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-                    effect: 'fade',
-                    fadeEffect: { crossFade: true }
+                    effect: 'slide',
+                    speed: 800,
+                    spaceBetween: 0
                 });
             } catch (err) {
                 console.error('Error loading sliders:', err);
