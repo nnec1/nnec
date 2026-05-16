@@ -2412,158 +2412,177 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
 // ====================== API مدیریت اسلایدر ======================
 
 // تنظیم multer برای آپلود فایل در پوشه‌های جداگانه
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        let uploadPath = "./uploads/";
-        
-        // تشخیص نوع فایل برای ذخیره در زیرپوشه مناسب
-        if (req.originalUrl.includes("/slider") || req.originalUrl.includes("/api/slider")) {
-            uploadPath = "./uploads/sliders/";
-        } else if (req.originalUrl.includes("/student") && file.fieldname === "photo") {
-            uploadPath = "./uploads/students/";
-        } else if (req.originalUrl.includes("/employee") && file.fieldname === "photo") {
-            uploadPath = "./uploads/teachers/";
-        }
-        
-        // ایجاد پوشه در صورت عدم وجود
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, uniqueSuffix + ext);
-    }
-});
-
-const upload = multer({ storage: storage });
+// ====================== API مدیریت اسلایدر ======================
 
 // دریافت اسلایدرهای فعال (برای صفحه ورود - عمومی)
 app.get("/api/slider", async (req, res) => {
-    try {
-        const [sliders] = await db.execute(
-            `SELECT id, image_path, title, description, link, order_index 
+  try {
+    const [sliders] = await db.execute(
+      `SELECT id, image_path, title, description, link, order_index 
              FROM sliders 
              WHERE is_active = 1 
-             ORDER BY order_index ASC, created_at DESC`
-        );
-        res.json(sliders);
-    } catch (err) {
-        console.error("Error in GET /api/slider:", err);
-        res.status(500).json({ error: err.message });
-    }
+             ORDER BY order_index ASC, created_at DESC`,
+    );
+    res.json(sliders);
+  } catch (err) {
+    console.error("Error in GET /api/slider:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت لیست همه اسلایدرها برای مدیریت (ادمین)
 app.get("/api/admin/slider", authenticate, isAdminOrCEO, async (req, res) => {
-    try {
-        const [sliders] = await db.execute(
-            `SELECT s.*, e.name as creator_name 
+  try {
+    const [sliders] = await db.execute(
+      `SELECT s.*, e.name as creator_name 
              FROM sliders s
              LEFT JOIN employees e ON s.created_by = e.id
-             ORDER BY s.order_index ASC, s.created_at DESC`
-        );
-        res.json(sliders);
-    } catch (err) {
-        console.error("Error in GET /api/admin/slider:", err);
-        res.status(500).json({ error: err.message });
-    }
+             ORDER BY s.order_index ASC, s.created_at DESC`,
+    );
+    res.json(sliders);
+  } catch (err) {
+    console.error("Error in GET /api/admin/slider:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // دریافت یک اسلایدر خاص
-app.get("/api/admin/slider/:id", authenticate, isAdminOrCEO, async (req, res) => {
+app.get(
+  "/api/admin/slider/:id",
+  authenticate,
+  isAdminOrCEO,
+  async (req, res) => {
     try {
-        const [slider] = await db.execute(`SELECT * FROM sliders WHERE id = ?`, [req.params.id]);
-        if (slider.length === 0) {
-            return res.status(404).json({ error: "اسلایدر یافت نشد" });
-        }
-        res.json(slider[0]);
+      const [slider] = await db.execute(`SELECT * FROM sliders WHERE id = ?`, [
+        req.params.id,
+      ]);
+      if (slider.length === 0) {
+        return res.status(404).json({ error: "اسلایدر یافت نشد" });
+      }
+      res.json(slider[0]);
     } catch (err) {
-        console.error("Error in GET /api/admin/slider/:id:", err);
-        res.status(500).json({ error: err.message });
+      console.error("Error in GET /api/admin/slider/:id:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
-// ایجاد اسلایدر جدید
-app.post("/api/admin/slider", authenticate, isAdminOrCEO, upload.single("image"), async (req, res) => {
+// ایجاد اسلایدر جدید (با استفاده از upload موجود)
+app.post(
+  "/api/admin/slider",
+  authenticate,
+  isAdminOrCEO,
+  upload.single("image"),
+  async (req, res) => {
     const { title, description, link, order_index, is_active } = req.body;
-    
+
     if (!req.file) {
-        return res.status(400).json({ error: "عکس اسلایدر الزامی است" });
+      return res.status(400).json({ error: "عکس اسلایدر الزامی است" });
     }
-    
-    const image_path = `/uploads/sliders/${req.file.filename}`;
+
+    const image_path = `/uploads/${req.file.filename}`;
     const created_by = req.user.id;
-    
+
     try {
-        const [result] = await db.execute(
-            `INSERT INTO sliders (image_path, title, description, link, order_index, is_active, created_by) 
+      const [result] = await db.execute(
+        `INSERT INTO sliders (image_path, title, description, link, order_index, is_active, created_by) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [image_path, title || null, description || null, link || null, order_index || 0, is_active !== undefined ? is_active : 1, created_by]
-        );
-        
-        res.json({ success: true, id: result.insertId, message: "اسلایدر با موفقیت اضافه شد" });
+        [
+          image_path,
+          title || null,
+          description || null,
+          link || null,
+          order_index || 0,
+          is_active !== undefined ? is_active : 1,
+          created_by,
+        ],
+      );
+
+      res.json({
+        success: true,
+        id: result.insertId,
+        message: "اسلایدر با موفقیت اضافه شد",
+      });
     } catch (err) {
-        console.error("Error in POST /api/admin/slider:", err);
-        res.status(500).json({ error: err.message });
+      console.error("Error in POST /api/admin/slider:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // ویرایش اسلایدر
-app.put("/api/admin/slider/:id", authenticate, isAdminOrCEO, upload.single("image"), async (req, res) => {
+app.put(
+  "/api/admin/slider/:id",
+  authenticate,
+  isAdminOrCEO,
+  upload.single("image"),
+  async (req, res) => {
     const sliderId = req.params.id;
     const { title, description, link, order_index, is_active } = req.body;
-    
+
     try {
-        const [existing] = await db.execute(`SELECT id FROM sliders WHERE id = ?`, [sliderId]);
-        if (existing.length === 0) {
-            return res.status(404).json({ error: "اسلایدر یافت نشد" });
-        }
-        
-        let image_path = null;
-        let query = `UPDATE sliders SET title = ?, description = ?, link = ?, order_index = ?, is_active = ?`;
-        let params = [title || null, description || null, link || null, order_index || 0, is_active !== undefined ? is_active : 1];
-        
-        if (req.file) {
-            image_path = `/uploads/sliders/${req.file.filename}`;
-            query += `, image_path = ?`;
-            params.push(image_path);
-        }
-        
-        query += ` WHERE id = ?`;
-        params.push(sliderId);
-        
-        await db.execute(query, params);
-        
-        res.json({ success: true, message: "اسلایدر با موفقیت ویرایش شد" });
+      const [existing] = await db.execute(
+        `SELECT id FROM sliders WHERE id = ?`,
+        [sliderId],
+      );
+      if (existing.length === 0) {
+        return res.status(404).json({ error: "اسلایدر یافت نشد" });
+      }
+
+      let query = `UPDATE sliders SET title = ?, description = ?, link = ?, order_index = ?, is_active = ?`;
+      let params = [
+        title || null,
+        description || null,
+        link || null,
+        order_index || 0,
+        is_active !== undefined ? is_active : 1,
+      ];
+
+      if (req.file) {
+        const image_path = `/uploads/${req.file.filename}`;
+        query += `, image_path = ?`;
+        params.push(image_path);
+      }
+
+      query += ` WHERE id = ?`;
+      params.push(sliderId);
+
+      await db.execute(query, params);
+
+      res.json({ success: true, message: "اسلایدر با موفقیت ویرایش شد" });
     } catch (err) {
-        console.error("Error in PUT /api/admin/slider/:id:", err);
-        res.status(500).json({ error: err.message });
+      console.error("Error in PUT /api/admin/slider/:id:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  },
+);
 
 // حذف اسلایدر
-app.delete("/api/admin/slider/:id", authenticate, isAdminOrCEO, async (req, res) => {
+app.delete(
+  "/api/admin/slider/:id",
+  authenticate,
+  isAdminOrCEO,
+  async (req, res) => {
     const sliderId = req.params.id;
-    
-    try {
-        const [existing] = await db.execute(`SELECT id FROM sliders WHERE id = ?`, [sliderId]);
-        if (existing.length === 0) {
-            return res.status(404).json({ error: "اسلایدر یافت نشد" });
-        }
-        
-        await db.execute(`DELETE FROM sliders WHERE id = ?`, [sliderId]);
-        
-        res.json({ success: true, message: "اسلایدر با موفقیت حذف شد" });
-    } catch (err) {
-        console.error("Error in DELETE /api/admin/slider/:id:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
 
+    try {
+      const [existing] = await db.execute(
+        `SELECT id FROM sliders WHERE id = ?`,
+        [sliderId],
+      );
+      if (existing.length === 0) {
+        return res.status(404).json({ error: "اسلایدر یافت نشد" });
+      }
+
+      await db.execute(`DELETE FROM sliders WHERE id = ?`, [sliderId]);
+
+      res.json({ success: true, message: "اسلایدر با موفقیت حذف شد" });
+    } catch (err) {
+      console.error("Error in DELETE /api/admin/slider/:id:", err);
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 // ====================== API حذف و ویرایش پرداخت ======================
 
 // حذف یک پرداخت خاص
