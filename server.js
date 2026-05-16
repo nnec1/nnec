@@ -2583,6 +2583,164 @@ app.delete(
   },
 );
 
+
+// ====================== API حذف و ویرایش پرداخت ======================
+
+// حذف یک پرداخت خاص
+app.delete("/api/fee-payments/:id", authenticate, async (req, res) => {
+    const paymentId = req.params.id;
+    
+    try {
+        // ابتدا اطلاعات پرداخت را دریافت کن
+        const [payment] = await db.execute(
+            `SELECT student_id, amount FROM fee_payments WHERE id = ?`,
+            [paymentId]
+        );
+        
+        if (payment.length === 0) {
+            return res.status(404).json({ error: "پرداخت یافت نشد" });
+        }
+        
+        const studentId = payment[0].student_id;
+        const paymentAmount = parseFloat(payment[0].amount) || 0;
+        
+        // حذف پرداخت
+        await db.execute(`DELETE FROM fee_payments WHERE id = ?`, [paymentId]);
+        
+        // محاسبه مجدد مجموع پرداختی‌های شاگرد
+        const [totalPaidResult] = await db.execute(
+            `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE student_id = ?`,
+            [studentId]
+        );
+        const totalPaid = parseFloat(totalPaidResult[0]?.total) || 0;
+        
+        // به‌روزرسانی remaining_fee در جدول students
+        const [student] = await db.execute(
+            `SELECT total_fee FROM students WHERE id = ?`,
+            [studentId]
+        );
+        const totalFee = parseFloat(student[0]?.total_fee) || 0;
+        const newRemaining = totalFee - totalPaid;
+        
+        await db.execute(
+            `UPDATE students SET remaining_fee = ? WHERE id = ?`,
+            [newRemaining < 0 ? 0 : newRemaining, studentId]
+        );
+        
+        // به‌روزرسانی جدول fee_debtors
+        if (newRemaining > 0) {
+            await db.execute(
+                `INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee) 
+                 VALUES (?, ?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE 
+                 total_fee = VALUES(total_fee), 
+                 paid_fee = VALUES(paid_fee), 
+                 remaining_fee = VALUES(remaining_fee)`,
+                [studentId, totalFee, totalPaid, newRemaining]
+            );
+        } else {
+            await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [studentId]);
+        }
+        
+        res.json({ success: true, message: "پرداخت با موفقیت حذف شد" });
+    } catch (err) {
+        console.error("Error in DELETE /api/fee-payments/:id:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ویرایش یک پرداخت خاص
+app.put("/api/fee-payments/:id", authenticate, async (req, res) => {
+    const paymentId = req.params.id;
+    const { amount, payment_date, notes } = req.body;
+    
+    try {
+        // ابتدا اطلاعات پرداخت را دریافت کن
+        const [payment] = await db.execute(
+            `SELECT student_id, amount FROM fee_payments WHERE id = ?`,
+            [paymentId]
+        );
+        
+        if (payment.length === 0) {
+            return res.status(404).json({ error: "پرداخت یافت نشد" });
+        }
+        
+        const studentId = payment[0].student_id;
+        const oldAmount = parseFloat(payment[0].amount) || 0;
+        const newAmount = parseFloat(amount) || oldAmount;
+        
+        // به‌روزرسانی پرداخت
+        await db.execute(
+            `UPDATE fee_payments SET amount = ?, payment_date = ?, notes = ? WHERE id = ?`,
+            [newAmount, payment_date, notes || null, paymentId]
+        );
+        
+        // محاسبه مجدد مجموع پرداختی‌های شاگرد
+        const [totalPaidResult] = await db.execute(
+            `SELECT COALESCE(SUM(amount), 0) as total FROM fee_payments WHERE student_id = ?`,
+            [studentId]
+        );
+        const totalPaid = parseFloat(totalPaidResult[0]?.total) || 0;
+        
+        // به‌روزرسانی remaining_fee در جدول students
+        const [student] = await db.execute(
+            `SELECT total_fee FROM students WHERE id = ?`,
+            [studentId]
+        );
+        const totalFee = parseFloat(student[0]?.total_fee) || 0;
+        const newRemaining = totalFee - totalPaid;
+        
+        await db.execute(
+            `UPDATE students SET remaining_fee = ? WHERE id = ?`,
+            [newRemaining < 0 ? 0 : newRemaining, studentId]
+        );
+        
+        // به‌روزرسانی جدول fee_debtors
+        if (newRemaining > 0) {
+            await db.execute(
+                `INSERT INTO fee_debtors (student_id, total_fee, paid_fee, remaining_fee) 
+                 VALUES (?, ?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE 
+                 total_fee = VALUES(total_fee), 
+                 paid_fee = VALUES(paid_fee), 
+                 remaining_fee = VALUES(remaining_fee)`,
+                [studentId, totalFee, totalPaid, newRemaining]
+            );
+        } else {
+            await db.execute(`DELETE FROM fee_debtors WHERE student_id = ?`, [studentId]);
+        }
+        
+        res.json({ success: true, message: "پرداخت با موفقیت ویرایش شد" });
+    } catch (err) {
+        console.error("Error in PUT /api/fee-payments/:id:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// دریافت اطلاعات یک پرداخت خاص
+app.get("/api/fee-payments/:id", authenticate, async (req, res) => {
+    const paymentId = req.params.id;
+    
+    try {
+        const [payment] = await db.execute(
+            `SELECT fp.*, s.name as student_name, s.father_name, s.student_card_id, c.class_name 
+             FROM fee_payments fp
+             JOIN students s ON fp.student_id = s.id
+             JOIN classes c ON s.class_id = c.id
+             WHERE fp.id = ?`,
+            [paymentId]
+        );
+        
+        if (payment.length === 0) {
+            return res.status(404).json({ error: "پرداخت یافت نشد" });
+        }
+        
+        res.json(payment[0]);
+    } catch (err) {
+        console.error("Error in GET /api/fee-payments/:id:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
