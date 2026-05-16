@@ -2780,112 +2780,100 @@ app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
   const targetDate = date || new Date().toISOString().split("T")[0];
 
   try {
-    // 1. دریافت لیست همه استادان فعال
-    const [teachers] = await db.execute(
-      `SELECT id, name, father_name, phone, email FROM employees WHERE position = 'teacher' AND status = 'active'`,
-    );
+    // دریافت همه استادان فعال
+    const [teachers] = await db.execute(`
+      SELECT id, name, father_name, phone, email
+      FROM employees
+      WHERE position = 'teacher' AND status = 'active'
+      ORDER BY name
+    `);
 
-    const teachersData = [];
-    let totalTeachers = teachers.length;
+    const result = [];
 
     for (const teacher of teachers) {
-      // 2. دریافت لیست صنف‌های این استاد
+      // دریافت صنف‌های تخصیص داده شده به این استاد
       const [classes] = await db.execute(
-        `SELECT c.id, c.class_name, c.start_time 
-                 FROM classes c 
-                 JOIN teacher_classes tc ON c.id = tc.class_id 
-                 WHERE tc.teacher_id = ? AND c.is_active = 1`,
+        `
+        SELECT c.id, c.class_name, c.start_time
+        FROM classes c
+        JOIN teacher_classes tc ON c.id = tc.class_id
+        WHERE tc.teacher_id = ? AND c.is_active = 1
+        ORDER BY c.start_time
+      `,
         [teacher.id],
       );
 
-      let attendedClasses = 0;
-      let notAttendedClasses = 0;
-      const classesData = [];
+      const classDetails = [];
 
       for (const cls of classes) {
-        // 3. بررسی حاضری در این تاریخ (با اصلاح نام ستون)
-        const [attendance] = await db.execute(
-          `SELECT id FROM daily_attendance 
-                     WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
+        // بررسی اینکه استاد در تاریخ مشخص حاضری گرفته است یا خیر
+        const [attendanceCheck] = await db.execute(
+          `
+          SELECT COUNT(*) as has_attendance
+          FROM daily_attendance
+          WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?
+        `,
           [teacher.id, cls.id, targetDate],
         );
 
-        const hasAttendance = attendance.length > 0;
-        let presentCount = 0,
-          absentCount = 0,
-          lateCount = 0,
-          totalStudents = 0;
+        // آمار حاضری شاگردان این صنف در تاریخ مشخص
+        const [studentStats] = await db.execute(
+          `
+          SELECT 
+            COUNT(DISTINCT s.id) as total_students,
+            COUNT(CASE WHEN ad.status = 'present' THEN 1 END) as present_count,
+            COUNT(CASE WHEN ad.status = 'absent' THEN 1 END) as absent_count,
+            COUNT(CASE WHEN ad.status = 'late' THEN 1 END) as late_count
+          FROM students s
+          LEFT JOIN attendance_details ad ON s.id = ad.student_id
+          LEFT JOIN daily_attendance da ON ad.attendance_id = da.id
+          WHERE s.class_id = ? AND s.status = 'active'
+            AND (da.attendance_date IS NULL OR da.attendance_date = ?)
+        `,
+          [cls.id, targetDate],
+        );
 
-        if (hasAttendance) {
-          // اصلاح: استفاده از attendance_id به جای da.attendance_id
-          const [stats] = await db.execute(
-            `SELECT 
-                            COUNT(CASE WHEN status = 'present' THEN 1 END) as present_count,
-                            COUNT(CASE WHEN status = 'absent' THEN 1 END) as absent_count,
-                            COUNT(CASE WHEN status = 'late' THEN 1 END) as late_count,
-                            COUNT(*) as total
-                         FROM attendance_details
-                         WHERE attendance_id = ?`,
-            [attendance[0].id],
-          );
-          presentCount = stats[0]?.present_count || 0;
-          absentCount = stats[0]?.absent_count || 0;
-          lateCount = stats[0]?.late_count || 0;
-          totalStudents = stats[0]?.total || 0;
-        } else {
-          // اگر حاضری گرفته نشده، تعداد شاگردان صنف را بگیر
-          const [studentsCount] = await db.execute(
-            `SELECT COUNT(*) as total FROM students WHERE class_id = ? AND status = 'active'`,
-            [cls.id],
-          );
-          totalStudents = studentsCount[0]?.total || 0;
-        }
-
-        if (hasAttendance) {
-          attendedClasses++;
-        } else {
-          notAttendedClasses++;
-        }
-
-        classesData.push({
-          id: cls.id,
+        classDetails.push({
+          class_id: cls.id,
           class_name: cls.class_name,
           start_time: cls.start_time,
-          has_attendance: hasAttendance,
-          total_students: totalStudents,
-          present_count: presentCount,
-          absent_count: absentCount,
-          late_count: lateCount,
+          has_attendance: attendanceCheck[0]?.has_attendance > 0,
+          total_students: studentStats[0]?.total_students || 0,
+          present_count: studentStats[0]?.present_count || 0,
+          absent_count: studentStats[0]?.absent_count || 0,
+          late_count: studentStats[0]?.late_count || 0,
         });
       }
 
-      teachersData.push({
-        teacher: {
-          id: teacher.id,
-          name: teacher.name,
-          father_name: teacher.father_name,
-          phone: teacher.phone,
-          email: teacher.email,
-        },
-        total_classes: classes.length,
-        attended_classes: attendedClasses,
-        not_attended_classes: notAttendedClasses,
-        classes: classesData,
-      });
+      if (classDetails.length > 0) {
+        result.push({
+          teacher: {
+            id: teacher.id,
+            name: teacher.name,
+            father_name: teacher.father_name,
+            phone: teacher.phone,
+            email: teacher.email,
+          },
+          classes: classDetails,
+          total_classes: classDetails.length,
+          attended_classes: classDetails.filter((c) => c.has_attendance).length,
+          not_attended_classes: classDetails.filter((c) => !c.has_attendance)
+            .length,
+        });
+      }
     }
 
     res.json({
       success: true,
       date: targetDate,
-      total_teachers: totalTeachers,
-      teachers: teachersData,
+      total_teachers: result.length,
+      teachers: result,
     });
   } catch (err) {
-    console.error("Error in /api/teachers-classes-attendance:", err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error("❌ Error in /api/teachers-classes-attendance:", err);
+    res.status(500).json({ error: err.message });
   }
 });
-
 // ====================== صفحات ======================
 
 app.use((req, res) => {
