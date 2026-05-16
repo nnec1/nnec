@@ -2771,6 +2771,45 @@ app.get("/api/fee-payments/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// گزارش حاضری استادان در یک تاریخ مشخص
+app.get("/api/teachers-attendance", authenticate, async (req, res) => {
+    const { date } = req.query;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    
+    try {
+        // دریافت لیست همه استادان فعال
+        const [teachers] = await db.execute(
+            `SELECT id, name, father_name, phone, email FROM employees WHERE position = 'teacher' AND status = 'active'`
+        );
+        
+        // دریافت حاضری استادان (اگر جدول خاصی برای حاضری استادان دارید)
+        // در غیر این صورت، یک آرایه خالی برمی‌گردانیم
+        const [attendance] = await db.execute(
+            `SELECT teacher_id, status, check_in_time, check_out_time 
+             FROM teacher_attendance 
+             WHERE attendance_date = ?`,
+            [targetDate]
+        );
+        
+        const attendanceMap = {};
+        attendance.forEach(a => {
+            attendanceMap[a.teacher_id] = a;
+        });
+        
+        const result = teachers.map(teacher => ({
+            ...teacher,
+            status: attendanceMap[teacher.id]?.status || 'absent',
+            check_in_time: attendanceMap[teacher.id]?.check_in_time || null,
+            check_out_time: attendanceMap[teacher.id]?.check_out_time || null
+        }));
+        
+        res.json({ success: true, date: targetDate, teachers: result });
+    } catch (err) {
+        console.error("Error in /api/teachers-attendance:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ====================== صفحات ======================
 
 app.use((req, res) => {
