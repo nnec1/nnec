@@ -1,3 +1,11 @@
 uploads/**/*.jpg filter=lfs diff=lfs merge=lfs -text
 uploads/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
 uploads/**/*.png filter=lfs diff=lfs merge=lfs -text
+uploads/**/*.gif filter=lfs diff=lfs merge=lfs -text
+uploads/**/*.webp filter=lfs diff=lfs merge=lfs -text
+uploads/students/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+uploads/students/**/*.png filter=lfs diff=lfs merge=lfs -text
+uploads/teachers/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+uploads/teachers/**/*.png filter=lfs diff=lfs merge=lfs -text
+uploads/sliders/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+uploads/sliders/**/*.png filter=lfs diff=lfs merge=lfs -text
