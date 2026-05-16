@@ -2414,6 +2414,8 @@ app.get("/api/ceo/dashboard-stats", authenticate, async (req, res) => {
 // تنظیم multer برای آپلود فایل در پوشه‌های جداگانه
 // ====================== API مدیریت اسلایدر ======================
 
+// ====================== API مدیریت اسلایدر ======================
+
 // دریافت اسلایدرهای فعال (برای صفحه ورود - عمومی)
 app.get("/api/slider", async (req, res) => {
   try {
@@ -2423,7 +2425,7 @@ app.get("/api/slider", async (req, res) => {
              WHERE is_active = 1 
              ORDER BY order_index ASC, created_at DESC`,
     );
-    res.json(sliders);
+    res.json(sliders || []);
   } catch (err) {
     console.error("Error in GET /api/slider:", err);
     res.status(500).json({ error: err.message });
@@ -2439,7 +2441,7 @@ app.get("/api/admin/slider", authenticate, isAdminOrCEO, async (req, res) => {
              LEFT JOIN employees e ON s.created_by = e.id
              ORDER BY s.order_index ASC, s.created_at DESC`,
     );
-    res.json(sliders);
+    res.json(sliders || []);
   } catch (err) {
     console.error("Error in GET /api/admin/slider:", err);
     res.status(500).json({ error: err.message });
@@ -2467,7 +2469,7 @@ app.get(
   },
 );
 
-// ایجاد اسلایدر جدید (با استفاده از upload موجود)
+// ایجاد اسلایدر جدید
 app.post(
   "/api/admin/slider",
   authenticate,
@@ -2771,6 +2773,7 @@ app.get("/api/fee-payments/:id", authenticate, async (req, res) => {
 });
 
 // ====================== API گزارش حاضری استادان و صنف‌ها ======================
+// ====================== API گزارش حاضری استادان و صنف‌ها ======================
 
 app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
   const { date } = req.query;
@@ -2800,7 +2803,7 @@ app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
       const classesData = [];
 
       for (const cls of classes) {
-        // 3. بررسی حاضری در این تاریخ
+        // 3. بررسی حاضری در این تاریخ (با اصلاح نام ستون)
         const [attendance] = await db.execute(
           `SELECT id FROM daily_attendance 
                      WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
@@ -2808,23 +2811,21 @@ app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
         );
 
         const hasAttendance = attendance.length > 0;
-
-        // 4. آمار شاگردان برای این صنف
         let presentCount = 0,
           absentCount = 0,
           lateCount = 0,
           totalStudents = 0;
 
         if (hasAttendance) {
+          // اصلاح: استفاده از attendance_id به جای da.attendance_id
           const [stats] = await db.execute(
             `SELECT 
-                            COUNT(CASE WHEN ad.status = 'present' THEN 1 END) as present_count,
-                            COUNT(CASE WHEN ad.status = 'absent' THEN 1 END) as absent_count,
-                            COUNT(CASE WHEN ad.status = 'late' THEN 1 END) as late_count,
+                            COUNT(CASE WHEN status = 'present' THEN 1 END) as present_count,
+                            COUNT(CASE WHEN status = 'absent' THEN 1 END) as absent_count,
+                            COUNT(CASE WHEN status = 'late' THEN 1 END) as late_count,
                             COUNT(*) as total
-                         FROM attendance_details ad
-                         JOIN daily_attendance da ON ad.attendance_id = da.id
-                         WHERE da.attendance_id = ?`,
+                         FROM attendance_details
+                         WHERE attendance_id = ?`,
             [attendance[0].id],
           );
           presentCount = stats[0]?.present_count || 0;
@@ -2884,6 +2885,7 @@ app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // ====================== صفحات ======================
 
 app.use((req, res) => {
