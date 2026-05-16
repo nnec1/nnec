@@ -2772,43 +2772,119 @@ app.get("/api/fee-payments/:id", authenticate, async (req, res) => {
   }
 });
 
-// گزارش حاضری استادان در یک تاریخ مشخص
-app.get("/api/teachers-attendance", authenticate, async (req, res) => {
-    const { date } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
-    
-    try {
-        // دریافت لیست همه استادان فعال
-        const [teachers] = await db.execute(
-            `SELECT id, name, father_name, phone, email FROM employees WHERE position = 'teacher' AND status = 'active'`
-        );
-        
-        // دریافت حاضری استادان (اگر جدول خاصی برای حاضری استادان دارید)
-        // در غیر این صورت، یک آرایه خالی برمی‌گردانیم
+// ====================== API گزارش حاضری استادان و صنف‌ها ======================
+
+app.get("/api/teachers-classes-attendance", authenticate, async (req, res) => {
+  const { date } = req.query;
+  const targetDate = date || new Date().toISOString().split("T")[0];
+
+  try {
+    // 1. دریافت لیست همه استادان فعال
+    const [teachers] = await db.execute(
+      `SELECT id, name, father_name, phone, email FROM employees WHERE position = 'teacher' AND status = 'active'`,
+    );
+
+    const teachersData = [];
+    let totalTeachers = teachers.length;
+
+    for (const teacher of teachers) {
+      // 2. دریافت لیست صنف‌های این استاد
+      const [classes] = await db.execute(
+        `SELECT c.id, c.class_name, c.start_time 
+                 FROM classes c 
+                 JOIN teacher_classes tc ON c.id = tc.class_id 
+                 WHERE tc.teacher_id = ? AND c.is_active = 1`,
+        [teacher.id],
+      );
+
+      let attendedClasses = 0;
+      let notAttendedClasses = 0;
+      const classesData = [];
+
+      for (const cls of classes) {
+        // 3. بررسی حاضری در این تاریخ
         const [attendance] = await db.execute(
-            `SELECT teacher_id, status, check_in_time, check_out_time 
-             FROM teacher_attendance 
-             WHERE attendance_date = ?`,
-            [targetDate]
+          `SELECT id FROM daily_attendance 
+                     WHERE teacher_id = ? AND class_id = ? AND attendance_date = ?`,
+          [teacher.id, cls.id, targetDate],
         );
-        
-        const attendanceMap = {};
-        attendance.forEach(a => {
-            attendanceMap[a.teacher_id] = a;
+
+        const hasAttendance = attendance.length > 0;
+
+        // 4. آمار شاگردان برای این صنف
+        let presentCount = 0,
+          absentCount = 0,
+          lateCount = 0,
+          totalStudents = 0;
+
+        if (hasAttendance) {
+          const [stats] = await db.execute(
+            `SELECT 
+                            COUNT(CASE WHEN ad.status = 'present' THEN 1 END) as present_count,
+                            COUNT(CASE WHEN ad.status = 'absent' THEN 1 END) as absent_count,
+                            COUNT(CASE WHEN ad.status = 'late' THEN 1 END) as late_count,
+                            COUNT(*) as total
+                         FROM attendance_details ad
+                         JOIN daily_attendance da ON ad.attendance_id = da.id
+                         WHERE da.attendance_id = ?`,
+            [attendance[0].id],
+          );
+          presentCount = stats[0]?.present_count || 0;
+          absentCount = stats[0]?.absent_count || 0;
+          lateCount = stats[0]?.late_count || 0;
+          totalStudents = stats[0]?.total || 0;
+        } else {
+          // اگر حاضری گرفته نشده، تعداد شاگردان صنف را بگیر
+          const [studentsCount] = await db.execute(
+            `SELECT COUNT(*) as total FROM students WHERE class_id = ? AND status = 'active'`,
+            [cls.id],
+          );
+          totalStudents = studentsCount[0]?.total || 0;
+        }
+
+        if (hasAttendance) {
+          attendedClasses++;
+        } else {
+          notAttendedClasses++;
+        }
+
+        classesData.push({
+          id: cls.id,
+          class_name: cls.class_name,
+          start_time: cls.start_time,
+          has_attendance: hasAttendance,
+          total_students: totalStudents,
+          present_count: presentCount,
+          absent_count: absentCount,
+          late_count: lateCount,
         });
-        
-        const result = teachers.map(teacher => ({
-            ...teacher,
-            status: attendanceMap[teacher.id]?.status || 'absent',
-            check_in_time: attendanceMap[teacher.id]?.check_in_time || null,
-            check_out_time: attendanceMap[teacher.id]?.check_out_time || null
-        }));
-        
-        res.json({ success: true, date: targetDate, teachers: result });
-    } catch (err) {
-        console.error("Error in /api/teachers-attendance:", err);
-        res.status(500).json({ error: err.message });
+      }
+
+      teachersData.push({
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          father_name: teacher.father_name,
+          phone: teacher.phone,
+          email: teacher.email,
+        },
+        total_classes: classes.length,
+        attended_classes: attendedClasses,
+        not_attended_classes: notAttendedClasses,
+        classes: classesData,
+      });
     }
+
+    res.json({
+      success: true,
+      date: targetDate,
+      total_teachers: totalTeachers,
+      teachers: teachersData,
+    });
+  } catch (err) {
+    console.error("Error in /api/teachers-classes-attendance:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 // ====================== صفحات ======================
 
